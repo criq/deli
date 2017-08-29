@@ -1,8 +1,8 @@
 <?php
 
-namespace Roubar\Controllers;
+namespace Deli\Controllers;
 
-use \Roubar\Models\KalorickeTabulky\Item;
+use \Deli\Models\KalorickeTabulky\Item;
 use \Sexy\Sexy as SX;
 
 class KalorickeTabulky extends \Katu\Controller {

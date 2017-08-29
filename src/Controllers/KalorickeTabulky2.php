@@ -1,6 +1,6 @@
 <?php
 
-namespace Roubar\Controllers;
+namespace Deli\Controllers;
 
 class KalorickeTabulky2 extends \Katu\Controller {
 

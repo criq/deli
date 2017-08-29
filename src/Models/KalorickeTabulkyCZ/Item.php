@@ -1,6 +1,6 @@
 <?php
 
-namespace Deli\Models\KalorickeTabulky;
+namespace Deli\Models\KalorickeTabulkyCZ;
 
 class Item extends \Deli\Models\Item {
 
