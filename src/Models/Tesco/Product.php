@@ -5,7 +5,6 @@ namespace Deli\Models\Tesco;
 class Product extends Deli\Models\Item {
 
 	const TABLE = 'deli_tesco_products';
-
 	const SOURCE = 'itesco.cz';
 
 	static function create($productId) {

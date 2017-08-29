@@ -1,11 +1,10 @@
 <?php
 
-namespace Deli\Models\PbdOnline;
+namespace Deli\Models\PbdOnlineSK;
 
 class Product extends \Deli\Models\Item {
 
-	const TABLE = 'deli_pbdonline_products';
-
+	const TABLE = 'deli_pbd_online_sk_products';
 	const SOURCE = 'pbd-online.sk';
 
 	static function create($productId, $name) {

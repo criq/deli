@@ -1,10 +1,10 @@
 <?php
 
-namespace Deli\Models\PbdOnline;
+namespace Deli\Models\PbdOnlineSK;
 
 class Category extends \Deli\Model {
 
-	const TABLE = 'deli_pbdonline_categories';
+	const TABLE = 'deli_pbd_online_sk_categories';
 
 	static function create($categoryIds) {
 		return static::insert([
