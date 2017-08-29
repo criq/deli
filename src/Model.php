@@ -1,6 +1,6 @@
 <?php
 
-namespace Roubar;
+namespace Deli;
 
 abstract class Model extends \Katu\Model {
 

@@ -7,19 +7,11 @@ class Item extends \Deli\Models\Item {
 	const TABLE = 'deli_kaloricketabulky_cz_items';
 	const SOURCE = 'kaloricketabulky.cz';
 
-
-
 	static function create($uri) {
 		return static::insert([
 			'timeCreated' => (string) (new \Katu\Utils\DateTime),
 			'uri'         => (string) ($uri),
 		]);
-	}
-
-	static function make($uri) {
-		return static::getOneOrCreateWithList([
-			'uri' => $uri,
-		], $uri);
 	}
 
 	public function setName($name) {
@@ -35,10 +27,6 @@ class Item extends \Deli\Models\Item {
 	public function getUrl() {
 		return 'http://www.kaloricketabulky.cz/' . urlencode(trim($this->uri, '/'));
 	}
-
-
-
-
 
 	public function scrape() {
 		try {
@@ -156,8 +144,6 @@ class Item extends \Deli\Models\Item {
 	static function build() {
 		try {
 
-			var_dump("A");
-
 			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'build'], 600, function() {
 
 				$timeout = 86400;
@@ -168,6 +154,7 @@ class Item extends \Deli\Models\Item {
 					$url = \Katu\Types\TUrl::make('http://www.kaloricketabulky.cz/tabulka-potravin.php', [
 						'pismeno' => $filter,
 					]);
+
 					$res = \Katu\Utils\Cache::getUrl($url, $timeout);
 					$dom = \Katu\Utils\DOM::crawlHtml($res);
 
@@ -185,13 +172,21 @@ class Item extends \Deli\Models\Item {
 							$res = \Katu\Utils\Cache::getUrl($url, $timeout);
 							$dom = \Katu\Utils\DOM::crawlHtml($res);
 							$dom->filter('.vypis tbody tr h3 a')->each(function($e) {
-								try {
-									$object = Item::make($e->attr('href'));
-									$object->setName($e->html());
-									$object->save();
-								} catch (\Exception $e) {
 
+								try {
+
+									static::upsert([
+										'uri' => $e->attr('href'),
+									], [
+										'timeCreated' => new \Katu\Utils\DateTime,
+									], [
+										'name' => $e->html(),
+									]);
+
+								} catch (\Exception $e) {
+									// Nevermind.
 								}
+
 							});
 
 						}
@@ -200,13 +195,14 @@ class Item extends \Deli\Models\Item {
 
 				}
 
-			});
+			}, \Katu\Env::getPlatform() != 'dev');
 
 		} catch (\Katu\Exceptions\LockException $e) {
-			/* Nevermind. */
+			// Nevermind.
 		}
 	}
 
+	/*
 	static function scrape() {
 		try {
 
@@ -225,14 +221,14 @@ class Item extends \Deli\Models\Item {
 					try {
 						$item->scrape();
 					} catch (\Exception $e) {
-						/* Nevermind. */
+						// Nevermind
 					}
 				}
 
 			});
 
 		} catch (\Katu\Exceptions\LockException $e) {
-			/* Nevermind. */
+			// Nevermind
 		}
 	}
 
@@ -256,15 +252,16 @@ class Item extends \Deli\Models\Item {
 						$item->import();
 						$item->getOrCreateScrapedIngredent()->refreshIngredientNutrients();
 					} catch (\Exception $e) {
-						/* Nevermind. */
+						// Nevermind
 					}
 				}
 
 			});
 
 		} catch (\Katu\Exceptions\LockException $e) {
-			/* Nevermind. */
+			// Nevermind
 		}
 	}
+	*/
 
 }
