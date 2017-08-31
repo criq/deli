@@ -4,7 +4,8 @@
 	"type": "library",
 	"require" : {
 		"php": ">=5.3.0",
-		"jabli/katu": "dev-master"
+		"jabli/katu": "dev-master",
+		"mustangostang/spyc": "@stable"
 	},
 	"minimum-stability": "dev",
 	"autoload": {

@@ -2,224 +2,190 @@
 
 namespace Deli\Models\PbdOnlineSK;
 
-class Product extends \Deli\Models\Item {
+class Product extends \Deli\Models\Product {
 
 	const TABLE = 'deli_pbd_online_sk_products';
 	const SOURCE = 'pbd-online.sk';
 
-	static function create($productId, $name) {
-		return static::insert([
-			'timeCreated' => (string) (new \Katu\Utils\DateTime),
-			'productId'   => (int)    ($productId),
-			'name'        => (string) ($name),
-		]);
-	}
+	public function load() {
+		$this->loadName();
+		$this->loadNutrients();
 
-	static function make($productId, $name) {
-		return static::getOneOrCreateWithList([
-			'productId'   => (int)    ($productId),
-		], $productId, $name);
-	}
-
-	public function getName() {
-		return $this->name;
-	}
-
-	public function scrape() {
-
-	}
-
-	public function import() {
-		$scrapedIngredient = $this->getOrCreateScrapedIngredent();
-
-		$amounts = [
-			'base'                      => new \App\Classes\AmountWithUnit(100, 'g'),
-			'water'                     => $this->getValueAmountByCode('WATER'),
-			'dryMatter'                 => $this->getValueAmountByCode('DRYMAT'),
-			'proteins'                  => $this->getValueAmountByCode('PROT'),
-			'fats'                      => $this->getValueAmountByCode('FAT'),
-			'palmiticAcid'              => $this->getValueAmountByCode('F16:0'),
-			'linoleicAcid'              => $this->getValueAmountByCode('F18:2CN6'),
-			'saturatedFattyAcids'       => $this->getValueAmountByCode('FASAT'),
-			'monounsaturatedFattyAcids' => $this->getValueAmountByCode('FAMS'),
-			'polyunsaturatedFattyAcids' => $this->getValueAmountByCode('FAPU'),
-			'transFattyAcids'           => $this->getValueAmountByCode('FATRS'),
-			'carbs'                     => $this->getValueAmountByCode('CHOT'),
-			'fiber'                     => $this->getValueAmountByCode('FIBT'),
-			'sodium'                    => $this->getValueAmountByCode('NA'),
-			'magnesium'                 => $this->getValueAmountByCode('MG'),
-			'phosphorus'                => $this->getValueAmountByCode('P'),
-			'potassium'                 => $this->getValueAmountByCode('K'),
-			'calcium'                   => $this->getValueAmountByCode('CA'),
-			'iron'                      => $this->getValueAmountByCode('FE'),
-			'copper'                    => $this->getValueAmountByCode('CU'),
-			'zinc'                      => $this->getValueAmountByCode('ZN'),
-			'selenium'                  => $this->getValueAmountByCode('SE'),
-			'iodine'                    => $this->getValueAmountByCode('ID'),
-			'retinol'                   => $this->getValueAmountByCode('RETOL'),
-			'vitaminA'                  => $this->getValueAmountByCode('VITA'),
-			'vitaminD'                  => $this->getValueAmountByCode('VITD'),
-			'vitaminE'                  => $this->getValueAmountByCode('VITE'),
-			'vitaminB1'                 => $this->getValueAmountByCode('THIA'),
-			'vitaminB2'                 => $this->getValueAmountByCode('RIBF'),
-			'vitaminB5'                 => $this->getValueAmountByCode('PANTAC'),
-			'vitaminB6'                 => $this->getValueAmountByCode('VITB6'),
-			'vitaminB12'                => $this->getValueAmountByCode('VITB12'),
-			'vitaminC'                  => $this->getValueAmountByCode('VITC'),
-			'energy'                    => $this->getValueAmountByCodeAndUnit('ENERC', 'kJ'),
-			'energyFromFats'            => $this->getEnergyByName('ENERGETICKÁ HODNOTA EÚ LIPIDOV (TUKOV)'),
-			'energyFromProteins'        => $this->getEnergyByName('ENERGETICKÁ HODNOTA EÚ Z BIELKOVÍN'),
-			'energyFromCarbs'           => $this->getEnergyByName('ENERGETICKÁ HODNOTA EÚ ZO SACHARIDOV'),
-			'energyFromAlcohol'         => $this->getEnergyByName('ENERGETICKÁ HODNOTA EÚ Z ALKOHOLU'),
-		];
-
-		$scrapedIngredient->setScrapedIngredientAmounts($amounts);
-
-		$this->setTimeImported(new \Katu\Utils\DateTime);
+		$this->update('timeLoaded', new \Katu\Utils\DateTime);
 		$this->save();
 
 		return true;
 	}
 
-	public function getNutrientLines() {
-		$url = \Katu\Types\TUrl::make('http://www.pbd-online.sk/sk/menu/welcome/detail', [
-			'id' => $this->productId,
+	public function getUrl() {
+		return \Katu\Types\TUrl::make('http://www.pbd-online.sk/sk/menu/welcome/detail', [
+			'id' => $this->uri,
 		]);
-		$src = \Katu\Utils\Cache::getUrl($url);
-		$dom = \Katu\Utils\DOM::crawlHtml($src);
+	}
 
-		$lines = array_values(array_filter($dom->filter('.datatable')->each(function($e, $i) {
+	public function getSrc($timeout = 86400 * 28) {
+		return \Katu\Utils\Cache::getUrl($this->getUrl(), $timeout);
+	}
+
+	public function loadName() {
+		$url = \Katu\Types\TUrl::make('https://www.googleapis.com/language/translate/v2', [
+			'key' => \Katu\Config::get('google', 'api', 'key'),
+			'source' => 'sk',
+			'target' => 'cs',
+			'q' => $this->originalName,
+		]);
+
+		$res = \Katu\Utils\Cache::getUrl($url);
+		if (isset($res->data->translations[0]->translatedText)) {
+			$this->update('name', $res->data->translations[0]->translatedText);
+			$this->save();
+		}
+
+		return true;
+	}
+
+	public function scrapeNutrientAssoc() {
+		$dom = \Katu\Utils\DOM::crawlHtml($this->getSrc());
+
+		$list = array_values(array_filter($dom->filter('.datatable')->each(function($e, $i) {
 			if ($i == 1) {
-				$lines = array_values(array_filter($e->filter('tr')->each(function($e) {
+				$list = array_values(array_filter($e->filter('tr')->each(function($e) {
 					if ($e->attr('class') != 'th') {
 
 						return [
-							'name' => trim($e->filter('td:nth-child(1)')->html()),
-							'code' => trim($e->filter('td:nth-child(2)')->html()),
+							'name' => trim(preg_replace('/\s+/', ' ', $e->filter('td:nth-child(1)')->html())),
 							'amountWithUnit' => trim($e->filter('td:nth-child(3)')->html()),
 						];
 
 					}
 				})));
 
-				return $lines;
+				return $list;
 			}
 		})));
 
-		return $lines[0];
+		$nutrientAssoc = [];
+		foreach (array_values(array_filter($list[0])) as $listItem) {
+			$nutrientAssoc[$listItem['name']] = $listItem['amountWithUnit'];
+		}
+
+		return $nutrientAssoc;
 	}
 
-	public function setScraped($scraped) {
-		$this->update('timeScraped', (new \Katu\Utils\DateTime)->getDbDateTimeFormat());
-		$this->update('scraped', \Katu\Utils\JSON::encode($scraped));
+	public function scrapeNutrients() {
+		$nutrientAssoc = $this->scrapeNutrientAssoc();
 
-		return true;
-	}
+		$nutrientNameMap = [
+			'VODA CELKOVÁ' => 'water',
+			'SUŠINA CELKOVÁ' => 'dryMatter',
+			'BIELKOVINY CELKOVÉ (HR. PROTEÍN)' => 'proteins',
+			'LIPIDY (TUKY) CELKOVÉ' => 'fats',
+			'KYS. PALMITOVÁ 16:0' => 'palmiticAcid',
+			'KYS. LINOLOVÁ 18:2n-6 **' => 'linoleicAcid',
+			'MASTNÉ KYSELINY NASÝTENÉ CELKOVÉ' => 'saturatedFattyAcids',
+			'MASTNÉ KYSELINY MONONENASÝTENÉ CELKOVÉ' => 'monounsaturatedFattyAcids',
+			'MASTNÉ KYSELINY POLYNENASÝTENÉ CELKOVÉ' => 'polyunsaturatedFattyAcids',
+			'trans-MASTNÉ KYSELINY CELKOVÉ' => 'transFattyAcids',
+			'CHOLESTEROL' => 'cholesterol',
+			'SACHARIDY CELKOVÉ' => 'carbs',
+			'SACHARÓZA' => 'sugar',
+			'ŠKROB' => 'starch',
+			'POTRAVINOVÁ VLÁKNINA CELKOVÁ' => 'fiber',
+			'SODÍK ** Na' => 'sodium',
+			'HORČÍK ** Mg' => 'magnesium',
+			'FOSFOR ** P' => 'phosphorus',
+			'SÍRA ** S' => 'sulphur',
+			'DRASLÍK ** K' => 'potassium',
+			'VÁPNIK ** Ca' => 'calcium',
+			'ŽELEZO ** Fe' => 'iron',
+			'MEĎ ** Cu' => 'copper',
+			'ZINOK ** Zn' => 'zinc',
+			'SELÉN ** Se' => 'selenium',
+			'JÓD ** I' => 'iodine',
+			'CHLORID SODNÝ (KUCHYNSKÁ SOĽ)' => 'salt',
+			'VITAMÍN A 1 (RETINOL)' => 'retinol',
+			'RETINOL EKVIVALENT (RE) (vypočítaný), VITAMÍN A' => 'vitaminA',
+			'VITAMÍN D (KALCIFEROL)' => 'vitaminD',
+			'VITAMÍN E (TOKOFEROLY)' => 'vitaminE',
+			'VITAMÍN B 1 (TIAMÍN)' => 'vitaminB1',
+			'VITAMÍN B 2 (RIBOFLAVÍN)' => 'vitaminB2',
+			'VITAMÍN B 5 (KYS. PANTOTÉNOVÁ)' => 'vitaminB5',
+			'VITAMÍN B 6 (PYRIDOXÍNY)' => 'vitaminB6',
+			'VITAMÍN B 12 (KOBALAMÍNY)' => 'vitaminB12',
+			'VITAMÍN C' => 'vitaminC',
+			'ENERGETICKÁ HODNOTA EÚ' => 'energy',
+			'ENERGETICKÁ HODNOTA EÚ Z BIELKOVÍN' => 'energyFromProteins',
+			'ENERGETICKÁ HODNOTA EÚ LIPIDOV (TUKOV)' => 'energyFromFats',
+			'ENERGETICKÁ HODNOTA EÚ ZO SACHARIDOV' => 'energyFromCarbs',
+			'ENERGETICKÁ HODNOTA EÚ Z ALKOHOLU' => 'energyFromAlcohol'
+		];
 
-	public function getValueArray() {
-		return array_values(array_filter(array_map(function($i) {
+		$nutrients = [];
+		foreach ($nutrientAssoc as $nutrientName => $nutrientAmountSource) {
 
-			if (preg_match('#^(?<amount>[0-9\.]+)\s+(?<unit>[a-z]+)$#ui', $i['amountWithUnit'], $match)) {
+			if (!isset($nutrientNameMap[$nutrientName])) {
+				continue;
+			}
+
+			$amountWithUnit = null;
+			if (preg_match('#^(?<amount>[0-9\.]+)\s+(?<unit>[a-z]+)$#ui', $nutrientAmountSource, $match)) {
 				switch ($match['unit']) {
 					case 'g' :
-						$amountWithUnit = new \App\Classes\AmountWithUnit($match['amount'], 'g');
+						$amountWithUnit = new \Deli\AmountWithUnit($match['amount'], 'g');
 					break;
 					case 'mg' :
-						$amountWithUnit = new \App\Classes\AmountWithUnit($match['amount'] * .001, 'g');
+						$amountWithUnit = new \Deli\AmountWithUnit($match['amount'] * .001, 'g');
 					break;
 					case 'ug' :
-						$amountWithUnit = new \App\Classes\AmountWithUnit($match['amount'] * .000001, 'g');
+						$amountWithUnit = new \Deli\AmountWithUnit($match['amount'] * .000001, 'g');
 					break;
 					case 'RE' :
-						$amountWithUnit = new \App\Classes\AmountWithUnit($match['amount'], 'RE');
+						$amountWithUnit = new \Deli\AmountWithUnit($match['amount'], 'RE');
 					break;
 					case 'kcal' :
-						$amountWithUnit = new \App\Classes\AmountWithUnit($match['amount'], 'kcal');
+						$amountWithUnit = new \Deli\AmountWithUnit($match['amount'], 'kcal');
 					break;
 					case 'kJ' :
-						$amountWithUnit = new \App\Classes\AmountWithUnit($match['amount'], 'kJ');
+						$amountWithUnit = new \Deli\AmountWithUnit($match['amount'], 'kJ');
 					break;
 					case 'PCT' :
-						$amountWithUnit = new \App\Classes\AmountWithUnit($match['amount'], 'percent');
+						$amountWithUnit = new \Deli\AmountWithUnit($match['amount'], 'percent');
 					break;
 				}
 			}
 
-			if (isset($amountWithUnit)) {
-				return [
-					'name' => $i['name'],
-					'code' => $i['code'],
-					'amountWithUnit' => $amountWithUnit,
-				];
+			if ($amountWithUnit) {
+				$nutrients[$nutrientNameMap[$nutrientName]] = $amountWithUnit;
 			}
 
-		}, \Katu\Utils\JSON::decodeAsArray($this->scraped))));
-	}
-
-	public function getValuesByCode() {
-		$values = [];
-		foreach ($this->getValueArray() as $value) {
-			$values[$value['code']] = $value;
 		}
 
-		return $values;
+		return $nutrients;
 	}
 
-	public function getValueByCode($code) {
-		$values = $this->getValuesByCode();
-		if (isset($values[$code])) {
-			return $values[$code]['amountWithUnit'];
-		}
+	public function loadNutrients() {
+		try {
 
-		return false;
-	}
+			$productAmountWithUnit = new \Deli\AmountWithUnit(100, 'g');
 
-	public function getValueAmountByCodeAndUnit($code, $unit) {
-		foreach ($this->getValueArray() as $value) {
-			if ($value['code'] == $code && $value['amountWithUnit']->unit == $unit) {
-				return $value['amountWithUnit'];
+			foreach ($this->scrapeNutrients() as $nutrientCode => $nutrientAmountWithUnit) {
+				ProductNutrient::upsert([
+					'productId' => $this->getId(),
+					'nutrientCode' => $nutrientCode,
+				], [
+					'timeCreated' => new \Katu\Utils\DateTime,
+				], [
+					'timeUpdated' => new \Katu\Utils\DateTime,
+					'nutrientAmount' => $nutrientAmountWithUnit->amount,
+					'nutrientUnit' => $nutrientAmountWithUnit->unit,
+					'ingredientAmount' => $productAmountWithUnit->amount,
+					'ingredientUnit' => $productAmountWithUnit->unit,
+				]);
 			}
+
+		} catch (\Exception $e) {
+			// Nevermind.
 		}
-
-		return false;
-	}
-
-	public function getValuesByName() {
-		$values = [];
-		foreach ($this->getValueArray() as $value) {
-			$values[$value['name']] = $value;
-		}
-
-		return $values;
-	}
-
-	public function getValueByName($name) {
-		$values = $this->getValuesByName();
-		if (isset($values[$name])) {
-			return $values[$name]['amountWithUnit'];
-		}
-
-		return false;
-	}
-
-	public function getValueAmountByCode($code) {
-		$value = $this->getValueByCode($code);
-		if ($value) {
-			return $value;
-		}
-
-		return false;
-	}
-
-	public function getEnergyByName($name) {
-		$energy = $this->getValueAmountByCodeAndUnit('ENERC', 'kJ');
-		$value = $this->getValueByName($name);
-
-		if ($energy && $value) {
-			return new \App\Classes\AmountWithUnit($energy->amount * $value->amount * .01, $energy->unit);
-		}
-
-		return false;
 	}
 
 }

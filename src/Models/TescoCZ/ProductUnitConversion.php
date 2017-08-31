@@ -1,6 +1,6 @@
 <?php
 
-namespace Deli\Models\Tesco;
+namespace Deli\Models\TescoCZ;
 
 class ProductUnitConversion extends \Deli\Model {
 

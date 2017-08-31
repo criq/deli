@@ -1,6 +1,6 @@
 <?php
 
-namespace Deli\Models\Tesco;
+namespace Deli\Models\TescoCZ;
 
 class ProductProperty extends \Deli\Model {
 

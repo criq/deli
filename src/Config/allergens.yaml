@@ -1,0 +1,278 @@
+texts:
+  gluten: # 1
+    - mouka
+    - mouky
+    - lepek
+    - lepku
+    - lepkový
+    - gluten
+    - obilovin
+    - obilná
+    - obilné
+    - pšenice
+    - pšeničná
+    - pšeničný
+    - pšeničné
+    - pšenici
+    - pšeničnou
+    - žito
+    - žita
+    - žitná
+    - žitný
+    - žitné
+    - žitnou
+    - slad
+    - sladová
+    - slad
+    - oves
+    - ovsa
+    - ovesné
+    - ovesná
+    - avenin
+    - ječmen
+    - ječný
+    - ječná
+    - ječné
+    - ječmenný
+    - špalda
+    - špaldy
+    - špaldová
+    - špaldové
+    - semolina
+    - semolinová
+    - semolinové
+    - kvasná kultura
+    - kroupy
+    - triticale
+    - "00"
+    - kuskus
+    - cereálie
+    - celozrnná
+    - strouhanka
+    - nudle
+    - vloček
+    - chlebový
+  crustaceans: # 2
+    - korýšů
+    - korýše
+    - krevety
+    - kraba
+    - krabí
+    - kalmar
+    - kalmár
+    - kalamáry
+    - hlavonožců
+    - sépie
+    - sépiový
+    - chobotnice
+  eggs: # 3
+    - vejce
+    - vajec
+    - vaječ
+    - žloutek
+    - žloutky
+    - majonéza
+    - bílky
+  fish: # 4
+    - ryb
+    - treska
+    - tresky
+    - tresek
+    - tresčí
+    - losos
+    - sleď
+    - sledě
+    - makrela
+    - makrely
+    - sardel
+    - sardele
+    - jikry
+    - tuňák
+    - ančovičky
+    - ančovičková
+    - ančoviček
+    - sardinka
+    - sardinky
+    - sardinely
+    - šprot
+    - šproty
+    - pstruh
+    - kapr
+    - štika
+    - nemipterus
+    - pangasius
+  peanuts: # 5
+    - arašídy
+    - arašídů
+    - arašidů
+    - arašídová
+    - arašídový
+    - arašídové
+  soy: # 6
+    - sója
+    - sóju
+    - soju
+    - soja
+    - sóji
+    - soji
+    - sójová
+    - sójový
+    - sójové
+    - sojový
+    - sojová
+    - sojové
+    - sójovou
+    - lecitin
+    - tofu
+    - okara
+  lactose: # 7
+    - laktóza
+    - laktózy
+    - laktózu
+    - laktosa
+    - laktózou
+    - mléko
+    - mléka
+    - mléčné
+    - mléčná
+    - mléčný
+    - mléčně
+    - mlékem
+    - mléčnou
+    - mlékárenská
+    - mlékárenské
+    - máslo
+    - máselný
+    - sýr
+    - syrovátka
+    - syrovátky
+    - syrovátkový
+    - syrovátková
+    - syrovátkové
+    - máslové
+    - podmáslí
+    - smetana
+    - smetany
+    - smetanový
+    - smetanová
+    - smetanového
+    - smetanou
+    - tvaroh
+    - kasein
+    - kaseinát
+    - mascarpone
+    - jogurt
+    - bílkovina
+    - šlehačka
+    - ementál
+    - čedar
+    - camembert
+    - bifidobacterium
+    - lactobacillus
+    - tvarůžky
+    - eidam
+    - mozzarella
+    - gouda
+    - grana padano
+    - roquefort
+  nuts: # 8
+    - skořápkových
+    - ořechy
+    - ořechů
+    - oříšky
+    - oříšků
+    - oříšková
+    - ořechových
+    - skořápkové
+    - skořákové
+    - mandle
+    - mandlí
+    - mandlový
+    - mandlová
+    - mandlové
+    - lískové
+    - lísková
+    - lískových
+    - vlašské
+    - vlašská
+    - vlašských
+    - kešu
+    - para
+    - pistácie
+    - pistácií
+    - pistáciové
+    - "lísko-oříškové"
+    - "mandlovo-lískoořechová"
+    - muškátový oříšek
+  celery: # 9
+    - celer
+  mustard: # 10
+    - hořčice
+    - hořčicí
+    - hořčici
+    - hořčičná
+    - hořčičné
+    - hořčicové
+    - hořčičný
+  sesame: # 11
+    - sezam
+  sulphur: # 12
+    - siřičitý
+    - siričitý
+    - siřičitého
+    - siřičitan
+    - siřičitany
+    - siřičitanů
+    - disiřičitan
+    - disiričitan
+    - disiřičan
+    - hydrogensřičitan
+    - sulfidu
+    - sulfitový
+    - sulfur
+    - s02
+    - so2
+    - so₂
+    - e211
+    - e222
+    - e224
+  lupine: # 13
+    - vlčí bob
+    - vlčího bobu
+    - lupinová
+    - lupinové
+    - lupinový
+    - lupinových
+    - lupiny
+  molluscs:
+    - mušle
+    - měkkýš
+    - měkkýši
+    - měkkýšů
+    - měkkýše
+    - ústřic
+    - ústřicový
+  cocoa:
+    - čokolády
+    - čokoládové
+    - kakao
+    - kakaový
+    - kokosový
+ignore:
+  - "tučným písmem"
+  - "tučně"
+  - "tučně."
+  - "*tučně vyznačen alergen."
+  - "velkými písmeny"
+  - "velkým písmem"
+  - "velkým"
+  - "písmem"
+  - "výrobek může obsahovat stopy:"
+  - "informace pro alergiky"
+  - "informace pro alergiky:"
+  - "alergeny jsou ve složení vyznačeny tučným písmem."
+  - "alergenní složky"
+  - "alergeny"
+  - "aroma"
+  - "výrobky"
+  - "může obsahovat"

@@ -9,60 +9,6 @@ use \Sexy\Sexy as SX;
 
 class Tesco extends \Katu\Controller {
 
-	static function build() {
-		try {
-
-			\Katu\Utils\Lock::run(['scrapers', 'tesco', 'build'], 600, function() {
-
-				$currency = Currency::getOneBy([
-					'code' => 'CZK',
-				]);
-
-				foreach (\Chakula\Tesco::getDepartmentTree() as $superDepartment) {
-					if (!in_array($superDepartment->name, \Katu\Config::get('tesco', 'superDepartments', 'exclude'))) {
-						foreach ($superDepartment->departments as $department) {
-							foreach ($department->categories as $category) {
-
-								\Katu\Utils\Cache::get(['scrapers', 'tesco', 'build', 'category', $category->id], function() use($currency, $superDepartment, $department, $category) {
-
-									foreach ($category->getProducts() as $product) {
-
-										try {
-
-											Product::upsert([
-												'productId' => (string) ($product->id),
-												'currencyId' => (int) ($currency->getId()),
-											], [
-												'timeCreated' => (string) (new \Katu\Utils\DateTime),
-											], [
-												'name' => (string) ($product->name),
-												'category' => \Katu\Utils\JSON::encodeInline([
-													$superDepartment->name,
-													$department->name,
-													$category->name,
-												]),
-											]);
-
-										} catch (\Exception $e) {
-											/* Nevermind. */
-										}
-
-									}
-
-								}, 86400 * 3);
-
-							}
-						}
-					}
-				}
-
-			});
-
-		} catch (\Katu\Exceptions\LockException $e) {
-			/* Nevermind. */
-		}
-	}
-
 	static function scrape() {
 		try {
 
