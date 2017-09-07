@@ -7,10 +7,10 @@ class Product extends \Deli\Models\Product {
 	const TABLE = 'deli_kaloricketabulky_cz_products';
 	const SOURCE = 'kaloricketabulky.cz';
 
-	static function buildDatabase() {
+	static function buildProductList() {
 		try {
 
-			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'buildDatabase'], 3600, function() {
+			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'buildProductList'], 3600, function() {
 
 				$timeout = 86400;
 

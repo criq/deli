@@ -28,16 +28,9 @@ class Product extends \Deli\Models\Product {
 	}
 
 	public function loadName() {
-		$url = \Katu\Types\TUrl::make('https://www.googleapis.com/language/translate/v2', [
-			'key' => \Katu\Config::get('google', 'api', 'key'),
-			'source' => 'sk',
-			'target' => 'cs',
-			'q' => $this->originalName,
-		]);
-
-		$res = \Katu\Utils\Cache::getUrl($url);
-		if (isset($res->data->translations[0]->translatedText)) {
-			$this->update('name', $res->data->translations[0]->translatedText);
+		$translation = (new \Deli\Classes\Translation('sk', 'cs', $this->originalName))->translate();
+		if ($translation) {
+			$this->update('name', $translation);
 			$this->save();
 		}
 
@@ -103,8 +96,8 @@ class Product extends \Deli\Models\Product {
 			'SELÉN ** Se' => 'selenium',
 			'JÓD ** I' => 'iodine',
 			'CHLORID SODNÝ (KUCHYNSKÁ SOĽ)' => 'salt',
-			'VITAMÍN A 1 (RETINOL)' => 'retinol',
-			'RETINOL EKVIVALENT (RE) (vypočítaný), VITAMÍN A' => 'vitaminA',
+			'VITAMÍN A 1 (RETINOL)' => 'vitaminA',
+			'RETINOL EKVIVALENT (RE) (vypočítaný), VITAMÍN A' => 'retinol',
 			'VITAMÍN D (KALCIFEROL)' => 'vitaminD',
 			'VITAMÍN E (TOKOFEROLY)' => 'vitaminE',
 			'VITAMÍN B 1 (TIAMÍN)' => 'vitaminB1',
