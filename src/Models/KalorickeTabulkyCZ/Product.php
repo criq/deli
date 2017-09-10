@@ -10,9 +10,7 @@ class Product extends \Deli\Models\Product {
 	static function buildProductList() {
 		try {
 
-			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'buildProductList'], 3600, function() {
-
-				$timeout = 86400;
+			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'buildProductList'], 1800, function() {
 
 				$filters = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Č', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'Š', 'S', 'Š', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'Ž'];
 				foreach ($filters as $filter) {
@@ -21,7 +19,7 @@ class Product extends \Deli\Models\Product {
 						'pismeno' => $filter,
 					]);
 
-					$res = \Katu\Utils\Cache::getUrl($url, $timeout);
+					$res = \Katu\Utils\Cache::getUrl($url, static::TIMEOUT);
 					$dom = \Katu\Utils\DOM::crawlHtml($res);
 
 					$total = $dom->filter('#page .listing b')->html();
@@ -30,30 +28,34 @@ class Product extends \Deli\Models\Product {
 						$pages = ceil($total / 50);
 						for ($page = 1; $page <= $pages; $page++) {
 
-							$offset = ($page - 1) * 50;
-							$url = \Katu\Types\TUrl::make('http://www.kaloricketabulky.cz/tabulka-potravin.php', [
-								'pismeno' => $filter,
-								'from' => $offset,
-							]);
-							$res = \Katu\Utils\Cache::getUrl($url, $timeout);
-							$dom = \Katu\Utils\DOM::crawlHtml($res);
-							$dom->filter('.vypis tbody tr h3 a')->each(function($e) {
+							\Katu\Utils\Cache::get(function($filter, $page) {
 
-								try {
+								$offset = ($page - 1) * 50;
+								$url = \Katu\Types\TUrl::make('http://www.kaloricketabulky.cz/tabulka-potravin.php', [
+									'pismeno' => $filter,
+									'from' => $offset,
+								]);
+								$res = \Katu\Utils\Cache::getUrl($url, static::TIMEOUT);
+								$dom = \Katu\Utils\DOM::crawlHtml($res);
+								$dom->filter('.vypis tbody tr h3 a')->each(function($e) {
 
-									static::upsert([
-										'uri' => $e->attr('href'),
-									], [
-										'timeCreated' => new \Katu\Utils\DateTime,
-									], [
-										'name' => $e->html(),
-									]);
+									try {
 
-								} catch (\Exception $e) {
-									// Nevermind.
-								}
+										static::upsert([
+											'uri' => $e->attr('href'),
+										], [
+											'timeCreated' => new \Katu\Utils\DateTime,
+										], [
+											'name' => $e->html(),
+										]);
 
-							});
+									} catch (\Exception $e) {
+										// Nevermind.
+									}
+
+								});
+
+							}, static::TIMEOUT, $filter, $page);
 
 						}
 

@@ -38,7 +38,7 @@ class Product extends \Deli\Models\Product {
 	static function buildProductList() {
 		try {
 
-			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'buildProductList'], 3600, function() {
+			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'buildProductList'], 1800, function() {
 
 				$categoryFileName = realpath(dirname(__FILE__) . '/../../Resources/UsdaGov/sr28asc/FD_GROUP.txt');
 				$categories = [];
@@ -49,7 +49,6 @@ class Product extends \Deli\Models\Product {
 
 				$productFileName = realpath(dirname(__FILE__) . '/../../Resources/UsdaGov/sr28asc/FOOD_DES.txt');
 				$products = static::readTextFileToArray($productFileName);
-				$products = array_slice($products, 0, 100);
 				foreach ($products as $productLine) {
 
 					$product = static::upsert([
@@ -76,6 +75,11 @@ class Product extends \Deli\Models\Product {
 		$this->loadName();
 		$this->loadCategory();
 		$this->loadNutrients();
+
+		$this->update('timeLoaded', new \Katu\Utils\DateTime);
+		$this->save();
+
+		return true;
 	}
 
 	public function loadName() {

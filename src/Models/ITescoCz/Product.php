@@ -10,7 +10,7 @@ class Product extends \Deli\Models\Product {
 	static function buildProductList() {
 		try {
 
-			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'buildProductList'], 3600, function() {
+			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'buildProductList'], 1800, function() {
 
 				foreach (\Chakula\Tesco::getDepartmentTree() as $superDepartment) {
 
@@ -24,7 +24,7 @@ class Product extends \Deli\Models\Product {
 						foreach ($superDepartment->departments as $department) {
 							foreach ($department->categories as $category) {
 
-								\Katu\Utils\Cache::get(['deli', static::SOURCE, 'buildProductList', 'category', $category->uri], function() use($superDepartment, $department, $category) {
+								\Katu\Utils\Cache::get(function($categoryUri) use($superDepartment, $department, $category) {
 
 									foreach ($category->getProducts() as $product) {
 
@@ -51,7 +51,7 @@ class Product extends \Deli\Models\Product {
 
 									}
 
-								}, 86400 * 3);
+								}, static::TIMEOUT, $category->uri);
 
 							}
 						}

@@ -10,7 +10,7 @@ class Product extends \Deli\Models\Product {
 	static function buildProductList() {
 		try {
 
-			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'buildProductList'], 3600, function() {
+			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'buildProductList'], 1800, function() {
 
 				$url = 'http://www.kaloricke-tabulky.cz/';
 				$src = \Katu\Utils\Cache::getUrl($url);

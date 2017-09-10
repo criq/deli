@@ -6,6 +6,8 @@ use \Sexy\Sexy as SX;
 
 abstract class Product extends \Deli\Model {
 
+	const TIMEOUT = 2419200;
+
 	#abstract public function scrape();
 	#abstract public function import();
 	#abstract public function getName();

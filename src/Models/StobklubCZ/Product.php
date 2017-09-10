@@ -10,7 +10,7 @@ class Product extends \Deli\Models\Product {
 	static function buildProductList() {
 		try {
 
-			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'buildProductList'], 600, function() {
+			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'buildProductList'], 1800, function() {
 
 				$url = 'http://www.stobklub.cz/databaze-potravin/';
 				$src = \Katu\Utils\Cache::getUrl($url);
@@ -35,54 +35,58 @@ class Product extends \Deli\Models\Product {
 				foreach ($categories as $category) {
 					foreach ($category['subcategories'] as $subcategory) {
 
-						$url = 'http://www.stobklub.cz' . $subcategory['uri'];
-						$src = \Katu\Utils\Cache::getUrl($url);
-						$dom = \Katu\Utils\DOM::crawlHtml($src);
+						\Katu\Utils\Cache::get(function($subcategoryUri) use($category, $subcategory) {
 
-						$dom->filter('#mainContent table tbody tr')->each(function($e) use($category, $subcategory) {
+							$url = 'http://www.stobklub.cz' . $subcategoryUri;
+							$src = \Katu\Utils\Cache::getUrl($url);
+							$dom = \Katu\Utils\DOM::crawlHtml($src);
 
-							$product = static::upsert([
-								'uri' => $e->filter('td')->eq(1)->filter('a')->attr('href'),
-							], [
-								'timeCreated' => new \Katu\Utils\DateTime,
-							], [
-								'name' => $e->filter('td')->eq(1)->filter('a')->text(),
-							]);
+							$dom->filter('#mainContent table tbody tr')->each(function($e) use($category, $subcategory) {
 
-							$nutrients = [
-								'energy'   => new \Deli\AmountWithUnit($e->filter('td')->eq(2)->text(), 'kJ'),
-								'proteins' => new \Deli\AmountWithUnit($e->filter('td')->eq(3)->text(), 'g'),
-								'fats'     => new \Deli\AmountWithUnit($e->filter('td')->eq(4)->text(), 'g'),
-								'carbs'    => new \Deli\AmountWithUnit($e->filter('td')->eq(5)->text(), 'g'),
-								'sugar'    => new \Deli\AmountWithUnit($e->filter('td')->eq(7)->text(), 'g'),
-								'fiber'    => new \Deli\AmountWithUnit($e->filter('td')->eq(8)->text(), 'g'),
-							];
-
-							$productAmountWithUnit = new \Deli\AmountWithUnit(100, 'g');
-
-							foreach ($nutrients as $nutrientCode => $nutrientAmountWithUnit) {
-								ProductNutrient::upsert([
-									'productId' => $product->getId(),
-									'nutrientCode' => $nutrientCode,
+								$product = static::upsert([
+									'uri' => $e->filter('td')->eq(1)->filter('a')->attr('href'),
 								], [
 									'timeCreated' => new \Katu\Utils\DateTime,
 								], [
-									'timeUpdated' => new \Katu\Utils\DateTime,
-									'nutrientAmount' => $nutrientAmountWithUnit->amount,
-									'nutrientUnit' => $nutrientAmountWithUnit->unit,
-									'ingredientAmount' => $productAmountWithUnit->amount,
-									'ingredientUnit' => $productAmountWithUnit->unit,
+									'name' => $e->filter('td')->eq(1)->filter('a')->text(),
 								]);
-							}
 
-							$product->setCategory([
-								$category['name'],
-								$subcategory['name'],
-							]);
-							$product->update('timeLoaded', new \Katu\Utils\DateTime);
-							$product->save();
+								$nutrients = [
+									'energy'   => new \Deli\AmountWithUnit($e->filter('td')->eq(2)->text(), 'kJ'),
+									'proteins' => new \Deli\AmountWithUnit($e->filter('td')->eq(3)->text(), 'g'),
+									'fats'     => new \Deli\AmountWithUnit($e->filter('td')->eq(4)->text(), 'g'),
+									'carbs'    => new \Deli\AmountWithUnit($e->filter('td')->eq(5)->text(), 'g'),
+									'sugar'    => new \Deli\AmountWithUnit($e->filter('td')->eq(7)->text(), 'g'),
+									'fiber'    => new \Deli\AmountWithUnit($e->filter('td')->eq(8)->text(), 'g'),
+								];
 
-						});
+								$productAmountWithUnit = new \Deli\AmountWithUnit(100, 'g');
+
+								foreach ($nutrients as $nutrientCode => $nutrientAmountWithUnit) {
+									ProductNutrient::upsert([
+										'productId' => $product->getId(),
+										'nutrientCode' => $nutrientCode,
+									], [
+										'timeCreated' => new \Katu\Utils\DateTime,
+									], [
+										'timeUpdated' => new \Katu\Utils\DateTime,
+										'nutrientAmount' => $nutrientAmountWithUnit->amount,
+										'nutrientUnit' => $nutrientAmountWithUnit->unit,
+										'ingredientAmount' => $productAmountWithUnit->amount,
+										'ingredientUnit' => $productAmountWithUnit->unit,
+									]);
+								}
+
+								$product->setCategory([
+									$category['name'],
+									$subcategory['name'],
+								]);
+								$product->update('timeLoaded', new \Katu\Utils\DateTime);
+								$product->save();
+
+							});
+
+						}, static::TIMEOUT, $subcategory['uri']);
 
 					}
 				}

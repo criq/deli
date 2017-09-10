@@ -23,7 +23,7 @@ class Product extends \Deli\Models\Product {
 		]);
 	}
 
-	public function getSrc($timeout = 86400 * 28) {
+	public function getSrc($timeout = 2419200) {
 		return \Katu\Utils\Cache::getUrl($this->getUrl(), $timeout);
 	}
 

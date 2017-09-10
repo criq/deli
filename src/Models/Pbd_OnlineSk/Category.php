@@ -9,7 +9,7 @@ class Category extends \Deli\Model {
 	static function buildCategoryList() {
 		try {
 
-			\Katu\Utils\Lock::run(['deli', Product::SOURCE, 'buildCategoryList'], 600, function() {
+			\Katu\Utils\Lock::run(['deli', Product::SOURCE, 'buildCategoryList'], 1800, function() {
 
 				$categoryIds = \Katu\Utils\Cache::get(function() {
 
