@@ -44,7 +44,7 @@ class RawNutrient extends \Deli\Model {
 
 				}
 
-			}, !in_array(\Katu\Env::getPlatform(), ['dev', 'prod']));
+			}, !in_array(\Katu\Env::getPlatform(), ['dev']));
 
 		} catch (\Exception $e) {
 			// Nevermind.

@@ -43,7 +43,7 @@ class Category extends \Deli\Model {
 					]);
 				}
 
-			}, \Katu\Env::getPlatform() != 'dev');
+			}, !in_array(\Katu\Env::getPlatform(), ['dev']));
 
 		} catch (\Katu\Exceptions\LockException $e) {
 			// Nevermind.
