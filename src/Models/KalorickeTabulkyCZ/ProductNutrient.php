@@ -1,6 +1,6 @@
 <?php
 
-namespace Deli\Models\KalorickeTabulkyCZ;
+namespace Deli\Models\KalorickeTabulkyCz;
 
 class ProductNutrient extends \Deli\Model {
 

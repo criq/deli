@@ -1,6 +1,6 @@
 <?php
 
-namespace Deli\Models\TescoCZ;
+namespace Deli\Models\ITescoCz;
 
 class ProductNutrient extends \Deli\Models\Product {
 

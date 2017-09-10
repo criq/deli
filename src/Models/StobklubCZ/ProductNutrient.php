@@ -1,6 +1,6 @@
 <?php
 
-namespace Deli\Models\StobklubCZ;
+namespace Deli\Models\StobklubCz;
 
 class ProductNutrient extends \Deli\Model {
 

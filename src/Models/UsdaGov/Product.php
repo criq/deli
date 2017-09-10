@@ -5,7 +5,7 @@ namespace Deli\Models\UsdaGov;
 class Product extends \Deli\Models\Product {
 
 	const TABLE = 'deli_usda_gov_products';
-	const SOURCE = 'usda.gov';
+	const SOURCE = 'usda_gov';
 
 	static function readTextFileToLines($fileName) {
 		$lines = [];

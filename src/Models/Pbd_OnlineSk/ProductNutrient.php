@@ -1,6 +1,6 @@
 <?php
 
-namespace Deli\Models\PbdOnlineSK;
+namespace Deli\Models\Pbd_OnlineSk;
 
 class ProductNutrient extends \Deli\Model {
 

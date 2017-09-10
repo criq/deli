@@ -1,16 +1,15 @@
 <?php
 
-namespace Deli\Models\PbdOnlineSK;
+namespace Deli\Models\Pbd_OnlineSk;
 
 class Category extends \Deli\Model {
 
 	const TABLE = 'deli_pbd_online_sk_categories';
-	const SOURCE = 'pbd-online.sk';
 
 	static function buildCategoryList() {
 		try {
 
-			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'buildCategoryList'], 600, function() {
+			\Katu\Utils\Lock::run(['deli', Product::SOURCE, 'buildCategoryList'], 600, function() {
 
 				$categoryIds = \Katu\Utils\Cache::get(function() {
 

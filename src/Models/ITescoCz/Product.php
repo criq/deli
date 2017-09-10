@@ -1,11 +1,11 @@
 <?php
 
-namespace Deli\Models\TescoCZ;
+namespace Deli\Models\ITescoCz;
 
 class Product extends \Deli\Models\Product {
 
 	const TABLE = 'deli_itesco_cz_products';
-	const SOURCE = 'itesco.cz';
+	const SOURCE = 'itesco_cz';
 
 	static function buildProductList() {
 		try {

@@ -1,11 +1,11 @@
 <?php
 
-namespace Deli\Models\KalorickeTabulkyCZ;
+namespace Deli\Models\KalorickeTabulkyCz;
 
 class Product extends \Deli\Models\Product {
 
 	const TABLE = 'deli_kaloricketabulky_cz_products';
-	const SOURCE = 'kaloricketabulky.cz';
+	const SOURCE = 'kaloricketabulky_cz';
 
 	static function buildProductList() {
 		try {

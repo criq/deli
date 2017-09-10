@@ -1,6 +1,6 @@
 <?php
 
-namespace Deli\Models\TescoCZ;
+namespace Deli\Models\ITescoCz;
 
 class ProductPrice extends \Deli\Model {
 

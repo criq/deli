@@ -1,11 +1,11 @@
 <?php
 
-namespace Deli\Models\StobklubCZ;
+namespace Deli\Models\StobklubCz;
 
 class Product extends \Deli\Models\Product {
 
 	const TABLE = 'deli_stobklub_cz_products';
-	const SOURCE = 'stobklub.cz';
+	const SOURCE = 'stobklub_cz';
 
 	static function buildProductList() {
 		try {
