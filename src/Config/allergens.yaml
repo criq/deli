@@ -1,6 +1,7 @@
 texts:
   gluten: # 1
     - mouka
+    - mouku
     - mouky
     - lepek
     - lepku
@@ -226,6 +227,7 @@ texts:
     - hořčičné
     - hořčicové
     - hořčičný
+    - hořtičnou
   sesame: # 11
     - sezam
   sulphur: # 12
