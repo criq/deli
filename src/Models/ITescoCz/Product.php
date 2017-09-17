@@ -61,7 +61,7 @@ class Product extends \Deli\Models\Product {
 			}, !in_array(\Katu\Env::getPlatform(), ['dev']));
 
 		} catch (\Katu\Exceptions\LockException $e) {
-			/* Nevermind. */
+			// Nevermind.
 		}
 	}
 
@@ -401,38 +401,8 @@ class Product extends \Deli\Models\Product {
 		return $allergens;
 	}
 
-	public function scrapeAllergenCodes() {
-		$allergenCodes = [];
-
-		$configFileName = realpath(dirname(__FILE__) . '/../../Config/allergens.yaml');
-		$config = \Spyc::YAMLLoad(file_get_contents($configFileName));
-
-		foreach ($this->scrapeAllergensInContents() as $productAllergenText) {
-
-			if (in_array($productAllergenText, $config['ignore'])) {
-				continue;
-			}
-
-			foreach ($config['texts'] as $allergenCode => $allergenTexts) {
-				foreach ($allergenTexts as $allergenText) {
-
-					if (strpos($productAllergenText, $allergenText) !== false) {
-						$allergenCodes[] = $allergenCode;
-						continue 3;
-					}
-
-				}
-			}
-
-			var_dump($productAllergenText);
-
-		}
-
-		return array_values(array_unique($allergenCodes));
-	}
-
 	public function loadAllergens() {
-		foreach ($this->scrapeAllergenCodes() as $allergenCode) {
+		foreach (static::getAllergenCodesFromTexts($this->scrapeAllergensInContents()) as $allergenCode) {
 			ProductAllergen::upsert([
 				'productId' => $this->getId(),
 				'allergenCode' => $allergenCode,

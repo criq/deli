@@ -15,6 +15,8 @@ texts:
     - pšeničné
     - pšenici
     - pšeničnou
+    - pčenice
+    - kamut
     - žito
     - žita
     - žitná
@@ -36,6 +38,7 @@ texts:
     - ječmenný
     - špalda
     - špaldy
+    - špaldový
     - špaldová
     - špaldové
     - semolina
@@ -52,6 +55,7 @@ texts:
     - nudle
     - vloček
     - chlebový
+    - křupinky
   crustaceans: # 2
     - korýšů
     - korýše
@@ -72,6 +76,7 @@ texts:
     - žloutek
     - žloutky
     - majonéza
+    - bílek
     - bílky
   fish: # 4
     - ryb
@@ -125,6 +130,8 @@ texts:
     - lecitin
     - tofu
     - okara
+    - boby
+    - miso
   lactose: # 7
     - laktóza
     - laktózy
@@ -201,9 +208,14 @@ texts:
     - pistácie
     - pistácií
     - pistáciové
+    - piniové
     - "lísko-oříškové"
+    - lískooříškový
     - "mandlovo-lískoořechová"
     - muškátový oříšek
+    - makadamové
+    - pekanové
+    - jádra
   celery: # 9
     - celer
   mustard: # 10
@@ -217,6 +229,7 @@ texts:
   sesame: # 11
     - sezam
   sulphur: # 12
+    - oxid
     - siřičitý
     - siričitý
     - siřičitého

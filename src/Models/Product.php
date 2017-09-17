@@ -36,4 +36,36 @@ abstract class Product extends \Deli\Model {
 		return \App\Models\ScrapedIngredient::make(static::SOURCE, $this->getName());
 	}
 
+	static function getAllergenCodesFromTexts($texts) {
+		$allergenCodes = [];
+
+		$configFileName = realpath(dirname(__FILE__) . '/../Config/allergens.yaml');
+		$config = \Spyc::YAMLLoad(file_get_contents($configFileName));
+
+		foreach ($texts as $text) {
+
+			if (in_array($text, $config['ignore'])) {
+				continue;
+			}
+
+			foreach ($config['texts'] as $allergenCode => $allergenTexts) {
+				foreach ($allergenTexts as $allergenText) {
+
+					if (strpos($text, $allergenText) !== false) {
+						$allergenCodes[] = $allergenCode;
+						continue 3;
+					}
+
+				}
+			}
+
+			// Dev.
+			var_dump($text);
+
+		}
+
+		return array_values(array_unique($allergenCodes));
+	}
+
+
 }
