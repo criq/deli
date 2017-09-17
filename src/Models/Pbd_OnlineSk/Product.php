@@ -6,6 +6,7 @@ class Product extends \Deli\Models\Product {
 
 	const TABLE = 'deli_pbd_online_sk_products';
 	const SOURCE = 'pbd_online_sk';
+	const SOURCE_LABEL = 'pbd-online.sk';
 
 	public function load() {
 		$this->loadName();

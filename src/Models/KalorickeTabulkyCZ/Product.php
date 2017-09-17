@@ -6,6 +6,7 @@ class Product extends \Deli\Models\Product {
 
 	const TABLE = 'deli_kaloricketabulky_cz_products';
 	const SOURCE = 'kaloricketabulky_cz';
+	const SOURCE_LABEL = 'kaloricketabulky.cz';
 
 	static function buildProductList() {
 		try {

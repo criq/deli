@@ -8,9 +8,17 @@ abstract class Product extends \Deli\Model {
 
 	const TIMEOUT = 2419200;
 
-	#abstract public function scrape();
-	#abstract public function import();
-	#abstract public function getName();
+	public function getSource() {
+		return static::SOURCE;
+	}
+
+	public function getSourceLabel() {
+		return static::SOURCE_LABEL;
+	}
+
+	public function getName() {
+		return $this->name;
+	}
 
 	public function setCategory($source, $property = 'category') {
 		$this->update($property, \Katu\Utils\JSON::encodeInline(array_values(array_filter(array_map('trim', (array)$source)))));
