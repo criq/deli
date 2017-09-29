@@ -148,9 +148,9 @@ class Product extends \Deli\Models\Product {
 
 		$ingredientUnitSource = $nutrientAssoc['Jednotka'];
 		if (preg_match('/(?<times>[0-9]+)x (?<amount>[0-9\,\.\s]+)\s*(?<unit>(g|ml))/u', $ingredientUnitSource, $match)) {
-			$productAmountWithUnit = new \Deli\Classes\AmountWithUnit($match['times'] * (new \Katu\Types\TString($match['amount']))->getAsFloat(), $match['unit']);
+			$productAmountWithUnit = new \Effekt\AmountWithUnit($match['times'] * (new \Katu\Types\TString($match['amount']))->getAsFloat(), $match['unit']);
 		} elseif (preg_match('/(?<times>[0-9]+)x (?<practicalUnit>.+) \((?<amount>[0-9\,\.\s]+) (?<unit>(g|ml))\)/u', $ingredientUnitSource, $match)) {
-			$productAmountWithUnit = new \Deli\Classes\AmountWithUnit($match['times'] * (new \Katu\Types\TString($match['amount']))->getAsFloat(), $match['unit']);
+			$productAmountWithUnit = new \Effekt\AmountWithUnit($match['times'] * (new \Katu\Types\TString($match['amount']))->getAsFloat(), $match['unit']);
 		}
 
 		return $productAmountWithUnit;
@@ -211,7 +211,7 @@ class Product extends \Deli\Models\Product {
 			];
 
 			if (isset($nutrientNameMap[$nutrientName])) {
-				$nutrients[$nutrientNameMap[$nutrientName]] = new \Deli\Classes\AmountWithUnit($nutrientAmount, $nutrientUnit);
+				$nutrients[$nutrientNameMap[$nutrientName]] = new \Effekt\AmountWithUnit($nutrientAmount, $nutrientUnit);
 			} else {
 				var_dump($nutrientName); die;
 			}

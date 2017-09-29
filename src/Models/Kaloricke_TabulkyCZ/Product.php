@@ -220,13 +220,13 @@ class Product extends \Deli\Models\Product {
 
 				switch ($match['unit']) {
 					case 'µg' :
-						$nutrientAmountWithUnit = new \Deli\Classes\AmountWithUnit($amount * .000001, 'g');
+						$nutrientAmountWithUnit = new \Effekt\AmountWithUnit($amount * .000001, 'g');
 					break;
 					case 'mg' :
-						$nutrientAmountWithUnit = new \Deli\Classes\AmountWithUnit($amount * .001, 'g');
+						$nutrientAmountWithUnit = new \Effekt\AmountWithUnit($amount * .001, 'g');
 					break;
 					default :
-						$nutrientAmountWithUnit = new \Deli\Classes\AmountWithUnit($amount, $match['unit']);
+						$nutrientAmountWithUnit = new \Effekt\AmountWithUnit($amount, $match['unit']);
 					break;
 				}
 
@@ -242,7 +242,7 @@ class Product extends \Deli\Models\Product {
 	}
 
 	public function getProductAmountWithUnit() {
-		return new \Deli\Classes\AmountWithUnit($this->baseAmount, $this->baseUnit);
+		return new \Effekt\AmountWithUnit($this->baseAmount, $this->baseUnit);
 	}
 
 	public function loadNutrients() {

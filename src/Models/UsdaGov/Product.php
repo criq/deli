@@ -200,7 +200,7 @@ class Product extends \Deli\Models\Product {
 						break;
 					}
 
-					$nutrients[$nutrientCode] = new \Deli\Classes\AmountWithUnit($nutrientAmount, $nutrientUnit);
+					$nutrients[$nutrientCode] = new \Effekt\AmountWithUnit($nutrientAmount, $nutrientUnit);
 
 				}
 			}
@@ -211,7 +211,7 @@ class Product extends \Deli\Models\Product {
 	}
 
 	public function getProductAmountWithUnit() {
-		return new \Deli\Classes\AmountWithUnit(100, 'g');
+		return new \Effekt\AmountWithUnit(100, 'g');
 	}
 
 	public function loadNutrients() {

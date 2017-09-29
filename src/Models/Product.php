@@ -83,7 +83,7 @@ abstract class Product extends \Deli\Model {
 			'productId' => $this->getId(),
 		]);
 		if ($productNutrient) {
-			return new \Deli\Classes\AmountWithUnit($productNutrient->ingredientAmount, $productNutrient->ingredientUnit);
+			return new \Effekt\AmountWithUnit($productNutrient->ingredientAmount, $productNutrient->ingredientUnit);
 		}
 
 		// Else scrape.
@@ -95,7 +95,7 @@ abstract class Product extends \Deli\Model {
 		}
 
 		// Default.
-		return new \Deli\Classes\AmountWithUnit(100, 'g');
+		return new \Effekt\AmountWithUnit(100, 'g');
 	}
 
 	public function setProductNutrientIfEmpty($nutrientCode, $nutrientAmountWithUnit) {

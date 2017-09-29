@@ -109,8 +109,8 @@ class Product extends \Deli\Models\Product {
 
 				$nutrients = [];
 				if (preg_match('/^Energetická hodnota\s*([0-9\s\,\.]+)\s*kJ\s*\/\s*([0-9\s\,\.]+)\s*kcal$/u', trim($e->text()), $match)) {
-					$nutrients['energy'] = new \Deli\Classes\AmountWithUnit($match[1], 'kJ');
-					$nutrients['calories'] = new \Deli\Classes\AmountWithUnit($match[2], 'kcal');
+					$nutrients['energy'] = new \Effekt\AmountWithUnit($match[1], 'kJ');
+					$nutrients['calories'] = new \Effekt\AmountWithUnit($match[2], 'kcal');
 				} else {
 					$nutrientCode = null;
 					switch (trim($e->filter('th')->text())) {
@@ -125,7 +125,7 @@ class Product extends \Deli\Models\Product {
 					}
 					$nutrientAmountWithUnit = null;
 					if (preg_match('/([0-9\s\,\.]+)\s*(g)/us', trim($e->filter('td')->text()), $match)) {
-						$nutrientAmountWithUnit = new \Deli\Classes\AmountWithUnit($match[1], $match[2]);
+						$nutrientAmountWithUnit = new \Effekt\AmountWithUnit($match[1], $match[2]);
 					}
 					if ($nutrientCode && $nutrientAmountWithUnit) {
 						$nutrients[$nutrientCode] = $nutrientAmountWithUnit;
@@ -159,7 +159,7 @@ class Product extends \Deli\Models\Product {
 
 			$text = $dom->filter('#popis-slozeni .ca-box h3')->text();
 			if (preg_match('/Výživové údaje na ([0-9\s\,\.]+)\s*(g|ml)/us', $text, $match)) {
-				return new \Deli\Classes\AmountWithUnit($match[1], $match[2]);
+				return new \Effekt\AmountWithUnit($match[1], $match[2]);
 			} else {
 				var_dump($text); die;
 			}
