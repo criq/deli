@@ -39,7 +39,9 @@ class Product extends \Deli\Models\Product {
 	static function buildProductList() {
 		try {
 
-			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'buildProductList'], 1800, function() {
+			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'buildProductList'], 3600, function() {
+
+				@ini_set('memory_limit', '512M');
 
 				$categoryFileName = realpath(dirname(__FILE__) . '/../../Resources/UsdaGov/sr28asc/FD_GROUP.txt');
 				$categories = [];
@@ -60,7 +62,7 @@ class Product extends \Deli\Models\Product {
 						'originalName' => $productLine[2],
 					]);
 
-					$product->setCategory($categories[$productLine[1]], 'originalCategory');
+					$product->setRemoteCategory($categories[$productLine[1]], 'remoteOriginalCategory');
 					$product->save();
 
 				}
@@ -95,14 +97,14 @@ class Product extends \Deli\Models\Product {
 
 	public function loadCategory() {
 		$categories = [];
-		foreach (\Katu\Utils\JSON::decodeAsArray($this->originalCategory) as $originalCategory) {
-			$translation = (new \Deli\Classes\Translation('en', 'cs', $originalCategory))->translate();
+		foreach (\Katu\Utils\JSON::decodeAsArray($this->remoteOriginalCategory) as $remoteOriginalCategory) {
+			$translation = (new \Deli\Classes\Translation('en', 'cs', $remoteOriginalCategory))->translate();
 			if ($translation) {
 				$categories[] = $translation;
 			}
 		}
 
-		$this->setCategory($categories);
+		$this->setRemoteCategory($categories);
 		$this->save();
 
 		return true;
@@ -198,7 +200,7 @@ class Product extends \Deli\Models\Product {
 						break;
 					}
 
-					$nutrients[$nutrientCode] = new \Deli\AmountWithUnit($nutrientAmount, $nutrientUnit);
+					$nutrients[$nutrientCode] = new \Deli\Classes\AmountWithUnit($nutrientAmount, $nutrientUnit);
 
 				}
 			}
@@ -208,24 +210,16 @@ class Product extends \Deli\Models\Product {
 		return $nutrients;
 	}
 
+	public function getProductAmountWithUnit() {
+		return new \Deli\Classes\AmountWithUnit(100, 'g');
+	}
+
 	public function loadNutrients() {
 		try {
 
-			$productAmountWithUnit = new \Deli\AmountWithUnit(100, 'g');
-
+			$productAmountWithUnit = $this->getProductAmountWithUnit();
 			foreach ($this->scrapeNutrients() as $nutrientCode => $nutrientAmountWithUnit) {
-				ProductNutrient::upsert([
-					'productId' => $this->getId(),
-					'nutrientCode' => $nutrientCode,
-				], [
-					'timeCreated' => new \Katu\Utils\DateTime,
-				], [
-					'timeUpdated' => new \Katu\Utils\DateTime,
-					'nutrientAmount' => $nutrientAmountWithUnit->amount,
-					'nutrientUnit' => $nutrientAmountWithUnit->unit,
-					'ingredientAmount' => $productAmountWithUnit->amount,
-					'ingredientUnit' => $productAmountWithUnit->unit,
-				]);
+				$this->setProductNutrient($nutrientCode, $nutrientAmountWithUnit, $productAmountWithUnit);
 			}
 
 		} catch (\Exception $e) {

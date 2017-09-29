@@ -11,7 +11,9 @@ class Product extends \Deli\Models\Product {
 	static function buildProductList() {
 		try {
 
-			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'buildProductList'], 1800, function() {
+			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'buildProductList'], 3600, function() {
+
+				@ini_set('memory_limit', '512M');
 
 				foreach (\Chakula\Tesco::getDepartmentTree() as $superDepartment) {
 
@@ -39,7 +41,7 @@ class Product extends \Deli\Models\Product {
 												'name' => $product->name,
 											]);
 
-											$product->setCategory([
+											$product->setRemoteCategory([
 												$superDepartment->name,
 												$department->name,
 												$category->name,
@@ -74,6 +76,10 @@ class Product extends \Deli\Models\Product {
 		return $this->getChakulaProduct()->getName();
 	}
 
+	public function getUrl() {
+		return $this->getChakulaProduct()->getUrl();
+	}
+
 	public function load() {
 		return static::transaction(function() {
 
@@ -95,7 +101,9 @@ class Product extends \Deli\Models\Product {
 				}
 
 			} catch (\Exception $e) {
+
 				$this->update('isAvailable', 0);
+
 			}
 
 			$this->update('timeLoaded', new \Katu\Utils\DateTime);
@@ -117,11 +125,9 @@ class Product extends \Deli\Models\Product {
 			}
 
 			if (preg_match('/(?<amount>[0-9]+)\s*(?<unit>g|ml)/ui', $e->html(), $match)) {
-				return new \Deli\AmountWithUnit($match['amount'], $match['unit']);
+				return new \Deli\Classes\AmountWithUnit($match['amount'], $match['unit']);
 			} elseif (preg_match('/Na (?<amount>[0-9]+) výrobku/ui', $e->html(), $match)) {
-				return new \Deli\AmountWithUnit($match['amount'], 'g');
-			} else {
-				#var_dump($this->getChakulaProduct()->getName()); echo $src; die;
+				return new \Deli\Classes\AmountWithUnit($match['amount'], 'g');
 			}
 
 		}
@@ -203,34 +209,34 @@ class Product extends \Deli\Models\Product {
 
 					if (preg_match('/([0-9\.\,]+)\s*kJ\s*\/\s*([0-9\.\,\s]+)\s*kcal/', $nutrientAmountSource, $match)) {
 
-						$nutrients['energy'] = new \Deli\AmountWithUnit($match[1], 'kJ');
-						$nutrients['calories'] = new \Deli\AmountWithUnit($match[2], 'kcal');
+						$nutrients['energy'] = new \Deli\Classes\AmountWithUnit($match[1], 'kJ');
+						$nutrients['calories'] = new \Deli\Classes\AmountWithUnit($match[2], 'kcal');
 
 					} elseif (preg_match('/([0-9\.\,]+)\s*kcal\s*\/\s*([0-9\.\,\s]+)\s*kJ/', $nutrientAmountSource, $match)) {
 
-						$nutrients['calories'] = new \Deli\AmountWithUnit($match[1], 'kcal');
-						$nutrients['energy'] = new \Deli\AmountWithUnit($match[2], 'kJ');
+						$nutrients['calories'] = new \Deli\Classes\AmountWithUnit($match[1], 'kcal');
+						$nutrients['energy'] = new \Deli\Classes\AmountWithUnit($match[2], 'kJ');
 
 					} elseif (preg_match('/([0-9\.\,]+)\s*kJ/', $nutrientAmountSource, $match)) {
 
-						$nutrients['energy'] = new \Deli\AmountWithUnit($match[1], 'kJ');
+						$nutrients['energy'] = new \Deli\Classes\AmountWithUnit($match[1], 'kJ');
 
 					} elseif (preg_match('/([0-9\.\,]+)\s*kcal/', $nutrientAmountSource, $match)) {
 
-						$nutrients['calories'] = new \Deli\AmountWithUnit($match[1], 'kcal');
+						$nutrients['calories'] = new \Deli\Classes\AmountWithUnit($match[1], 'kcal');
 
 					} elseif (preg_match('/(Energie \(kJ\)|Energie kJ)/', $nutrientName) && preg_match('/([0-9\.\,]+)/', $nutrientAmountSource, $match)) {
 
-						$nutrients['energy'] = new \Deli\AmountWithUnit($match[1], 'kJ');
+						$nutrients['energy'] = new \Deli\Classes\AmountWithUnit($match[1], 'kJ');
 
 					} elseif (preg_match('/(Energie \(kcal\)|Energie kcal)/', $nutrientName) && preg_match('/([0-9\.\,]+)/', $nutrientAmountSource, $match)) {
 
-						$nutrients['calories'] = new \Deli\AmountWithUnit($match[1], 'kcal');
+						$nutrients['calories'] = new \Deli\Classes\AmountWithUnit($match[1], 'kcal');
 
 					} elseif (preg_match('/Energetická hodnota \(kJ\s*\/\s*kcal\)/', $nutrientName) && preg_match('/([0-9\.\,]+)\s*\/\s*([0-9\.\,]+)/', $nutrientAmountSource, $match)) {
 
-						$nutrients['energy'] = new \Deli\AmountWithUnit($match[1], 'kJ');
-						$nutrients['calories'] = new \Deli\AmountWithUnit($match[2], 'kcal');
+						$nutrients['energy'] = new \Deli\Classes\AmountWithUnit($match[1], 'kJ');
+						$nutrients['calories'] = new \Deli\Classes\AmountWithUnit($match[2], 'kcal');
 
 					}
 
@@ -240,9 +246,9 @@ class Product extends \Deli\Models\Product {
 					$nutrientAmountWithUnit = null;
 
 					if (preg_match('/([0-9\.\,]+)\s*(g)?/', $nutrientAmountSource, $match)) {
-						$nutrientAmountWithUnit = new \Deli\AmountWithUnit($match[1], 'g');
+						$nutrientAmountWithUnit = new \Deli\Classes\AmountWithUnit($match[1], 'g');
 					} elseif (preg_match('/([0-9\.\,]+)\s*(mg)?/', $nutrientAmountSource, $match)) {
-						$nutrientAmountWithUnit = new \Deli\AmountWithUnit($match[1], 'mg');
+						$nutrientAmountWithUnit = new \Deli\Classes\AmountWithUnit($match[1], 'mg');
 					}
 
 					/* Monounsaturated fatty acids **************************************/
@@ -361,21 +367,9 @@ class Product extends \Deli\Models\Product {
 	public function loadNutrients() {
 		try {
 
-			$productAmountWithUnit = $this->scrapeProductAmountWithUnit();
-
+			$productAmountWithUnit = $this->getProductAmountWithUnit();
 			foreach ($this->scrapeNutrients() as $nutrientCode => $nutrientAmountWithUnit) {
-				ProductNutrient::upsert([
-					'productId' => $this->getId(),
-					'nutrientCode' => $nutrientCode,
-				], [
-					'timeCreated' => new \Katu\Utils\DateTime,
-				], [
-					'timeUpdated' => new \Katu\Utils\DateTime,
-					'nutrientAmount' => $nutrientAmountWithUnit->amount,
-					'nutrientUnit' => $nutrientAmountWithUnit->unit,
-					'ingredientAmount' => $productAmountWithUnit->amount,
-					'ingredientUnit' => $productAmountWithUnit->unit,
-				]);
+				$this->setProductNutrient($nutrientCode, $nutrientAmountWithUnit, $productAmountWithUnit);
 			}
 
 		} catch (\Exception $e) {
@@ -404,12 +398,7 @@ class Product extends \Deli\Models\Product {
 
 	public function loadAllergens() {
 		foreach (static::getAllergenCodesFromTexts($this->scrapeAllergensInContents()) as $allergenCode) {
-			ProductAllergen::upsert([
-				'productId' => $this->getId(),
-				'allergenCode' => $allergenCode,
-			], [
-				'timeCreated' => new \Katu\Utils\DateTime,
-			]);
+			$this->setProductAllergen($allergenCode);
 		}
 
 		return true;

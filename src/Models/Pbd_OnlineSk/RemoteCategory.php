@@ -2,16 +2,16 @@
 
 namespace Deli\Models\Pbd_OnlineSk;
 
-class Category extends \Deli\Model {
+class RemoteCategory extends \Deli\Model {
 
-	const TABLE = 'deli_pbd_online_sk_categories';
+	const TABLE = 'deli_pbd_online_sk_remote_categories';
 
-	static function buildCategoryList() {
+	static function buildRemoteCategoryList() {
 		try {
 
-			\Katu\Utils\Lock::run(['deli', Product::SOURCE, 'buildCategoryList'], 1800, function() {
+			\Katu\Utils\Lock::run(['deli', Product::SOURCE, 'buildRemoteCategoryList'], 1800, function() {
 
-				$categoryIds = \Katu\Utils\Cache::get(function() {
+				$remoteCategoryIds = \Katu\Utils\Cache::get(function() {
 
 					$url = 'http://www.pbd-online.sk/';
 					$src = \Katu\Utils\Cache::getUrl($url);
@@ -31,13 +31,13 @@ class Category extends \Deli\Model {
 
 				});
 
-				foreach ($categoryIds as $categoryId) {
+				foreach ($remoteCategoryIds as $remoteCategoryId) {
 
 					static::upsert([
-						'zakladnaSkupinaId' => $categoryId['id_c_zakladna_skupina'],
-						'podskupinaId' => $categoryId['id_c_podskupina'],
-						'komoditaId' => $categoryId['id_c_komodita'],
-						'subkomoditaId' => $categoryId['id_c_subkomodita'],
+						'zakladnaSkupinaId' => $remoteCategoryId['id_c_zakladna_skupina'],
+						'podskupinaId' => $remoteCategoryId['id_c_podskupina'],
+						'komoditaId' => $remoteCategoryId['id_c_komodita'],
+						'subkomoditaId' => $remoteCategoryId['id_c_subkomodita'],
 					], [
 						'timeCreated' => new \Katu\Utils\DateTime,
 					]);
@@ -100,7 +100,7 @@ class Category extends \Deli\Model {
 					'timeCreated' => new \Katu\Utils\DateTime,
 				], [
 					'originalName' => $product['name'],
-					'categoryId' => $this->getId(),
+					'remoteCategoryId' => $this->getId(),
 				]);
 
 			}

@@ -11,7 +11,9 @@ class Product extends \Deli\Models\Product {
 	static function buildProductList() {
 		try {
 
-			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'buildProductList'], 1800, function() {
+			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'buildProductList'], 3600, function() {
+
+				@ini_set('memory_limit', '512M');
 
 				$src = \Katu\Utils\Cache::getUrl('https://www.countrylife.cz/biopotraviny', static::TIMEOUT);
 				$dom = \Katu\Utils\DOM::crawlHtml($src);
@@ -43,7 +45,7 @@ class Product extends \Deli\Models\Product {
 							], [
 								'name' => trim($i->filter('h2 .name')->html()),
 							]);
-							$product->setCategory($categoryName);
+							$product->setRemoteCategory($categoryName);
 							$product->save();
 
 						});
@@ -107,8 +109,8 @@ class Product extends \Deli\Models\Product {
 
 				$nutrients = [];
 				if (preg_match('/^Energetická hodnota\s*([0-9\s\,\.]+)\s*kJ\s*\/\s*([0-9\s\,\.]+)\s*kcal$/u', trim($e->text()), $match)) {
-					$nutrients['energy'] = new \Deli\AmountWithUnit($match[1], 'kJ');
-					$nutrients['calories'] = new \Deli\AmountWithUnit($match[2], 'kcal');
+					$nutrients['energy'] = new \Deli\Classes\AmountWithUnit($match[1], 'kJ');
+					$nutrients['calories'] = new \Deli\Classes\AmountWithUnit($match[2], 'kcal');
 				} else {
 					$nutrientCode = null;
 					switch (trim($e->filter('th')->text())) {
@@ -123,7 +125,7 @@ class Product extends \Deli\Models\Product {
 					}
 					$nutrientAmountWithUnit = null;
 					if (preg_match('/([0-9\s\,\.]+)\s*(g)/us', trim($e->filter('td')->text()), $match)) {
-						$nutrientAmountWithUnit = new \Deli\AmountWithUnit($match[1], $match[2]);
+						$nutrientAmountWithUnit = new \Deli\Classes\AmountWithUnit($match[1], $match[2]);
 					}
 					if ($nutrientCode && $nutrientAmountWithUnit) {
 						$nutrients[$nutrientCode] = $nutrientAmountWithUnit;
@@ -157,7 +159,7 @@ class Product extends \Deli\Models\Product {
 
 			$text = $dom->filter('#popis-slozeni .ca-box h3')->text();
 			if (preg_match('/Výživové údaje na ([0-9\s\,\.]+)\s*(g|ml)/us', $text, $match)) {
-				return new \Deli\AmountWithUnit($match[1], $match[2]);
+				return new \Deli\Classes\AmountWithUnit($match[1], $match[2]);
 			} else {
 				var_dump($text); die;
 			}
@@ -170,21 +172,9 @@ class Product extends \Deli\Models\Product {
 	public function loadNutrients() {
 		try {
 
-			$productAmountWithUnit = $this->scrapeProductAmountWithUnit();
-
+			$productAmountWithUnit = $this->getProductAmountWithUnit();
 			foreach ($this->scrapeNutrients() as $nutrientCode => $nutrientAmountWithUnit) {
-				ProductNutrient::upsert([
-					'productId' => $this->getId(),
-					'nutrientCode' => $nutrientCode,
-				], [
-					'timeCreated' => new \Katu\Utils\DateTime,
-				], [
-					'timeUpdated' => new \Katu\Utils\DateTime,
-					'nutrientAmount' => $nutrientAmountWithUnit->amount,
-					'nutrientUnit' => $nutrientAmountWithUnit->unit,
-					'ingredientAmount' => $productAmountWithUnit->amount,
-					'ingredientUnit' => $productAmountWithUnit->unit,
-				]);
+				$this->setProductNutrient($nutrientCode, $nutrientAmountWithUnit, $productAmountWithUnit);
 			}
 
 		} catch (\Exception $e) {
@@ -248,12 +238,7 @@ class Product extends \Deli\Models\Product {
 		$allergenCodes = array_values(array_unique($allergenCodes));
 
 		foreach ($allergenCodes as $allergenCode) {
-			ProductAllergen::upsert([
-				'productId' => $this->getId(),
-				'allergenCode' => $allergenCode,
-			], [
-				'timeCreated' => new \Katu\Utils\DateTime,
-			]);
+			$this->setProductAllergen($allergenCode);
 		}
 
 		return true;

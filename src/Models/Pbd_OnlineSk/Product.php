@@ -125,25 +125,25 @@ class Product extends \Deli\Models\Product {
 			if (preg_match('#^(?<amount>[0-9\.]+)\s+(?<unit>[a-z]+)$#ui', $nutrientAmountSource, $match)) {
 				switch ($match['unit']) {
 					case 'g' :
-						$amountWithUnit = new \Deli\AmountWithUnit($match['amount'], 'g');
+						$amountWithUnit = new \Deli\Classes\AmountWithUnit($match['amount'], 'g');
 					break;
 					case 'mg' :
-						$amountWithUnit = new \Deli\AmountWithUnit($match['amount'] * .001, 'g');
+						$amountWithUnit = new \Deli\Classes\AmountWithUnit($match['amount'] * .001, 'g');
 					break;
 					case 'ug' :
-						$amountWithUnit = new \Deli\AmountWithUnit($match['amount'] * .000001, 'g');
+						$amountWithUnit = new \Deli\Classes\AmountWithUnit($match['amount'] * .000001, 'g');
 					break;
 					case 'RE' :
-						$amountWithUnit = new \Deli\AmountWithUnit($match['amount'], 'RE');
+						$amountWithUnit = new \Deli\Classes\AmountWithUnit($match['amount'], 'RE');
 					break;
 					case 'kcal' :
-						$amountWithUnit = new \Deli\AmountWithUnit($match['amount'], 'kcal');
+						$amountWithUnit = new \Deli\Classes\AmountWithUnit($match['amount'] * 4.184, 'kJ');
 					break;
 					case 'kJ' :
-						$amountWithUnit = new \Deli\AmountWithUnit($match['amount'], 'kJ');
+						$amountWithUnit = new \Deli\Classes\AmountWithUnit($match['amount'], 'kJ');
 					break;
 					case 'PCT' :
-						$amountWithUnit = new \Deli\AmountWithUnit($match['amount'], 'percent');
+						$amountWithUnit = new \Deli\Classes\AmountWithUnit($match['amount'], 'percent');
 					break;
 				}
 			}
@@ -157,28 +157,32 @@ class Product extends \Deli\Models\Product {
 		return $nutrients;
 	}
 
+	public function getProductAmountWithUnit() {
+		return new \Deli\Classes\AmountWithUnit(100, 'g');
+	}
+
 	public function loadNutrients() {
 		try {
 
-			$productAmountWithUnit = new \Deli\AmountWithUnit(100, 'g');
-
+			$productAmountWithUnit = $this->getProductAmountWithUnit();
 			foreach ($this->scrapeNutrients() as $nutrientCode => $nutrientAmountWithUnit) {
-				ProductNutrient::upsert([
-					'productId' => $this->getId(),
-					'nutrientCode' => $nutrientCode,
-				], [
-					'timeCreated' => new \Katu\Utils\DateTime,
-				], [
-					'timeUpdated' => new \Katu\Utils\DateTime,
-					'nutrientAmount' => $nutrientAmountWithUnit->amount,
-					'nutrientUnit' => $nutrientAmountWithUnit->unit,
-					'ingredientAmount' => $productAmountWithUnit->amount,
-					'ingredientUnit' => $productAmountWithUnit->unit,
-				]);
+				$this->setProductNutrient($nutrientCode, $nutrientAmountWithUnit, $productAmountWithUnit);
 			}
 
 		} catch (\Exception $e) {
 			// Nevermind.
+		}
+
+		// Convert kcal to kJ.
+		$productNutrient = ProductNutrient::getOneBy([
+			'productId' => $this->getId(),
+			'nutrientCode' => 'energy',
+			'nutrientUnit' => 'kcal',
+		]);
+		if ($productNutrient) {
+			$productNutrient->update('nutrientAmount', $productNutrient->nutrientAmount * 4.184);
+			$productNutrient->update('nutrientUnit', 'kJ');
+			$productNutrient->save();
 		}
 	}
 

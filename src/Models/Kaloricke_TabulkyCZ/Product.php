@@ -11,7 +11,9 @@ class Product extends \Deli\Models\Product {
 	static function buildProductList() {
 		try {
 
-			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'buildProductList'], 1800, function() {
+			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'buildProductList'], 3600, function() {
+
+				@ini_set('memory_limit', '512M');
 
 				$url = 'http://www.kaloricke-tabulky.cz/';
 				$src = \Katu\Utils\Cache::getUrl($url);
@@ -46,7 +48,7 @@ class Product extends \Deli\Models\Product {
 								'baseUnit' => $baseUnit,
 							]);
 
-							$product->setCategory($category);
+							$product->setRemoteCategory($category);
 							$product->save();
 
 						} catch (\Exception $e) {
@@ -218,13 +220,13 @@ class Product extends \Deli\Models\Product {
 
 				switch ($match['unit']) {
 					case 'µg' :
-						$nutrientAmountWithUnit = new \Deli\AmountWithUnit($amount * .000001, 'g');
+						$nutrientAmountWithUnit = new \Deli\Classes\AmountWithUnit($amount * .000001, 'g');
 					break;
 					case 'mg' :
-						$nutrientAmountWithUnit = new \Deli\AmountWithUnit($amount * .001, 'g');
+						$nutrientAmountWithUnit = new \Deli\Classes\AmountWithUnit($amount * .001, 'g');
 					break;
 					default :
-						$nutrientAmountWithUnit = new \Deli\AmountWithUnit($amount, $match['unit']);
+						$nutrientAmountWithUnit = new \Deli\Classes\AmountWithUnit($amount, $match['unit']);
 					break;
 				}
 
@@ -239,24 +241,16 @@ class Product extends \Deli\Models\Product {
 		return $nutrients;
 	}
 
+	public function getProductAmountWithUnit() {
+		return new \Deli\Classes\AmountWithUnit($this->baseAmount, $this->baseUnit);
+	}
+
 	public function loadNutrients() {
 		try {
 
-			$productAmountWithUnit = new \Deli\AmountWithUnit($this->baseAmount, $this->baseUnit);
-
+			$productAmountWithUnit = $this->getProductAmountWithUnit();
 			foreach ($this->scrapeNutrients() as $nutrientCode => $nutrientAmountWithUnit) {
-				ProductNutrient::upsert([
-					'productId' => $this->getId(),
-					'nutrientCode' => $nutrientCode,
-				], [
-					'timeCreated' => new \Katu\Utils\DateTime,
-				], [
-					'timeUpdated' => new \Katu\Utils\DateTime,
-					'nutrientAmount' => $nutrientAmountWithUnit->amount,
-					'nutrientUnit' => $nutrientAmountWithUnit->unit,
-					'ingredientAmount' => $productAmountWithUnit->amount,
-					'ingredientUnit' => $productAmountWithUnit->unit,
-				]);
+				$this->setProductNutrient($nutrientCode, $nutrientAmountWithUnit, $productAmountWithUnit);
 			}
 
 		} catch (\Exception $e) {

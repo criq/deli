@@ -8,10 +8,16 @@ class Product extends \Deli\Models\Product {
 	const SOURCE = 'stobklub_cz';
 	const SOURCE_LABEL = 'stobklub.cz';
 
+	public function getProductAmountWithUnit() {
+		return new \Deli\Classes\AmountWithUnit(100, 'g');
+	}
+
 	static function buildProductList() {
 		try {
 
-			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'buildProductList'], 1800, function() {
+			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'buildProductList'], 3600, function() {
+
+				@ini_set('memory_limit', '512M');
 
 				$url = 'http://www.stobklub.cz/databaze-potravin/';
 				$src = \Katu\Utils\Cache::getUrl($url);
@@ -53,32 +59,20 @@ class Product extends \Deli\Models\Product {
 								]);
 
 								$nutrients = [
-									'energy'   => new \Deli\AmountWithUnit($e->filter('td')->eq(2)->text(), 'kJ'),
-									'proteins' => new \Deli\AmountWithUnit($e->filter('td')->eq(3)->text(), 'g'),
-									'fats'     => new \Deli\AmountWithUnit($e->filter('td')->eq(4)->text(), 'g'),
-									'carbs'    => new \Deli\AmountWithUnit($e->filter('td')->eq(5)->text(), 'g'),
-									'sugar'    => new \Deli\AmountWithUnit($e->filter('td')->eq(7)->text(), 'g'),
-									'fiber'    => new \Deli\AmountWithUnit($e->filter('td')->eq(8)->text(), 'g'),
+									'energy'   => new \Deli\Classes\AmountWithUnit($e->filter('td')->eq(2)->text(), 'kJ'),
+									'proteins' => new \Deli\Classes\AmountWithUnit($e->filter('td')->eq(3)->text(), 'g'),
+									'fats'     => new \Deli\Classes\AmountWithUnit($e->filter('td')->eq(4)->text(), 'g'),
+									'carbs'    => new \Deli\Classes\AmountWithUnit($e->filter('td')->eq(5)->text(), 'g'),
+									'sugar'    => new \Deli\Classes\AmountWithUnit($e->filter('td')->eq(7)->text(), 'g'),
+									'fiber'    => new \Deli\Classes\AmountWithUnit($e->filter('td')->eq(8)->text(), 'g'),
 								];
 
-								$productAmountWithUnit = new \Deli\AmountWithUnit(100, 'g');
-
+								$productAmountWithUnit = $product->getProductAmountWithUnit();
 								foreach ($nutrients as $nutrientCode => $nutrientAmountWithUnit) {
-									ProductNutrient::upsert([
-										'productId' => $product->getId(),
-										'nutrientCode' => $nutrientCode,
-									], [
-										'timeCreated' => new \Katu\Utils\DateTime,
-									], [
-										'timeUpdated' => new \Katu\Utils\DateTime,
-										'nutrientAmount' => $nutrientAmountWithUnit->amount,
-										'nutrientUnit' => $nutrientAmountWithUnit->unit,
-										'ingredientAmount' => $productAmountWithUnit->amount,
-										'ingredientUnit' => $productAmountWithUnit->unit,
-									]);
+									$product->setProductNutrient($nutrientCode, $nutrientAmountWithUnit, $productAmountWithUnit);
 								}
 
-								$product->setCategory([
+								$product->setRemoteCategory([
 									$category['name'],
 									$subcategory['name'],
 								]);

@@ -11,7 +11,9 @@ class Product extends \Deli\Models\Product {
 	static function buildProductList() {
 		try {
 
-			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'buildProductList'], 1800, function() {
+			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'buildProductList'], 3600, function() {
+
+				@ini_set('memory_limit', '512M');
 
 				$filters = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Č', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'Š', 'S', 'Š', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'Ž'];
 				foreach ($filters as $filter) {
@@ -80,13 +82,27 @@ class Product extends \Deli\Models\Product {
 	}
 
 	public function load() {
-		$this->loadCategory();
-		$this->loadNutrients();
+		return static::transaction(function() {
 
-		$this->update('timeLoaded', new \Katu\Utils\DateTime);
-		$this->save();
+			try {
 
-		return true;
+				$this->loadCategory();
+				$this->loadNutrients();
+
+				$this->update('isAvailable', 1);
+
+			} catch (\Exception $e) {
+
+				$this->update('isAvailable', 0);
+
+			}
+
+			$this->update('timeLoaded', new \Katu\Utils\DateTime);
+			$this->save();
+
+			return true;
+
+		});
 	}
 
 	public function scrapeNutrientAssoc() {
@@ -120,7 +136,7 @@ class Product extends \Deli\Models\Product {
 		$nutrientAssoc = $this->scrapeNutrientAssoc();
 
 		if (isset($nutrientAssoc['Kategorie'])) {
-			$this->setCategory($nutrientAssoc['Kategorie']);
+			$this->setRemoteCategory($nutrientAssoc['Kategorie']);
 			$this->save();
 		}
 
@@ -132,23 +148,9 @@ class Product extends \Deli\Models\Product {
 
 		$ingredientUnitSource = $nutrientAssoc['Jednotka'];
 		if (preg_match('/(?<times>[0-9]+)x (?<amount>[0-9\,\.\s]+)\s*(?<unit>(g|ml))/u', $ingredientUnitSource, $match)) {
-			$productAmountWithUnit = new \Deli\AmountWithUnit($match['times'] * (new \Katu\Types\TString($match['amount']))->getAsFloat(), $match['unit']);
+			$productAmountWithUnit = new \Deli\Classes\AmountWithUnit($match['times'] * (new \Katu\Types\TString($match['amount']))->getAsFloat(), $match['unit']);
 		} elseif (preg_match('/(?<times>[0-9]+)x (?<practicalUnit>.+) \((?<amount>[0-9\,\.\s]+) (?<unit>(g|ml))\)/u', $ingredientUnitSource, $match)) {
-			$productAmountWithUnit = new \Deli\AmountWithUnit($match['times'] * (new \Katu\Types\TString($match['amount']))->getAsFloat(), $match['unit']);
-		} else {
-
-			$ignore = [
-				'1x kyblík',
-				'1x porce',
-				'1x 1porce',
-				'1x 1ks',
-				'1x 1kus',
-			];
-
-			if (!in_array($ingredientUnitSource, $ignore)) {
-				var_dump($ingredientUnitSource); die;
-			}
-
+			$productAmountWithUnit = new \Deli\Classes\AmountWithUnit($match['times'] * (new \Katu\Types\TString($match['amount']))->getAsFloat(), $match['unit']);
 		}
 
 		return $productAmountWithUnit;
@@ -209,7 +211,7 @@ class Product extends \Deli\Models\Product {
 			];
 
 			if (isset($nutrientNameMap[$nutrientName])) {
-				$nutrients[$nutrientNameMap[$nutrientName]] = new \Deli\AmountWithUnit($nutrientAmount, $nutrientUnit);
+				$nutrients[$nutrientNameMap[$nutrientName]] = new \Deli\Classes\AmountWithUnit($nutrientAmount, $nutrientUnit);
 			} else {
 				var_dump($nutrientName); die;
 			}
@@ -222,21 +224,9 @@ class Product extends \Deli\Models\Product {
 	public function loadNutrients() {
 		try {
 
-			$productAmountWithUnit = $this->scrapeProductAmountWithUnit();
-
+			$productAmountWithUnit = $this->getProductAmountWithUnit();
 			foreach ($this->scrapeNutrients() as $nutrientCode => $nutrientAmountWithUnit) {
-				ProductNutrient::upsert([
-					'productId' => $this->getId(),
-					'nutrientCode' => $nutrientCode,
-				], [
-					'timeCreated' => new \Katu\Utils\DateTime,
-				], [
-					'timeUpdated' => new \Katu\Utils\DateTime,
-					'nutrientAmount' => $nutrientAmountWithUnit->amount,
-					'nutrientUnit' => $nutrientAmountWithUnit->unit,
-					'ingredientAmount' => $productAmountWithUnit->amount,
-					'ingredientUnit' => $productAmountWithUnit->unit,
-				]);
+				$this->setProductNutrient($nutrientCode, $nutrientAmountWithUnit, $productAmountWithUnit);
 			}
 
 		} catch (\Exception $e) {
