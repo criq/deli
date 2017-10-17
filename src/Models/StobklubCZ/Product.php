@@ -6,7 +6,6 @@ class Product extends \Deli\Models\Product {
 
 	const TABLE = 'deli_stobklub_cz_products';
 	const SOURCE = 'stobklub_cz';
-	const SOURCE_LABEL = 'stobklub.cz';
 
 	public function getProductAmountWithUnit() {
 		return new \Effekt\AmountWithUnit(100, 'g');

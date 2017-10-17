@@ -3,18 +3,36 @@
 namespace Deli\Models;
 
 use \Sexy\Sexy as SX;
-use Deli\AmountWithUnit;
+use \Deli\AmountWithUnit;
 
 abstract class Product extends \Deli\Model {
 
 	const TIMEOUT = 2419200;
 
-	public function getSource() {
-		return static::SOURCE;
+	static function getProductNutrientTopClass() {
+		return implode([
+			static::getTopClass(),
+			"Nutrient",
+		]);
 	}
 
-	public function getSourceLabel() {
-		return static::SOURCE_LABEL;
+	static function getAllSources() {
+		$sources = [
+			\Deli\Models\Custom\Product::SOURCE              => \Deli\Models\Custom\Product::getTopClass(),
+			\Deli\Models\CountrylifeCz\Product::SOURCE       => \Deli\Models\CountrylifeCz\Product::getTopClass(),
+			\Deli\Models\ITescoCz\Product::SOURCE            => \Deli\Models\ITescoCz\Product::getTopClass(),
+			\Deli\Models\Kaloricke_TabulkyCz\Product::SOURCE => \Deli\Models\Kaloricke_TabulkyCz\Product::getTopClass(),
+			\Deli\Models\KalorickeTabulkyCz\Product::SOURCE  => \Deli\Models\KalorickeTabulkyCz\Product::getTopClass(),
+			\Deli\Models\Pbd_OnlineSk\Product::SOURCE        => \Deli\Models\Pbd_OnlineSk\Product::getTopClass(),
+			\Deli\Models\StobklubCz\Product::SOURCE          => \Deli\Models\StobklubCz\Product::getTopClass(),
+			\Deli\Models\UsdaGov\Product::SOURCE             => \Deli\Models\UsdaGov\Product::getTopClass(),
+		];
+
+		return $sources;
+	}
+
+	public function getSource() {
+		return static::SOURCE;
 	}
 
 	public function getName() {
@@ -137,6 +155,33 @@ abstract class Product extends \Deli\Model {
 
 		if (class_exists($productNutrientClass)) {
 			return $productNutrientClass::getBy([
+				'productId' => $this->getId(),
+			]);
+		}
+
+		return false;
+	}
+
+	public function getProductNutrientByCode($code) {
+		$class = static::getClass();
+		$productNutrientClass = $class . 'Nutrient';
+
+		if (class_exists($productNutrientClass)) {
+			return $productNutrientClass::getBy([
+				'productId' => $this->getId(),
+				'nutrientCode' => $code,
+			])->getOne();
+		}
+
+		return false;
+	}
+
+	public function getProductAllergens() {
+		$class = static::getClass();
+		$productAllergenClass = $class . 'Allergen';
+
+		if (class_exists($productAllergenClass)) {
+			return $productAllergenClass::getBy([
 				'productId' => $this->getId(),
 			]);
 		}

@@ -6,7 +6,6 @@ class Product extends \Deli\Models\Product {
 
 	const TABLE = 'deli_itesco_cz_products';
 	const SOURCE = 'itesco_cz';
-	const SOURCE_LABEL = 'itesco.cz';
 
 	static function buildProductList() {
 		try {
@@ -18,7 +17,7 @@ class Product extends \Deli\Models\Product {
 				foreach (\Chakula\Tesco::getDepartmentTree() as $superDepartment) {
 
 					try {
-						$exclude = \Katu\Config::get('deli', static::SOURCE, 'excludeSuperDepartmentNames');
+						$exclude = \Katu\Config::get('deli', 'sources', static::SOURCE, 'excludeSuperDepartmentNames');
 					} catch (\Katu\Exceptions\MissingConfigException $e) {
 						$exclude = [];
 					}
@@ -73,7 +72,11 @@ class Product extends \Deli\Models\Product {
 	}
 
 	public function getName() {
-		return $this->getChakulaProduct()->getName();
+		try {
+			return $this->getChakulaProduct()->getName();
+		} catch (\Exception $e) {
+			return $this->name;
+		}
 	}
 
 	public function getUrl() {
@@ -93,6 +96,7 @@ class Product extends \Deli\Models\Product {
 
 					$this->loadNutrients();
 					$this->loadAllergens();
+					$this->loadEan();
 
 				} else {
 
@@ -162,7 +166,9 @@ class Product extends \Deli\Models\Product {
 
 			foreach ($nutrientAssoc as $nutrientName => $nutrientAmountSource) {
 
-				if (!trim($nutrientName) || !trim($nutrientAmountSource)) {
+				$nutrientName = trim($nutrientName);
+				$nutrientAmountSource = trim($nutrientAmountSource);
+				if (!$nutrientName || !$nutrientAmountSource) {
 					continue;
 				}
 
@@ -245,9 +251,9 @@ class Product extends \Deli\Models\Product {
 					$nutrientCode = null;
 					$nutrientAmountWithUnit = null;
 
-					if (preg_match('/([0-9\.\,]+)\s*(g)?/', $nutrientAmountSource, $match)) {
+					if (preg_match('/^([0-9\.\,]+)\s*(g)?$/', $nutrientAmountSource, $match)) {
 						$nutrientAmountWithUnit = new \Effekt\AmountWithUnit($match[1], 'g');
-					} elseif (preg_match('/([0-9\.\,]+)\s*(mg)?/', $nutrientAmountSource, $match)) {
+					} elseif (preg_match('/^([0-9\.\,]+)\s*(mg)?$/', $nutrientAmountSource, $match)) {
 						$nutrientAmountWithUnit = new \Effekt\AmountWithUnit($match[1], 'mg');
 					}
 
@@ -404,6 +410,32 @@ class Product extends \Deli\Models\Product {
 		return true;
 	}
 
+	public function loadEan() {
+		try {
+
+			$ean = trim($this->getChakulaProduct()->getEan());
+			if ($ean) {
+
+				$this->update('ean', $ean);
+				$this->save();
+
+				return true;
+
+			}
+
+			throw new \Exception;
+
+		} catch (\Exception $e) {
+
+			$this->update('ean', null);
+			$this->save();
+
+			return false;
+
+		}
+
+	}
+
 
 
 
@@ -496,23 +528,6 @@ class Product extends \Deli\Models\Product {
 		$scrapedTescoProductPrice->save();
 
 		$this->update('timeImportedPrice', new \Katu\Utils\DateTime);
-		$this->save();
-
-		return true;
-	}
-
-
-
-
-
-
-
-
-
-
-
-	public function importEan() {
-		$this->update('ean', $this->getChakulaProduct()->getEan());
 		$this->save();
 
 		return true;

@@ -6,7 +6,6 @@ class Product extends \Deli\Models\Product {
 
 	const TABLE = 'deli_custom_products';
 	const SOURCE = 'custom';
-	const SOURCE_LABEL = 'Vlastní';
 
 	public function setProductProperty($property, $value) {
 		return \Deli\Models\Custom\ProductProperty::upsert([

@@ -116,7 +116,7 @@ texts:
     - arašídová
     - arašídový
     - arašídové
-  soy: # 6
+  soybeans: # 6
     - sója
     - sóju
     - soju
@@ -233,7 +233,7 @@ texts:
     - hořtičnou
   sesame: # 11
     - sezam
-  sulphur: # 12
+  sulphurDioxide: # 12
     - oxid
     - siřičitý
     - siričitý
@@ -254,7 +254,7 @@ texts:
     - e211
     - e222
     - e224
-  lupine: # 13
+  lupin: # 13
     - vlčí bob
     - vlčího bobu
     - lupinová

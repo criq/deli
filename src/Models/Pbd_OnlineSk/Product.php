@@ -6,7 +6,6 @@ class Product extends \Deli\Models\Product {
 
 	const TABLE = 'deli_pbd_online_sk_products';
 	const SOURCE = 'pbd_online_sk';
-	const SOURCE_LABEL = 'pbd-online.sk';
 
 	public function load() {
 		$this->loadName();
@@ -137,10 +136,8 @@ class Product extends \Deli\Models\Product {
 						$amountWithUnit = new \Effekt\AmountWithUnit($match['amount'], 'RE');
 					break;
 					case 'kcal' :
-						$amountWithUnit = new \Effekt\AmountWithUnit($match['amount'] * 4.184, 'kJ');
-					break;
 					case 'kJ' :
-						$amountWithUnit = new \Effekt\AmountWithUnit($match['amount'], 'kJ');
+						$amountWithUnit = (new \Effekt\Joules($match['amount'], $match['unit']))->toJ();
 					break;
 					case 'PCT' :
 						$amountWithUnit = new \Effekt\AmountWithUnit($match['amount'], 'percent');
@@ -180,8 +177,8 @@ class Product extends \Deli\Models\Product {
 			'nutrientUnit' => 'kcal',
 		]);
 		if ($productNutrient) {
-			$productNutrient->update('nutrientAmount', $productNutrient->nutrientAmount * 4.184);
-			$productNutrient->update('nutrientUnit', 'kJ');
+			$productNutrient->update('nutrientAmount', (new \Effekt\Joules($productNutrient->nutrientAmount, 'kcal'))->toJ());
+			$productNutrient->update('nutrientUnit', 'J');
 			$productNutrient->save();
 		}
 	}
