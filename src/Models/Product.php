@@ -16,6 +16,13 @@ abstract class Product extends \Deli\Model {
 		]);
 	}
 
+	static function getProductPropertyTopClass() {
+		return implode([
+			static::getTopClass(),
+			"Property",
+		]);
+	}
+
 	static function getAllSources() {
 		$sources = [
 			\Deli\Models\Custom\Product::SOURCE              => \Deli\Models\Custom\Product::getTopClass(),
@@ -231,11 +238,35 @@ abstract class Product extends \Deli\Model {
 			}
 
 			// Dev.
-			var_dump($text);
+			#var_dump($text);
 
 		}
 
 		return array_values(array_unique($allergenCodes));
+	}
+
+	public function setProductProperty($property, $value) {
+		$class = static::getProductPropertyTopClass();
+
+		$productProperty = $class::upsert([
+			'productId' => $this->getId(),
+			'property' => trim($property),
+		], [
+			'timeCreated' => new \Katu\Utils\DateTime,
+		]);
+		$productProperty->setValue($value);
+		$productProperty->save();
+
+		return true;
+	}
+
+	public function getProductProperty($property) {
+		$class = static::getProductPropertyTopClass();
+
+		return $class::getOneBy([
+			'productId' => $this->getId(),
+			'property' => trim($property),
+		]);
 	}
 
 }

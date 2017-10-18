@@ -72,6 +72,7 @@ class Product extends \Deli\Models\Product {
 		$this->loadRemoteId();
 		$this->loadNutrients();
 		$this->loadAllergens();
+		$this->loadContents();
 
 		$this->update('timeLoaded', new \Katu\Utils\DateTime);
 		$this->save();
@@ -239,6 +240,23 @@ class Product extends \Deli\Models\Product {
 		foreach ($allergenCodes as $allergenCode) {
 			$this->setProductAllergen($allergenCode);
 		}
+
+		return true;
+	}
+
+	public function scrapeContents() {
+		try {
+			$info = $this->scrapeInfo();
+			if (isset($info['Složení'])) {
+				return $info['Složení'];
+			}
+		} catch (\Exception $e) {
+			return false;
+		}
+	}
+
+	public function loadContents() {
+		$this->setProductProperty('contents', $this->scrapeContents());
 
 		return true;
 	}

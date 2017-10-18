@@ -7,24 +7,6 @@ class Product extends \Deli\Models\Product {
 	const TABLE = 'deli_custom_products';
 	const SOURCE = 'custom';
 
-	public function setProductProperty($property, $value) {
-		return \Deli\Models\Custom\ProductProperty::upsert([
-			'productId' => $this->getId(),
-			'property' => trim($property),
-		], [
-			'timeCreated' => new \Katu\Utils\DateTime,
-		], [
-			'value' => trim($value) ?: null,
-		]);
-	}
-
-	public function getProductProperty($property) {
-		return \Deli\Models\Custom\ProductProperty::getOneBy([
-			'productId' => $this->getId(),
-			'property' => trim($property),
-		]);
-	}
-
 	public function getUrl() {
 		$productProperty = $this->getProductProperty('url');
 		if ($productProperty) {
@@ -80,5 +62,6 @@ class Product extends \Deli\Models\Product {
 
 		return true;
 	}
+
 
 }

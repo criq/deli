@@ -97,6 +97,7 @@ class Product extends \Deli\Models\Product {
 					$this->loadNutrients();
 					$this->loadAllergens();
 					$this->loadEan();
+					$this->loadContents();
 
 				} else {
 
@@ -434,6 +435,27 @@ class Product extends \Deli\Models\Product {
 
 		}
 
+	}
+
+	public function scrapeContents() {
+		try {
+
+			$info = $this->getChakulaProduct()->getInfo('Složení');
+			if ($info) {
+				return strip_tags($info->text);
+			}
+
+			throw new \Exception;
+
+		} catch (\Exception $e) {
+			return false;
+		}
+	}
+
+	public function loadContents() {
+		$this->setProductProperty('contents', $this->scrapeContents());
+
+		return true;
 	}
 
 
