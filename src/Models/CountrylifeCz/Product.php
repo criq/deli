@@ -69,10 +69,20 @@ class Product extends \Deli\Models\Product {
 	}
 
 	public function load() {
-		$this->loadRemoteId();
-		$this->loadNutrients();
-		$this->loadAllergens();
-		$this->loadContents();
+		try {
+
+			$this->loadRemoteId();
+			$this->loadNutrients();
+			$this->loadAllergens();
+			$this->loadContents();
+
+			$this->update('isAvailable', 1);
+
+		} catch (\Exception $e) {
+
+			$this->update('isAvailable', 0);
+
+		}
 
 		$this->update('timeLoaded', new \Katu\Utils\DateTime);
 		$this->save();
