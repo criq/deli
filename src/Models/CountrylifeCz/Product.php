@@ -271,4 +271,10 @@ class Product extends \Deli\Models\Product {
 		return true;
 	}
 
+	public function loadPrice() {
+
+		echo $this->getSrc(); die;
+
+	}
+
 }
