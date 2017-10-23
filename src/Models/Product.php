@@ -9,17 +9,24 @@ abstract class Product extends \Deli\Model {
 
 	const TIMEOUT = 2419200;
 
-	static function getProductNutrientTopClass() {
-		return implode([
-			static::getTopClass(),
-			"Nutrient",
-		]);
-	}
-
 	static function getProductPropertyTopClass() {
 		return implode([
 			static::getTopClass(),
-			"Property",
+			'Property',
+		]);
+	}
+
+	static function getProductNutrientTopClass() {
+		return implode([
+			static::getTopClass(),
+			'Nutrient',
+		]);
+	}
+
+	static function getProductPriceTopClass() {
+		return implode([
+			static::getTopClass(),
+			'Price',
 		]);
 	}
 
@@ -203,6 +210,20 @@ abstract class Product extends \Deli\Model {
 			->where(SX::lgcOr([
 				SX::cmpIsNull(static::getColumn('timeLoaded')),
 				SX::cmpLessThan(static::getColumn('timeLoaded'), new \Katu\Utils\DateTime('- 1 month')),
+			]))
+			->orderBy(static::getColumn('timeCreated'))
+			;
+
+		return $sql;
+	}
+
+	static function getForLoadPriceSql() {
+		$sql = SX::select()
+			->setForTotal()
+			->from(static::getTable())
+			->where(SX::lgcOr([
+				SX::cmpIsNull(static::getColumn('timeLoadedPrice')),
+				SX::cmpLessThan(static::getColumn('timeLoadedPrice'), new \Katu\Utils\DateTime('- 1 week')),
 			]))
 			->orderBy(static::getColumn('timeCreated'))
 			;

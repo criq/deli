@@ -458,98 +458,33 @@ class Product extends \Deli\Models\Product {
 		return true;
 	}
 
+	public function loadPrice() {
+		try {
 
+			$chakulaProduct = $this->getChakulaProduct();
+			$chakulaProductPrice = $chakulaProduct->getPrice();
 
+			$productPriceClass = static::getProductPriceTopClass();
+			$productPrice = $productPriceClass::insert([
+				'timeCreated' => new \Katu\Utils\DateTime,
+				'productId' => $this->getId(),
+				'currencyCode' => $chakulaProductPrice->price->currency,
+			]);
 
+			// Price per item.
+			$productPrice->update('pricePerProduct', (float)$chakulaProductPrice->price->amount);
 
+			// Price per quantity.
+			$productPrice->update('pricePerUnit', (float)$chakulaProductPrice->pricePerQuantity->price->amount);
+			$productPrice->update('unit', (string)$chakulaProductPrice->pricePerQuantity->quantity->unit);
 
+			$productPrice->save();
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	public function importPrice() {
-		$scrapedTescoProductPrice = ProductPrice::create($this, \App\Models\Currency::getOneBy([
-			'code' => 'CZK',
-		]));
-
-		$product = $this->getChakulaProduct();
-		$productPrice = $product->getPrice();
-
-		// Price per item.
-		$scrapedTescoProductPrice->update('pricePerItem', (float) $productPrice->price->amount);
-
-		// Price per quantity.
-		$scrapedTescoProductPrice->update('pricePerUnit', (float) $productPrice->pricePerQuantity->price->amount);
-		$scrapedTescoProductPrice->update('unitAbbr', (string) $productPrice->pricePerQuantity->quantity->unit);
-
-		// Price per base unit.
-		switch ($scrapedTescoProductPrice->unitAbbr) {
-			case 'kg' :
-
-				$scrapedTescoProductPrice->update('pricePerPracticalUnit', $scrapedTescoProductPrice->pricePerUnit / 1000);
-				$scrapedTescoProductPrice->update('practicalUnitId', \App\Models\PracticalUnit::getOneBy(['abbr' => 'g'])->getId());
-
-			break;
-			case 'l' :
-
-				$scrapedTescoProductPrice->update('pricePerPracticalUnit', $scrapedTescoProductPrice->pricePerUnit / 1000);
-				$scrapedTescoProductPrice->update('practicalUnitId', \App\Models\PracticalUnit::getOneBy(['abbr' => 'ml'])->getId());
-
-			break;
-			case 'Kus' :
-
-				$scrapedTescoProductPrice->update('pricePerPracticalUnit', $scrapedTescoProductPrice->pricePerItem);
-				$scrapedTescoProductPrice->update('practicalUnitId', \App\Models\PracticalUnit::getOneBy(['abbr' => 'ks'])->getId());
-
-			break;
-			default :
-				var_dump($this, $productPrice); die;
-			break;
+		} catch (\Exception $e) {
+			// Nevermind.
 		}
 
-		$scrapedTescoProductPrice->save();
-
-		$this->update('timeImportedPrice', new \Katu\Utils\DateTime);
+		$this->update('timeLoadedPrice', new \Katu\Utils\DateTime);
 		$this->save();
 
 		return true;
