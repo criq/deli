@@ -64,7 +64,11 @@ class Product extends \Deli\Models\Product {
 		return 'https://www.countrylife.cz' . $this->uri;
 	}
 
-	public function getSrc() {
+	public function getSrc($timeout = null) {
+		if (is_null($timeout)) {
+			$timeout = static::TIMEOUT;
+		}
+
 		return \Katu\Utils\Cache::getUrl($this->getUrl());
 	}
 
@@ -274,7 +278,9 @@ class Product extends \Deli\Models\Product {
 	public function loadPrice() {
 		try {
 
-			$src = $this->getSrc();
+			$productPriceClass = static::getProductPriceTopClass();
+
+			$src = $this->getSrc($productPriceClass::TIMEOUT);
 			$dom = \Katu\Utils\DOM::crawlHtml($src);
 
 			if ($dom->filter('.product-price .tr-price .right')->count()) {
@@ -282,7 +288,6 @@ class Product extends \Deli\Models\Product {
 				$str = (new \Katu\Types\TString($dom->filter('.product-price .tr-price')->eq(0)->filter('.right')->html()))->normalizeSpaces()->trim();
 				if (preg_match('/^(?<price>[0-9\,\s]+)\s+(?<currencyCode>Kč)$/u', $str, $match)) {
 
-					$productPriceClass = static::getProductPriceTopClass();
 					$productPrice = $productPriceClass::insert([
 						'timeCreated' => new \Katu\Utils\DateTime,
 						'productId' => $this->getId(),

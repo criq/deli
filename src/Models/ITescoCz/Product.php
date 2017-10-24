@@ -461,10 +461,11 @@ class Product extends \Deli\Models\Product {
 	public function loadPrice() {
 		try {
 
-			$chakulaProduct = $this->getChakulaProduct();
-			$chakulaProductPrice = $chakulaProduct->getPrice();
-
 			$productPriceClass = static::getProductPriceTopClass();
+
+			$chakulaProduct = $this->getChakulaProduct();
+			$chakulaProductPrice = $chakulaProduct->getPrice($productPriceClass::TIMEOUT);
+
 			$productPrice = $productPriceClass::insert([
 				'timeCreated' => new \Katu\Utils\DateTime,
 				'productId' => $this->getId(),
