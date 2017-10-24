@@ -476,7 +476,8 @@ class Product extends \Deli\Models\Product {
 
 			// Price per quantity.
 			$productPrice->update('pricePerUnit', (float)$chakulaProductPrice->pricePerQuantity->price->amount);
-			$productPrice->update('unit', (string)$chakulaProductPrice->pricePerQuantity->quantity->unit);
+			$productPrice->update('unitAmount', (string)$chakulaProductPrice->pricePerQuantity->quantity->amount);
+			$productPrice->update('unitCode', (string)$chakulaProductPrice->pricePerQuantity->quantity->unit);
 
 			$productPrice->save();
 

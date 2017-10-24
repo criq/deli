@@ -272,9 +272,56 @@ class Product extends \Deli\Models\Product {
 	}
 
 	public function loadPrice() {
+		try {
 
-		echo $this->getSrc(); die;
+			$src = $this->getSrc();
+			$dom = \Katu\Utils\DOM::crawlHtml($src);
 
+			if ($dom->filter('.product-price .tr-price .right')->count()) {
+
+				$str = (new \Katu\Types\TString($dom->filter('.product-price .tr-price')->eq(0)->filter('.right')->html()))->normalizeSpaces()->trim();
+				if (preg_match('/^(?<price>[0-9\,\s]+)\s+(?<currencyCode>Kč)$/u', $str, $match)) {
+
+					$productPriceClass = static::getProductPriceTopClass();
+					$productPrice = $productPriceClass::insert([
+						'timeCreated' => new \Katu\Utils\DateTime,
+						'productId' => $this->getId(),
+						'currencyCode' => 'CZK',
+					]);
+
+					$productPrice->update('pricePerProduct', (new \Katu\Types\TString($match['price']))->getAsFloat());
+
+					if ($dom->filter('.product-price .tr-price .other')->count()) {
+
+						$str = (new \Katu\Types\TString($dom->filter('.product-price .tr-price')->eq(0)->filter('.other')->text()))->normalizeSpaces()->trim();
+						if (preg_match('/(?<price>[0-9\,\s]+)\s+(?<currencyCode>Kč)\s+za\s+(?<unitAmount>[0-9\,\s]+)\s+(?<unitCode>g)/u', $str, $match)) {
+
+							$productPrice->update('pricePerUnit', (new \Katu\Types\TString($match['price']))->getAsFloat());
+							$productPrice->update('unitAmount', (new \Katu\Types\TString($match['unitAmount']))->getAsFloat());
+							$productPrice->update('unitCode', trim($match['unitCode']));
+
+						}
+
+					}
+
+					$productPrice->save();
+
+				}
+
+			}
+
+		} catch (\Exception $e) {
+			if (method_exists($e, 'getAbbr') && $e->getAbbr() == 'urlUnavailable') {
+
+			} else {
+				var_dump($e); die;
+			}
+		}
+
+		$this->update('timeLoadedPrice', new \Katu\Utils\DateTime);
+		$this->save();
+
+		return true;
 	}
 
 }
