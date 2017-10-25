@@ -59,4 +59,10 @@ class Emulgator extends \Deli\Model {
 		}
 	}
 
+	public function getEmulgatorName() {
+		return EmulgatorName::getOneBy([
+			'emulgatorId' => $this->getId(),
+		]);
+	}
+
 }

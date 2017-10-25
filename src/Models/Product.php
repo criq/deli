@@ -363,4 +363,28 @@ abstract class Product extends \Deli\Model {
 		return false;
 	}
 
+	public function getViscojisCzEmulgators() {
+		if ($this->ean) {
+
+			$sql = SX::select()
+				->setOptGetTotalRows(false)
+				->select(\Deli\Models\Emulgator::getTable())
+				->from(\Deli\Models\ViscojisCz\Product::getTable())
+				->where(SX::eq(\Deli\Models\ViscojisCz\Product::getColumn('ean'), $this->ean))
+				->joinColumns(\Deli\Models\ViscojisCz\Product::getIdColumn(), \Deli\Models\ViscojisCz\ProductEmulgator::getColumn('productId'))
+				->joinColumns(\Deli\Models\ViscojisCz\ProductEmulgator::getColumn('emulgatorId'), \Deli\Models\Emulgator::getIdColumn())
+				->joinColumns(\Deli\Models\Emulgator::getIdColumn(), \Deli\Models\ViscojisCz\Emulgator::getColumn('emulgatorId'))
+				->orderBy([
+					\Deli\Models\ViscojisCz\Emulgator::getColumn('rating'),
+					\Deli\Models\Emulgator::getColumn('code'),
+				])
+				;
+
+			return \Deli\Models\Emulgator::getBySql($sql);
+
+		}
+
+		return false;
+	}
+
 }
