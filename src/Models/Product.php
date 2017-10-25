@@ -290,4 +290,29 @@ abstract class Product extends \Deli\Model {
 		]);
 	}
 
+	public function getViscojisCzProductByEan() {
+		if ($this->ean) {
+			return ViscojisCz\Product::getOneBy([
+				'ean' => $this->ean,
+			]);
+		}
+
+		return false;
+	}
+
+	public function getProductPrice() {
+		$productPriceClass = static::getProductPriceTopClass();
+		if (class_exists($productPriceClass)) {
+
+			return $productPriceClass::getOneBy([
+				'productId' => $this->id,
+			], [
+				'orderBy' => SX::orderBy($productPriceClass::getColumn('timeCreated'), SX::kw('desc')),
+			]);
+
+		}
+
+		return false;
+	}
+
 }
