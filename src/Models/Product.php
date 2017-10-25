@@ -23,6 +23,13 @@ abstract class Product extends \Deli\Model {
 		]);
 	}
 
+	static function getProductAllergenTopClass() {
+		return implode([
+			static::getTopClass(),
+			'Allergen',
+		]);
+	}
+
 	static function getProductPriceTopClass() {
 		return implode([
 			static::getTopClass(),
