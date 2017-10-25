@@ -205,7 +205,6 @@ abstract class Product extends \Deli\Model {
 
 	static function getForLoadSql() {
 		$sql = SX::select()
-			->setForTotal()
 			->from(static::getTable())
 			->where(SX::lgcOr([
 				SX::cmpIsNull(static::getColumn('timeLoaded')),
@@ -219,11 +218,24 @@ abstract class Product extends \Deli\Model {
 
 	static function getForLoadPriceSql() {
 		$sql = SX::select()
-			->setForTotal()
 			->from(static::getTable())
 			->where(SX::lgcOr([
 				SX::cmpIsNull(static::getColumn('timeLoadedPrice')),
 				SX::cmpLessThan(static::getColumn('timeLoadedPrice'), new \Katu\Utils\DateTime('- 1 week')),
+			]))
+			->orderBy(static::getColumn('timeCreated'))
+			;
+
+		return $sql;
+	}
+
+	static function getForSetAllergensFromViscojisCzSql() {
+		$sql = SX::select()
+			->from(static::getTable())
+			->where(SX::cmpIsNotNull(static::getColumn('ean')))
+			->where(SX::lgcOr([
+				SX::cmpIsNull(static::getColumn('timeSetAllergensFromViscojisCz')),
+				SX::cmpLessThan(static::getColumn('timeSetAllergensFromViscojisCz'), new \Katu\Utils\DateTime('- 1 month')),
 			]))
 			->orderBy(static::getColumn('timeCreated'))
 			;
@@ -290,14 +302,8 @@ abstract class Product extends \Deli\Model {
 		]);
 	}
 
-	public function getViscojisCzProductByEan() {
-		if ($this->ean) {
-			return ViscojisCz\Product::getOneBy([
-				'ean' => $this->ean,
-			]);
-		}
-
-		return false;
+	public function getContents() {
+		return $this->getProductProperty('contents');
 	}
 
 	public function getProductPrice() {
@@ -309,6 +315,41 @@ abstract class Product extends \Deli\Model {
 			], [
 				'orderBy' => SX::orderBy($productPriceClass::getColumn('timeCreated'), SX::kw('desc')),
 			]);
+
+		}
+
+		return false;
+	}
+
+	public function getViscojisCzProductByEan() {
+		if ($this->ean) {
+
+			return ViscojisCz\Product::getOneBy([
+				'ean' => $this->ean,
+			]);
+
+		}
+
+		return false;
+	}
+
+	public function setAllergensFromViscojis() {
+		if ($this->ean) {
+
+			$viscojisCzProduct = $this->getViscojisCzProductByEan();
+			if ($viscojisCzProduct) {
+
+				$productAllergens = $viscojisCzProduct->getProductAllergens();
+				foreach ($productAllergens as $productAllergen) {
+
+					$this->setProductAllergen($productAllergen->allergenCode);
+
+				}
+
+			}
+
+			$this->update('timeSetAllergensFromViscojisCz', new \Katu\Utils\DateTime);
+			$this->save();
 
 		}
 
