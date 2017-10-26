@@ -97,7 +97,7 @@ class Product extends \Deli\Models\Product {
 					$this->loadNutrients();
 					$this->loadAllergens();
 					$this->loadEan();
-					$this->loadContents();
+					$this->loadProperties();
 
 				} else {
 
@@ -106,6 +106,8 @@ class Product extends \Deli\Models\Product {
 				}
 
 			} catch (\Exception $e) {
+
+				var_dump($e); die;
 
 				$this->update('isAvailable', 0);
 
@@ -437,23 +439,23 @@ class Product extends \Deli\Models\Product {
 
 	}
 
-	public function scrapeContents() {
-		try {
+	public function loadProperties() {
+		$propertyLabelMap = [
+			#'Alergeny'   => 'allergens',
+			#'Popis'      => 'description',
+			#'Skladování' => 'storage',
+			#'Složení'    => 'contents',
+		];
 
-			$info = $this->getChakulaProduct()->getInfo('Složení');
-			if ($info) {
-				return strip_tags($info->text);
+		var_dump($this->scrapeInfo()); die;
+
+		foreach ($this->scrapeInfo() as $propertyLabel => $value) {
+			if (isset($propertyLabelMap[$propertyLabel])) {
+				$this->setProductProperty($propertyLabelMap[$propertyLabel], $value);
+			} else {
+				var_dump($propertyLabel); die;
 			}
-
-			throw new \Exception;
-
-		} catch (\Exception $e) {
-			return false;
 		}
-	}
-
-	public function loadContents() {
-		$this->setProductProperty('contents', $this->scrapeContents());
 
 		return true;
 	}

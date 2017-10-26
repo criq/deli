@@ -78,7 +78,7 @@ class Product extends \Deli\Models\Product {
 			$this->loadRemoteId();
 			$this->loadNutrients();
 			$this->loadAllergens();
-			$this->loadContents();
+			$this->loadProperties();
 
 			$this->update('isAvailable', 1);
 
@@ -258,19 +258,21 @@ class Product extends \Deli\Models\Product {
 		return true;
 	}
 
-	public function scrapeContents() {
-		try {
-			$info = $this->scrapeInfo();
-			if (isset($info['Složení'])) {
-				return $info['Složení'];
-			}
-		} catch (\Exception $e) {
-			return false;
-		}
-	}
+	public function loadProperties() {
+		$propertyLabelMap = [
+			'Alergeny'   => 'allergens',
+			'Popis'      => 'description',
+			'Skladování' => 'storage',
+			'Složení'    => 'contents',
+		];
 
-	public function loadContents() {
-		$this->setProductProperty('contents', $this->scrapeContents());
+		foreach ($this->scrapeInfo() as $propertyLabel => $value) {
+			if (isset($propertyLabelMap[$propertyLabel])) {
+				$this->setProductProperty($propertyLabelMap[$propertyLabel], $value);
+			} else {
+				#var_dump($propertyLabel); die;
+			}
+		}
 
 		return true;
 	}

@@ -328,7 +328,7 @@ abstract class Product extends \Deli\Model {
 		return false;
 	}
 
-	public function getViscojisCzProductByEan() {
+	public function getViscojisCzProduct() {
 		if ($this->ean) {
 
 			return ViscojisCz\Product::getOneBy([
@@ -343,7 +343,7 @@ abstract class Product extends \Deli\Model {
 	public function setAllergensFromViscojis() {
 		if ($this->ean) {
 
-			$viscojisCzProduct = $this->getViscojisCzProductByEan();
+			$viscojisCzProduct = $this->getViscojisCzProduct();
 			if ($viscojisCzProduct) {
 
 				$productAllergens = $viscojisCzProduct->getProductAllergens();
@@ -362,6 +362,7 @@ abstract class Product extends \Deli\Model {
 
 		return false;
 	}
+
 
 	public function getViscojisCzEmulgators() {
 		if ($this->ean) {
