@@ -441,19 +441,21 @@ class Product extends \Deli\Models\Product {
 
 	public function loadProperties() {
 		$propertyLabelMap = [
-			#'Alergeny'   => 'allergens',
-			#'Popis'      => 'description',
-			#'Skladování' => 'storage',
-			#'Složení'    => 'contents',
+			'Balení'               => 'packaging',
+			'Informace o produktu' => 'information',
+			'Název a Sídlo'        => 'producer',
+			'Popis produktu'       => 'description',
+			'Příprava a použití'   => 'preparation',
+			'Skladování a použití' => 'storage',
+			'Složení'              => 'contents',
+			'Výživové hodnoty'     => 'nutrients',
 		];
 
-		var_dump($this->scrapeInfo()); die;
-
-		foreach ($this->scrapeInfo() as $propertyLabel => $value) {
-			if (isset($propertyLabelMap[$propertyLabel])) {
-				$this->setProductProperty($propertyLabelMap[$propertyLabel], $value);
+		foreach ($this->getChakulaProduct()->getInfo() as $info) {
+			if (isset($propertyLabelMap[$info->title])) {
+				$this->setProductProperty($propertyLabelMap[$info->title], $info->text);
 			} else {
-				var_dump($propertyLabel); die;
+				#var_dump($info); die;
 			}
 		}
 
