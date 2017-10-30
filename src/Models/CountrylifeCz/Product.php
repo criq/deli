@@ -122,8 +122,6 @@ class Product extends \Deli\Models\Product {
 			$this->loadAllergens();
 			$this->loadProperties();
 
-			$this->refreshNameParts();
-
 			$this->update('isAvailable', 1);
 
 		} catch (\Exception $e) {

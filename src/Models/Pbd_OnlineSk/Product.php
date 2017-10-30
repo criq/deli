@@ -13,8 +13,6 @@ class Product extends \Deli\Models\Product {
 		$this->loadName();
 		$this->loadNutrients();
 
-		$this->refreshNameParts();
-
 		$this->update('timeLoaded', new \Katu\Utils\DateTime);
 		$this->save();
 

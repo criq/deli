@@ -96,8 +96,6 @@ class Product extends \Deli\Models\Product {
 	}
 
 	public function load() {
-		$this->refreshNameParts();
-
 		$this->update('timeLoaded', new \Katu\Utils\DateTime);
 		$this->save();
 

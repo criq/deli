@@ -99,8 +99,6 @@ class Product extends \Deli\Models\Product {
 					$this->loadEan();
 					$this->loadProperties();
 
-					$this->refreshNameParts();
-
 				} else {
 
 					$this->update('isAvailable', 0);
