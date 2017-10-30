@@ -230,6 +230,25 @@ abstract class Product extends \Deli\Model {
 		return $sql;
 	}
 
+	static function getForAllSourcesLoadSql() {
+		$sqls = [];
+		foreach (static::getAllSources() as $sourceCode => $sourceClass) {
+			$sqls[] = $sourceClass::getForLoadSql()
+				->select(SX::aka(SX::val($sourceClass), SX::a('class')))
+				->select($sourceClass::getIdColumn())
+				->select($sourceClass::getColumn('timeLoaded'))
+				->setOptGetTotalRows(false)
+				;
+		}
+
+		$sql = SX::select()
+			->from(SX::aka(SX::union($sqls), SX::a('_t')))
+			->orderBy(SX::orderBy(SX::a('timeLoaded'), SX::kw('desc')))
+			;
+
+		return $sql;
+	}
+
 	static function getForLoadPriceSql() {
 		$sql = SX::select()
 			->from(static::getTable())
