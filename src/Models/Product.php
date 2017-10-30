@@ -415,6 +415,8 @@ abstract class Product extends \Deli\Model {
 	}
 
 	public function refreshNameParts() {
+		return false;
+
 		$namePartClass = static::getProductNamePartTopClass();
 		if (class_exists($namePartClass)) {
 

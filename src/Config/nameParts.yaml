@@ -1,0 +1,9 @@
+igonre:
+  - Tesco
+  - Finest
+  - Vitana
+  - [0-9]+\s*(g|kg|l|ml)
+  - se
+  - bez
+  - na
+  - ve
