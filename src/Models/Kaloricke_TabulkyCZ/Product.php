@@ -7,10 +7,12 @@ class Product extends \Deli\Models\Product {
 	const TABLE = 'deli_kaloricke_tabulky_cz_products';
 	const SOURCE = 'kaloricke_tabulky_cz';
 
+	const TIMEOUT = 14515200;
+
 	static function buildProductList() {
 		try {
 
-			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'buildProductList'], 3600, function() {
+			\Katu\Utils\Lock::run(['deli', static::SOURCE, __FUNCTION__], 3600, function() {
 
 				@ini_set('memory_limit', '512M');
 

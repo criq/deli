@@ -10,7 +10,7 @@ class Product extends \Deli\Models\Product {
 	static function buildProductList() {
 		try {
 
-			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'buildProductList'], 3600, function() {
+			\Katu\Utils\Lock::run(['deli', static::SOURCE, __FUNCTION__], 3600, function() {
 
 				@ini_set('memory_limit', '512M');
 
@@ -60,6 +60,48 @@ class Product extends \Deli\Models\Product {
 		}
 	}
 
+	static function loadProductEans() {
+		try {
+
+			\Katu\Utils\Lock::run(['deli', static::SOURCE, __FUNCTION__], 3600, function() {
+
+				@ini_set('memory_limit', '512M');
+
+				$src = \Katu\Utils\Cache::get(function() {
+
+					$curl = new \Curl\Curl;
+					$curl->setTimeout(60);
+					$curl->get('https://www.countrylife.cz/multiweb/CountryLife/export/products.xml');
+
+					return $curl->rawResponse;
+
+				}, static::TIMEOUT);
+
+				$xml = new \SimpleXMLElement($src);
+				foreach ($xml as $item) {
+
+					if (isset($item->ITEM_ID, $item->EAN)) {
+
+						$product = Product::getOneBy([
+							'remoteId' => (string)$item->ITEM_ID,
+						]);
+
+						if ($product) {
+							$product->update('ean', (string)$item->EAN);
+							$product->save();
+						}
+
+					}
+
+				}
+
+			}, !in_array(\Katu\Env::getPlatform(), ['dev']));
+
+		} catch (\Katu\Exceptions\LockException $e) {
+			// Nevermind.
+		}
+	}
+
 	public function getUrl() {
 		return 'https://www.countrylife.cz' . $this->uri;
 	}
@@ -79,6 +121,8 @@ class Product extends \Deli\Models\Product {
 			$this->loadNutrients();
 			$this->loadAllergens();
 			$this->loadProperties();
+
+			$this->refreshNameParts();
 
 			$this->update('isAvailable', 1);
 

@@ -7,6 +7,8 @@ class Product extends \Deli\Models\Product {
 	const TABLE = 'deli_stobklub_cz_products';
 	const SOURCE = 'stobklub_cz';
 
+	const TIMEOUT = 14515200;
+
 	public function getProductAmountWithUnit() {
 		return new \Effekt\AmountWithUnit(100, 'g');
 	}
@@ -14,7 +16,7 @@ class Product extends \Deli\Models\Product {
 	static function buildProductList() {
 		try {
 
-			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'buildProductList'], 3600, function() {
+			\Katu\Utils\Lock::run(['deli', static::SOURCE, __FUNCTION__], 3600, function() {
 
 				@ini_set('memory_limit', '512M');
 
@@ -75,8 +77,9 @@ class Product extends \Deli\Models\Product {
 									$category['name'],
 									$subcategory['name'],
 								]);
-								$product->update('timeLoaded', new \Katu\Utils\DateTime);
 								$product->save();
+
+								$product->load();
 
 							});
 
@@ -90,6 +93,15 @@ class Product extends \Deli\Models\Product {
 		} catch (\Katu\Exceptions\LockException $e) {
 			// Nevermind.
 		}
+	}
+
+	public function load() {
+		$this->refreshNameParts();
+
+		$this->update('timeLoaded', new \Katu\Utils\DateTime);
+		$this->save();
+
+		return true;
 	}
 
 }

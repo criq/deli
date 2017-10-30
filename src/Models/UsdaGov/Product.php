@@ -7,6 +7,8 @@ class Product extends \Deli\Models\Product {
 	const TABLE = 'deli_usda_gov_products';
 	const SOURCE = 'usda_gov';
 
+	const TIMEOUT = 14515200;
+
 	static function readTextFileToLines($fileName) {
 		$lines = [];
 
@@ -38,7 +40,7 @@ class Product extends \Deli\Models\Product {
 	static function buildProductList() {
 		try {
 
-			\Katu\Utils\Lock::run(['deli', static::SOURCE, 'buildProductList'], 3600, function() {
+			\Katu\Utils\Lock::run(['deli', static::SOURCE, __FUNCTION__], 3600, function() {
 
 				@ini_set('memory_limit', '512M');
 
@@ -77,6 +79,8 @@ class Product extends \Deli\Models\Product {
 		$this->loadName();
 		$this->loadCategory();
 		$this->loadNutrients();
+
+		$this->refreshNameParts();
 
 		$this->update('timeLoaded', new \Katu\Utils\DateTime);
 		$this->save();

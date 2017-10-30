@@ -37,6 +37,13 @@ abstract class Product extends \Deli\Model {
 		]);
 	}
 
+	static function getProductNamePartTopClass() {
+		return implode([
+			static::getTopClass(),
+			'NamePart',
+		]);
+	}
+
 	static function getAllSources() {
 		$sources = [
 			\Deli\Models\Custom\Product::SOURCE              => \Deli\Models\Custom\Product::getTopClass(),
@@ -386,6 +393,41 @@ abstract class Product extends \Deli\Model {
 		}
 
 		return false;
+	}
+
+	public function refreshNameParts() {
+		$namePartClass = static::getProductNamePartTopClass();
+		if (class_exists($namePartClass)) {
+
+			// Delete old.
+			foreach ($namePartClass::getBy([
+				'productId' => $this->getId(),
+			]) as $productNamePart) {
+				$productNamePart->delete();
+			}
+
+			// Insert new.
+			$nameParts = preg_split('/\s/', $this->name);
+			$nameParts = array_map(function($i) {
+				return preg_replace('/[,\(\)]/', null, $i);
+			}, $nameParts);
+			$nameParts = array_map('trim', $nameParts);
+			$nameParts = array_map(function($i) {
+				return mb_strlen($i) > 1 ? $i : null;
+			}, $nameParts);
+			$nameParts = array_values(array_filter(array_unique($nameParts)));
+
+			foreach ($nameParts as $namePart) {
+				$namePartClass::insert([
+					'timeCreated' => new \Katu\Utils\DateTime,
+					'productId' => $this->getId(),
+					'namePart' => $namePart,
+				]);
+			}
+
+		}
+
+		return true;
 	}
 
 }

@@ -9,7 +9,7 @@ class RemoteCategory extends \Deli\Model {
 	static function buildRemoteCategoryList() {
 		try {
 
-			\Katu\Utils\Lock::run(['deli', Product::SOURCE, 'buildRemoteCategoryList'], 1800, function() {
+			\Katu\Utils\Lock::run(['deli', Product::SOURCE, __FUNCTION__], 1800, function() {
 
 				$remoteCategoryIds = \Katu\Utils\Cache::get(function() {
 

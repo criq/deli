@@ -7,9 +7,13 @@ class Product extends \Deli\Models\Product {
 	const TABLE = 'deli_pbd_online_sk_products';
 	const SOURCE = 'pbd_online_sk';
 
+	const TIMEOUT = 14515200;
+
 	public function load() {
 		$this->loadName();
 		$this->loadNutrients();
+
+		$this->refreshNameParts();
 
 		$this->update('timeLoaded', new \Katu\Utils\DateTime);
 		$this->save();
