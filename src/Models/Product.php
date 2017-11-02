@@ -273,7 +273,7 @@ abstract class Product extends \Deli\Model {
 	}
 
 	static function getForLoadProductDataFromViscojisCzSql() {
-		$sqls[] = SX::select()
+		$sql = SX::select()
 			->from(static::getTable())
 			->where(SX::lgcOr([
 				SX::cmpIsNull(static::getColumn('timeLoadedFromViscojisCz')),
@@ -291,7 +291,7 @@ abstract class Product extends \Deli\Model {
 
 			if (in_array('timeLoadedFromViscojisCz', $sourceClass::getTable()->getColumnNames())) {
 
-				$sqls[] = $sourceClass::getForLoadSql()
+				$sqls[] = $sourceClass::getForLoadProductDataFromViscojisCzSql()
 					->setOptGetTotalRows(false)
 					->select(SX::aka(SX::val($sourceClass), SX::a('class')))
 					->select($sourceClass::getIdColumn())
