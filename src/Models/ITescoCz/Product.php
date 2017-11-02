@@ -369,7 +369,7 @@ class Product extends \Deli\Models\Product {
 
 			$productAmountWithUnit = $this->getProductAmountWithUnit();
 			foreach ($this->scrapeNutrients() as $nutrientCode => $nutrientAmountWithUnit) {
-				$this->setProductNutrient($nutrientCode, $nutrientAmountWithUnit, $productAmountWithUnit);
+				$this->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, $nutrientCode, $nutrientAmountWithUnit, $productAmountWithUnit);
 			}
 
 		} catch (\Exception $e) {
@@ -398,7 +398,7 @@ class Product extends \Deli\Models\Product {
 
 	public function loadAllergens() {
 		foreach (static::getAllergenCodesFromTexts($this->scrapeAllergensInContents()) as $allergenCode) {
-			$this->setProductAllergen($allergenCode, ProductAllergen::SOURCE_ORIGIN);
+			$this->setProductAllergen(ProductAllergen::SOURCE_ORIGIN, $allergenCode);
 		}
 
 		return true;
@@ -444,7 +444,7 @@ class Product extends \Deli\Models\Product {
 
 		foreach ($this->getChakulaProduct()->getInfo() as $info) {
 			if (isset($propertyLabelMap[$info->title])) {
-				$this->setProductProperty($propertyLabelMap[$info->title], $info->text);
+				$this->setProductProperty(ProductProperty::SOURCE_ORIGIN, $propertyLabelMap[$info->title], $info->text);
 			} else {
 				#var_dump($info); die;
 			}

@@ -70,7 +70,7 @@ class Product extends \Deli\Models\Product {
 
 								$productAmountWithUnit = $product->getProductAmountWithUnit();
 								foreach ($nutrients as $nutrientCode => $nutrientAmountWithUnit) {
-									$product->setProductNutrient($nutrientCode, $nutrientAmountWithUnit, $productAmountWithUnit);
+									$product->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, $nutrientCode, $nutrientAmountWithUnit, $productAmountWithUnit);
 								}
 
 								$product->setRemoteCategory([

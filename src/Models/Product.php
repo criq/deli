@@ -108,7 +108,7 @@ abstract class Product extends \Deli\Model {
 		return true;
 	}
 
-	public function setProductAllergen($allergenCode, $source) {
+	public function setProductAllergen($source, $allergenCode) {
 		$class = static::getProductAllergenTopClass();
 
 		return $class::upsert([
@@ -120,7 +120,7 @@ abstract class Product extends \Deli\Model {
 		]);
 	}
 
-	public function setProductEmulgator($emulgator, $source) {
+	public function setProductEmulgator($source, $emulgator) {
 		$class = static::getProductEmulgatorTopClass();
 
 		return $class::upsert([
@@ -155,27 +155,28 @@ abstract class Product extends \Deli\Model {
 		return new \Effekt\AmountWithUnit(100, 'g');
 	}
 
-	public function setProductNutrientIfEmpty($nutrientCode, $nutrientAmountWithUnit) {
+	public function setProductNutrientIfEmpty($source, $nutrientCode, $nutrientAmountWithUnit) {
 		$class = static::getClass();
 		$productNutrientClass = $class . 'Nutrient';
 
 		$productNutrient = $productNutrientClass::getOneBy([
 			'productId' => $this->getId(),
+			'source' => $source,
 			'nutrientCode' => $nutrientCode,
 		]);
 		if (!$productNutrient) {
-			$productNutrient = $this->setProductNutrient($nutrientCode, $nutrientAmountWithUnit, $this->getProductAmountWithUnit());
+			$productNutrient = $this->setProductNutrient($source, $nutrientCode, $nutrientAmountWithUnit, $this->getProductAmountWithUnit());
 		}
 
 		return $productNutrient;
 	}
 
-	public function setProductNutrient($nutrientCode, $nutrientAmountWithUnit, $productAmountWithUnit) {
-		$class = static::getClass();
-		$productNutrientClass = $class . 'Nutrient';
+	public function setProductNutrient($source, $nutrientCode, $nutrientAmountWithUnit, $productAmountWithUnit) {
+		$class = static::getProductNutrientTopClass();
 
-		return $productNutrientClass::upsert([
+		return $class::upsert([
 			'productId' => $this->getId(),
+			'source' => $source,
 			'nutrientCode' => $nutrientCode,
 		], [
 			'timeCreated' => new \Katu\Utils\DateTime,
@@ -189,11 +190,10 @@ abstract class Product extends \Deli\Model {
 	}
 
 	public function getProductNutrients() {
-		$class = static::getClass();
-		$productNutrientClass = $class . 'Nutrient';
+		$class = static::getProductNutrientTopClass();
 
 		if (class_exists($productNutrientClass)) {
-			return $productNutrientClass::getBy([
+			return $class::getBy([
 				'productId' => $this->getId(),
 			]);
 		}
@@ -235,6 +235,7 @@ abstract class Product extends \Deli\Model {
 				SX::cmpIsNull(static::getColumn('timeLoaded')),
 				SX::cmpLessThan(static::getColumn('timeLoaded'), new \Katu\Utils\DateTime('- 1 month')),
 			]))
+			->where(SX::eq(static::getColumn('isBanned'), 0))
 			->orderBy([
 				SX::orderBy(static::getColumn('timeLoaded')),
 				SX::orderBy(static::getIdColumn()),
@@ -252,6 +253,7 @@ abstract class Product extends \Deli\Model {
 				->setOptGetTotalRows(false)
 				->select(SX::aka(SX::val($sourceClass), SX::a('class')))
 				->select($sourceClass::getIdColumn())
+				->select($sourceClass::getColumn('name'))
 				->select($sourceClass::getColumn('timeLoaded'))
 				;
 
@@ -261,7 +263,23 @@ abstract class Product extends \Deli\Model {
 			->from(SX::aka(SX::union($sqls), SX::a('_t')))
 			->orderBy([
 				SX::orderBy(SX::a('timeLoaded')),
+				SX::orderBy(SX::a('name')),
+				SX::orderBy(SX::a('id')),
+				SX::orderBy(SX::a('class')),
 			])
+			;
+
+		return $sql;
+	}
+
+	static function getForLoadProductDataFromViscojisCzSql() {
+		$sqls[] = SX::select()
+			->from(static::getTable())
+			->where(SX::lgcOr([
+				SX::cmpIsNull(static::getColumn('timeLoadedFromViscojisCz')),
+				SX::cmpLessThan(static::getColumn('timeLoadedFromViscojisCz'), new \Katu\Utils\DateTime('- ' . static::TIMEOUT . ' seconds')),
+			]))
+			->where(SX::eq(static::getColumn('isBanned'), 0))
 			;
 
 		return $sql;
@@ -273,18 +291,12 @@ abstract class Product extends \Deli\Model {
 
 			if (in_array('timeLoadedFromViscojisCz', $sourceClass::getTable()->getColumnNames())) {
 
-				$sqls[] = SX::select()
+				$sqls[] = $sourceClass::getForLoadSql()
 					->setOptGetTotalRows(false)
-					->from($sourceClass::getTable())
 					->select(SX::aka(SX::val($sourceClass), SX::a('class')))
 					->select($sourceClass::getIdColumn())
 					->select($sourceClass::getColumn('name'))
 					->select($sourceClass::getColumn('timeLoadedFromViscojisCz'))
-					->where(SX::lgcOr([
-						SX::cmpIsNull($sourceClass::getColumn('timeLoadedFromViscojisCz')),
-						SX::cmpLessThan($sourceClass::getColumn('timeLoadedFromViscojisCz'), new \Katu\Utils\DateTime('- ' . static::TIMEOUT . ' seconds')),
-					]))
-					->where(SX::eq($sourceClass::getColumn('isBanned'), 0))
 					;
 
 			}
@@ -348,11 +360,12 @@ abstract class Product extends \Deli\Model {
 		return array_values(array_unique($allergenCodes));
 	}
 
-	public function setProductProperty($property, $value) {
+	public function setProductProperty($source, $property, $value) {
 		$class = static::getProductPropertyTopClass();
 
 		$productProperty = $class::upsert([
 			'productId' => $this->getId(),
+			'source' => $source,
 			'property' => trim($property),
 		], [
 			'timeCreated' => new \Katu\Utils\DateTime,
@@ -459,7 +472,7 @@ abstract class Product extends \Deli\Model {
 			// Allergens.
 			$config = ProductAllergen::getConfig();
 			foreach ($res->a as $allergenId) {
-				$this->setProductAllergen($config['list'][$allergenId]['code'], ProductAllergen::SOURCE_VISCOJIS_CZ);
+				$this->setProductAllergen(ProductAllergen::SOURCE_VISCOJIS_CZ, $config['list'][$allergenId]['code']);
 			}
 
 			// Emulgators.
@@ -469,7 +482,7 @@ abstract class Product extends \Deli\Model {
 				], [
 					'timeCreated' => new \Katu\Utils\DateTime,
 				]);
-				$this->setProductEmulgator($emulgator, ProductEmulgator::SOURCE_VISCOJIS_CZ);
+				$this->setProductEmulgator(ProductEmulgator::SOURCE_VISCOJIS_CZ, $emulgator);
 			}
 
 		}
@@ -494,7 +507,7 @@ abstract class Product extends \Deli\Model {
 				$productAllergens = $viscojisCzProduct->getProductAllergens();
 				foreach ($productAllergens as $productAllergen) {
 
-					$this->setProductAllergen($productAllergen->allergenCode, ProductAllergen::SOURCE_VISCOJIS_CZ);
+					$this->setProductAllergen(ProductAllergen::SOURCE_VISCOJIS_CZ, $productAllergen->allergenCode);
 
 				}
 

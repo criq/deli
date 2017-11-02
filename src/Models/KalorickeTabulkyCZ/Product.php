@@ -227,7 +227,7 @@ class Product extends \Deli\Models\Product {
 
 			$productAmountWithUnit = $this->getProductAmountWithUnit();
 			foreach ($this->scrapeNutrients() as $nutrientCode => $nutrientAmountWithUnit) {
-				$this->setProductNutrient($nutrientCode, $nutrientAmountWithUnit, $productAmountWithUnit);
+				$this->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, $nutrientCode, $nutrientAmountWithUnit, $productAmountWithUnit);
 			}
 
 		} catch (\Exception $e) {

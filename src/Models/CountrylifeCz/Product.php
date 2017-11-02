@@ -230,7 +230,7 @@ class Product extends \Deli\Models\Product {
 
 			$productAmountWithUnit = $this->getProductAmountWithUnit();
 			foreach ($this->scrapeNutrients() as $nutrientCode => $nutrientAmountWithUnit) {
-				$this->setProductNutrient($nutrientCode, $nutrientAmountWithUnit, $productAmountWithUnit);
+				$this->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, $nutrientCode, $nutrientAmountWithUnit, $productAmountWithUnit);
 			}
 
 		} catch (\Exception $e) {
@@ -294,7 +294,7 @@ class Product extends \Deli\Models\Product {
 		$allergenCodes = array_values(array_unique($allergenCodes));
 
 		foreach ($allergenCodes as $allergenCode) {
-			$this->setProductAllergen($allergenCode, ProductAllergen::SOURCE_ORIGIN);
+			$this->setProductAllergen(ProductAllergen::SOURCE_ORIGIN, $allergenCode);
 		}
 
 		return true;
@@ -310,7 +310,7 @@ class Product extends \Deli\Models\Product {
 
 		foreach ($this->scrapeInfo() as $propertyLabel => $value) {
 			if (isset($propertyLabelMap[$propertyLabel])) {
-				$this->setProductProperty($propertyLabelMap[$propertyLabel], $value);
+				$this->setProductProperty(ProductProperty::SOURCE_ORIGIN, $propertyLabelMap[$propertyLabel], $value);
 			} else {
 				#var_dump($propertyLabel); die;
 			}
