@@ -9,10 +9,17 @@ abstract class Product extends \Deli\Model {
 
 	const TIMEOUT = 2419200;
 
-	static function getProductPropertyTopClass() {
+	static function getProductAllergenTopClass() {
 		return implode([
 			static::getTopClass(),
-			'Property',
+			'Allergen',
+		]);
+	}
+
+	static function getProductEmulgatorTopClass() {
+		return implode([
+			static::getTopClass(),
+			'Emulgator',
 		]);
 	}
 
@@ -23,17 +30,17 @@ abstract class Product extends \Deli\Model {
 		]);
 	}
 
-	static function getProductAllergenTopClass() {
-		return implode([
-			static::getTopClass(),
-			'Allergen',
-		]);
-	}
-
 	static function getProductPriceTopClass() {
 		return implode([
 			static::getTopClass(),
 			'Price',
+		]);
+	}
+
+	static function getProductPropertyTopClass() {
+		return implode([
+			static::getTopClass(),
+			'Property',
 		]);
 	}
 
@@ -101,24 +108,35 @@ abstract class Product extends \Deli\Model {
 		return true;
 	}
 
-	public function setProductAllergen($allergenCode) {
-		$class = static::getClass();
-		$productAllergenClass = $class . 'Allergen';
+	public function setProductAllergen($allergenCode, $source) {
+		$class = static::getProductAllergenTopClass();
 
-		return $productAllergenClass::upsert([
+		return $class::upsert([
 			'productId' => $this->getId(),
+			'source' => $source,
 			'allergenCode' => $allergenCode,
 		], [
 			'timeCreated' => new \Katu\Utils\DateTime,
 		]);
 	}
 
+	public function setProductEmulgator($emulgator, $source) {
+		$class = static::getProductEmulgatorTopClass();
+
+		return $class::upsert([
+			'productId' => $this->getId(),
+			'source' => $source,
+			'emulgatorId' => $emulgator->getId(),
+		], [
+			'timeCreated' => new \Katu\Utils\DateTime,
+		]);
+	}
+
 	public function getProductAmountWithUnit() {
-		$class = static::getClass();
-		$productNutrientClass = $class . 'Nutrient';
+		$class = static::getProductNutrientTopClass();
 
 		// Look into existing first.
-		$productNutrient = $productNutrientClass::getOneBy([
+		$productNutrient = $class::getOneBy([
 			'productId' => $this->getId(),
 		]);
 		if ($productNutrient) {
@@ -217,26 +235,70 @@ abstract class Product extends \Deli\Model {
 				SX::cmpIsNull(static::getColumn('timeLoaded')),
 				SX::cmpLessThan(static::getColumn('timeLoaded'), new \Katu\Utils\DateTime('- 1 month')),
 			]))
-			->orderBy(static::getColumn('timeCreated'))
+			->orderBy([
+				SX::orderBy(static::getColumn('timeLoaded')),
+				SX::orderBy(static::getIdColumn()),
+			])
 			;
 
 		return $sql;
 	}
 
-	static function getForAllSourcesLoadSql() {
+	static function getAllSourcesForLoadSql() {
 		$sqls = [];
 		foreach (static::getAllSources() as $sourceCode => $sourceClass) {
+
 			$sqls[] = $sourceClass::getForLoadSql()
+				->setOptGetTotalRows(false)
 				->select(SX::aka(SX::val($sourceClass), SX::a('class')))
 				->select($sourceClass::getIdColumn())
 				->select($sourceClass::getColumn('timeLoaded'))
-				->setOptGetTotalRows(false)
 				;
+
 		}
 
 		$sql = SX::select()
 			->from(SX::aka(SX::union($sqls), SX::a('_t')))
-			->orderBy(SX::orderBy(SX::a('timeLoaded'), SX::kw('desc')))
+			->orderBy([
+				SX::orderBy(SX::a('timeLoaded')),
+			])
+			;
+
+		return $sql;
+	}
+
+	static function getAllSourcesForLoadProductDataFromViscojisCzSql() {
+		$sqls = [];
+		foreach (static::getAllSources() as $sourceCode => $sourceClass) {
+
+			if (in_array('timeLoadedFromViscojisCz', $sourceClass::getTable()->getColumnNames())) {
+
+				$sqls[] = SX::select()
+					->setOptGetTotalRows(false)
+					->from($sourceClass::getTable())
+					->select(SX::aka(SX::val($sourceClass), SX::a('class')))
+					->select($sourceClass::getIdColumn())
+					->select($sourceClass::getColumn('name'))
+					->select($sourceClass::getColumn('timeLoadedFromViscojisCz'))
+					->where(SX::lgcOr([
+						SX::cmpIsNull($sourceClass::getColumn('timeLoadedFromViscojisCz')),
+						SX::cmpLessThan($sourceClass::getColumn('timeLoadedFromViscojisCz'), new \Katu\Utils\DateTime('- ' . static::TIMEOUT . ' seconds')),
+					]))
+					->where(SX::eq($sourceClass::getColumn('isBanned'), 0))
+					;
+
+			}
+
+		}
+
+		$sql = SX::select()
+			->from(SX::aka(SX::union($sqls), SX::a('_t')))
+			->orderBy([
+				SX::orderBy(SX::a('timeLoadedFromViscojisCz')),
+				SX::orderBy(SX::a('name')),
+				SX::orderBy(SX::a('id')),
+				SX::orderBy(SX::a('class')),
+			])
 			;
 
 		return $sql;
@@ -255,49 +317,31 @@ abstract class Product extends \Deli\Model {
 		return $sql;
 	}
 
-	static function getForSetAllergensFromViscojisCzSql() {
-		$sql = SX::select()
-			->from(static::getTable())
-			->where(SX::cmpIsNotNull(static::getColumn('ean')))
-			->where(SX::lgcOr([
-				SX::cmpIsNull(static::getColumn('timeSetAllergensFromViscojisCz')),
-				SX::cmpLessThan(static::getColumn('timeSetAllergensFromViscojisCz'), new \Katu\Utils\DateTime('- 1 month')),
-			]))
-			->orderBy(static::getColumn('timeCreated'))
-			;
-
-		return $sql;
-	}
-
 	public function getOrCreateScrapedIngredent() {
 		return \App\Models\ScrapedIngredient::make(static::SOURCE, $this->getName());
 	}
 
 	static function getAllergenCodesFromTexts($texts) {
+		$config = ProductAllergen::getConfig();
+
 		$allergenCodes = [];
-
-		$configFileName = realpath(dirname(__FILE__) . '/../Config/allergens.yaml');
-		$config = \Spyc::YAMLLoad(file_get_contents($configFileName));
-
 		foreach ($texts as $text) {
 
-			if (in_array($text, $config['ignore'])) {
+			if (in_array($text, $config['ignoreTexts'])) {
 				continue;
 			}
 
-			foreach ($config['texts'] as $allergenCode => $allergenTexts) {
-				foreach ($allergenTexts as $allergenText) {
+			foreach ($config['list'] as $allergenId => $allergenConfig) {
+
+				foreach ($allergenConfig['texts'] as $allergenText) {
 
 					if (strpos($text, $allergenText) !== false) {
-						$allergenCodes[] = $allergenCode;
+						$allergenCodes[] = $allergenConfig['code'];
 						continue 3;
 					}
 
 				}
 			}
-
-			// Dev.
-			#var_dump($text);
 
 		}
 
@@ -332,6 +376,15 @@ abstract class Product extends \Deli\Model {
 		return $this->getProductProperty('contents');
 	}
 
+	public function getContentsString() {
+		$contents = $this->getContents();
+		if (!$contents) {
+			return false;
+		}
+
+		return trim(preg_replace('/\s+/', ' ', preg_replace('/\v/u', ' ', strip_tags((new \Katu\Types\TString((string)$contents->getValue()))->normalizeSpaces()))));
+	}
+
 	public function getProductPrice() {
 		$productPriceClass = static::getProductPriceTopClass();
 		if (class_exists($productPriceClass)) {
@@ -359,30 +412,6 @@ abstract class Product extends \Deli\Model {
 		return false;
 	}
 
-	public function setAllergensFromViscojis() {
-		if ($this->ean) {
-
-			$viscojisCzProduct = $this->getViscojisCzProduct();
-			if ($viscojisCzProduct) {
-
-				$productAllergens = $viscojisCzProduct->getProductAllergens();
-				foreach ($productAllergens as $productAllergen) {
-
-					$this->setProductAllergen($productAllergen->allergenCode);
-
-				}
-
-			}
-
-			$this->update('timeSetAllergensFromViscojisCz', new \Katu\Utils\DateTime);
-			$this->save();
-
-		}
-
-		return false;
-	}
-
-
 	public function getViscojisCzEmulgators() {
 		if ($this->ean) {
 
@@ -405,6 +434,78 @@ abstract class Product extends \Deli\Model {
 		}
 
 		return false;
+	}
+
+	public function loadProductDataFromViscojisCz() {
+		/***************************************************************************
+		 * Load by contents.
+		 */
+
+		$string = (string)trim($this->getContentsString());
+		if ($string) {
+
+			$res = \Katu\Utils\Cache::get(function($string) {
+
+				$curl = new \Curl\Curl;
+				$curl->setHeader('Content-Type', 'application/json');
+				$res = $curl->post('https://viscokupujes.cz/api/get-info', \Katu\Utils\JSON::encodeInline([
+					'ingredients' => $string,
+				]));
+
+				return $res;
+
+			}, 86400 * 28, $string);
+
+			// Allergens.
+			$config = ProductAllergen::getConfig();
+			foreach ($res->a as $allergenId) {
+				$this->setProductAllergen($config['list'][$allergenId]['code'], ProductAllergen::SOURCE_VISCOJIS_CZ);
+			}
+
+			// Emulgators.
+			foreach ($res->e as $emulgatorData) {
+				$emulgator = Emulgator::upsert([
+					'code' => $emulgatorData->id,
+				], [
+					'timeCreated' => new \Katu\Utils\DateTime,
+				]);
+				$this->setProductEmulgator($emulgator, ProductEmulgator::SOURCE_VISCOJIS_CZ);
+			}
+
+		}
+
+		$this->update('timeLoadedFromViscojisCz', new \Katu\Utils\DateTime);
+		$this->save();
+
+		return true;
+
+		/*
+		die;
+		var_dump($res->po);
+		var_dump($res->gf);
+
+		die;
+
+		if ($this->ean) {
+
+			$viscojisCzProduct = $this->getViscojisCzProduct();
+			if ($viscojisCzProduct) {
+
+				$productAllergens = $viscojisCzProduct->getProductAllergens();
+				foreach ($productAllergens as $productAllergen) {
+
+					$this->setProductAllergen($productAllergen->allergenCode, ProductAllergen::SOURCE_VISCOJIS_CZ);
+
+				}
+
+			}
+
+
+
+		}
+
+		return false;
+		*/
 	}
 
 }

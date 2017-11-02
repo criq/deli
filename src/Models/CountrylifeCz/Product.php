@@ -294,7 +294,7 @@ class Product extends \Deli\Models\Product {
 		$allergenCodes = array_values(array_unique($allergenCodes));
 
 		foreach ($allergenCodes as $allergenCode) {
-			$this->setProductAllergen($allergenCode);
+			$this->setProductAllergen($allergenCode, ProductAllergen::SOURCE_ORIGIN);
 		}
 
 		return true;

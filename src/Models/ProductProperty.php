@@ -2,7 +2,7 @@
 
 namespace Deli\Models;
 
-class ProductProperty extends \Deli\Model {
+abstract class ProductProperty extends \Deli\Model {
 
 	public function setValue($value) {
 		$value = \Katu\Utils\JSON::encodeInline($value);

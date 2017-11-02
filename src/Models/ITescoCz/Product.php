@@ -15,47 +15,38 @@ class Product extends \Deli\Models\Product {
 				@ini_set('memory_limit', '512M');
 
 				foreach (\Chakula\Tesco::getDepartmentTree() as $superDepartment) {
+					foreach ($superDepartment->departments as $department) {
+						foreach ($department->categories as $category) {
 
-					try {
-						$exclude = \Katu\Config::get('deli', 'sources', static::SOURCE, 'excludeSuperDepartmentNames');
-					} catch (\Katu\Exceptions\MissingConfigException $e) {
-						$exclude = [];
-					}
+							\Katu\Utils\Cache::get(function($categoryUri) use($superDepartment, $department, $category) {
 
-					if (!in_array($superDepartment->name, $exclude)) {
-						foreach ($superDepartment->departments as $department) {
-							foreach ($department->categories as $category) {
+								foreach ($category->getProducts() as $product) {
 
-								\Katu\Utils\Cache::get(function($categoryUri) use($superDepartment, $department, $category) {
+									try {
 
-									foreach ($category->getProducts() as $product) {
+										$product = static::upsert([
+											'uri' => $product->id,
+										], [
+											'timeCreated' => new \Katu\Utils\DateTime,
+										], [
+											'name' => $product->name,
+										]);
 
-										try {
+										$product->setRemoteCategory([
+											$superDepartment->name,
+											$department->name,
+											$category->name,
+										]);
+										$product->save();
 
-											$product = static::upsert([
-												'uri' => $product->id,
-											], [
-												'timeCreated' => new \Katu\Utils\DateTime,
-											], [
-												'name' => $product->name,
-											]);
-
-											$product->setRemoteCategory([
-												$superDepartment->name,
-												$department->name,
-												$category->name,
-											]);
-											$product->save();
-
-										} catch (\Exception $e) {
-											// Nevermind.
-										}
-
+									} catch (\Exception $e) {
+										// Nevermind.
 									}
 
-								}, static::TIMEOUT, $category->uri);
+								}
 
-							}
+							}, static::TIMEOUT, $category->uri);
+
 						}
 					}
 				}
@@ -407,7 +398,7 @@ class Product extends \Deli\Models\Product {
 
 	public function loadAllergens() {
 		foreach (static::getAllergenCodesFromTexts($this->scrapeAllergensInContents()) as $allergenCode) {
-			$this->setProductAllergen($allergenCode);
+			$this->setProductAllergen($allergenCode, ProductAllergen::SOURCE_ORIGIN);
 		}
 
 		return true;

@@ -1,282 +1,304 @@
-texts:
-  gluten: # 1
-    - mouka
-    - mouku
-    - mouky
-    - lepek
-    - lepku
-    - lepkový
-    - gluten
-    - obilovin
-    - obilná
-    - obilné
-    - pšenice
-    - pšeničná
-    - pšeničný
-    - pšeničné
-    - pšenici
-    - pšeničnou
-    - pčenice
-    - kamut
-    - žito
-    - žita
-    - žitná
-    - žitný
-    - žitné
-    - žitnou
-    - slad
-    - sladová
-    - slad
-    - oves
-    - ovsa
-    - ovesné
-    - ovesná
-    - avenin
-    - ječmen
-    - ječný
-    - ječná
-    - ječné
-    - ječmenný
-    - špalda
-    - špaldy
-    - špaldový
-    - špaldová
-    - špaldové
-    - śpaldová
-    - semolina
-    - semolinová
-    - semolinové
-    - kvasná kultura
-    - kroupy
-    - triticale
-    - "00"
-    - kuskus
-    - cereálie
-    - celozrnná
-    - strouhanka
-    - nudle
-    - vloček
-    - chlebový
-    - křupinky
-    - otruby
-  crustaceans: # 2
-    - korýšů
-    - korýše
-    - krevety
-    - kraba
-    - krabí
-    - kalmar
-    - kalmár
-    - kalamáry
-    - hlavonožců
-    - sépie
-    - sépiový
-    - chobotnice
-  eggs: # 3
-    - vejce
-    - vajec
-    - vaječ
-    - žloutek
-    - žloutky
-    - majonéza
-    - bílek
-    - bílky
-  fish: # 4
-    - ryb
-    - treska
-    - tresky
-    - tresek
-    - tresčí
-    - losos
-    - sleď
-    - sledě
-    - makrela
-    - makrely
-    - sardel
-    - sardele
-    - jikry
-    - tuňák
-    - ančovičky
-    - ančovičková
-    - ančoviček
-    - sardinka
-    - sardinky
-    - sardinely
-    - šprot
-    - šproty
-    - pstruh
-    - kapr
-    - štika
-    - nemipterus
-    - pangasius
-  peanuts: # 5
-    - arašídy
-    - arašídů
-    - arašidů
-    - arašídová
-    - arašídový
-    - arašídové
-  soybeans: # 6
-    - sója
-    - sóju
-    - soju
-    - soja
-    - sóji
-    - soji
-    - sójová
-    - sójový
-    - sójové
-    - sojový
-    - sojová
-    - sojové
-    - sójovou
-    - lecitin
-    - tofu
-    - okara
-    - boby
-    - miso
-  lactose: # 7
-    - laktóza
-    - laktózy
-    - laktózu
-    - laktosa
-    - laktózou
-    - mléko
-    - mléka
-    - mléčné
-    - mléčná
-    - mléčný
-    - mléčně
-    - mlékem
-    - mléčnou
-    - mlékárenská
-    - mlékárenské
-    - plnotučné
-    - máslo
-    - máselný
-    - sýr
-    - syrovátka
-    - syrovátky
-    - syrovátkový
-    - syrovátková
-    - syrovátkové
-    - máslové
-    - podmáslí
-    - smetana
-    - smetany
-    - smetanový
-    - smetanová
-    - smetanového
-    - smetanou
-    - tvaroh
-    - kasein
-    - kaseinát
-    - mascarpone
-    - jogurt
-    - bílkovina
-    - šlehačka
-    - ementál
-    - čedar
-    - camembert
-    - bifidobacterium
-    - lactobacillus
-    - tvarůžky
-    - eidam
-    - mozzarella
-    - gouda
-    - grana padano
-    - roquefort
-  nuts: # 8
-    - skořápkových
-    - ořechy
-    - ořechů
-    - oříšky
-    - oříšků
-    - oříšková
-    - ořechových
-    - skořápkové
-    - skořákové
-    - mandle
-    - mandlí
-    - mandlový
-    - mandlová
-    - mandlové
-    - lískové
-    - lísková
-    - lískových
-    - vlašské
-    - vlašská
-    - vlašských
-    - kešu
-    - para
-    - pistácie
-    - pistácií
-    - pistáciové
-    - piniové
-    - "lísko-oříškové"
-    - lískooříškový
-    - "mandlovo-lískoořechová"
-    - muškátový oříšek
-    - makadamové
-    - pekanové
-    - jádra
-  celery: # 9
-    - celer
-  mustard: # 10
-    - hořčice
-    - hořčicí
-    - hořčici
-    - hořčičná
-    - hořčičné
-    - hořčicové
-    - hořčičný
-    - hořtičnou
-  sesame: # 11
-    - sezam
-  sulphurDioxide: # 12
-    - oxid
-    - siřičitý
-    - siričitý
-    - siřičitého
-    - siřičitan
-    - siřičitany
-    - siřičitanů
-    - disiřičitan
-    - disiričitan
-    - disiřičan
-    - hydrogensřičitan
-    - sulfidu
-    - sulfitový
-    - sulfur
-    - s02
-    - so2
-    - so₂
-    - e211
-    - e222
-    - e224
-  lupin: # 13
-    - vlčí bob
-    - vlčího bobu
-    - lupinová
-    - lupinové
-    - lupinový
-    - lupinových
-    - lupiny
-  molluscs:
-    - mušle
-    - měkkýš
-    - měkkýši
-    - měkkýšů
-    - měkkýše
-    - ústřic
-    - ústřicový
-  cocoa:
-    - čokolády
-    - čokoládové
-    - kakao
-    - kakaový
-    - kokosový
-ignore:
+list:
+  1:
+    code: gluten
+    texts:
+      - mouka
+      - mouku
+      - mouky
+      - lepek
+      - lepku
+      - lepkový
+      - gluten
+      - obilovin
+      - obilná
+      - obilné
+      - pšenice
+      - pšeničná
+      - pšeničný
+      - pšeničné
+      - pšenici
+      - pšeničnou
+      - pčenice
+      - kamut
+      - žito
+      - žita
+      - žitná
+      - žitný
+      - žitné
+      - žitnou
+      - slad
+      - sladová
+      - slad
+      - oves
+      - ovsa
+      - ovesné
+      - ovesná
+      - avenin
+      - ječmen
+      - ječný
+      - ječná
+      - ječné
+      - ječmenný
+      - špalda
+      - špaldy
+      - špaldový
+      - špaldová
+      - špaldové
+      - śpaldová
+      - semolina
+      - semolinová
+      - semolinové
+      - kvasná kultura
+      - kroupy
+      - triticale
+      - "00"
+      - kuskus
+      - cereálie
+      - celozrnná
+      - strouhanka
+      - nudle
+      - vloček
+      - chlebový
+      - křupinky
+      - otruby
+  2:
+    code: crustaceans
+    texts:
+      - korýšů
+      - korýše
+      - krevety
+      - kraba
+      - krabí
+      - kalmar
+      - kalmár
+      - kalamáry
+      - hlavonožců
+      - sépie
+      - sépiový
+      - chobotnice
+  3:
+    code: eggs
+    texts:
+      - vejce
+      - vajec
+      - vaječ
+      - žloutek
+      - žloutky
+      - majonéza
+      - bílek
+      - bílky
+  4:
+    code: fish
+    texts:
+      - ryb
+      - treska
+      - tresky
+      - tresek
+      - tresčí
+      - losos
+      - sleď
+      - sledě
+      - makrela
+      - makrely
+      - sardel
+      - sardele
+      - jikry
+      - tuňák
+      - ančovičky
+      - ančovičková
+      - ančoviček
+      - sardinka
+      - sardinky
+      - sardinely
+      - šprot
+      - šproty
+      - pstruh
+      - kapr
+      - štika
+      - nemipterus
+      - pangasius
+  5:
+    code: peanuts
+    texts:
+      - arašídy
+      - arašídů
+      - arašidů
+      - arašídová
+      - arašídový
+      - arašídové
+  6:
+    code: soybeans
+    texts:
+      - sója
+      - sóju
+      - soju
+      - soja
+      - sóji
+      - soji
+      - sójová
+      - sójový
+      - sójové
+      - sojový
+      - sojová
+      - sojové
+      - sójovou
+      - lecitin
+      - tofu
+      - okara
+      - boby
+      - miso
+  7:
+    code: lactose
+    texts:
+      - laktóza
+      - laktózy
+      - laktózu
+      - laktosa
+      - laktózou
+      - mléko
+      - mléka
+      - mléčné
+      - mléčná
+      - mléčný
+      - mléčně
+      - mlékem
+      - mléčnou
+      - mlékárenská
+      - mlékárenské
+      - plnotučné
+      - máslo
+      - máselný
+      - sýr
+      - syrovátka
+      - syrovátky
+      - syrovátkový
+      - syrovátková
+      - syrovátkové
+      - máslové
+      - podmáslí
+      - smetana
+      - smetany
+      - smetanový
+      - smetanová
+      - smetanového
+      - smetanou
+      - tvaroh
+      - kasein
+      - kaseinát
+      - mascarpone
+      - jogurt
+      - bílkovina
+      - šlehačka
+      - ementál
+      - čedar
+      - camembert
+      - bifidobacterium
+      - lactobacillus
+      - tvarůžky
+      - eidam
+      - mozzarella
+      - gouda
+      - grana padano
+      - roquefort
+  8:
+    code: nuts
+    texts:
+      - skořápkových
+      - ořechy
+      - ořechů
+      - oříšky
+      - oříšků
+      - oříšková
+      - ořechových
+      - skořápkové
+      - skořákové
+      - mandle
+      - mandlí
+      - mandlový
+      - mandlová
+      - mandlové
+      - lískové
+      - lísková
+      - lískových
+      - vlašské
+      - vlašská
+      - vlašských
+      - kešu
+      - para
+      - pistácie
+      - pistácií
+      - pistáciové
+      - piniové
+      - "lísko-oříškové"
+      - lískooříškový
+      - "mandlovo-lískoořechová"
+      - muškátový oříšek
+      - makadamové
+      - pekanové
+      - jádra
+  9:
+    code: celery
+    texts:
+      - celer
+  10:
+    code: mustard
+    texts:
+      - hořčice
+      - hořčicí
+      - hořčici
+      - hořčičná
+      - hořčičné
+      - hořčicové
+      - hořčičný
+      - hořtičnou
+  11:
+    code: sesame
+    texts:
+      - sezam
+  12:
+    code: sulphurDioxide
+    texts:
+      - oxid
+      - siřičitý
+      - siričitý
+      - siřičitého
+      - siřičitan
+      - siřičitany
+      - siřičitanů
+      - disiřičitan
+      - disiričitan
+      - disiřičan
+      - hydrogensřičitan
+      - sulfidu
+      - sulfitový
+      - sulfur
+      - s02
+      - so2
+      - so₂
+      - e211
+      - e222
+      - e224
+  13:
+    code: lupin
+    texts:
+      - vlčí bob
+      - vlčího bobu
+      - lupinová
+      - lupinové
+      - lupinový
+      - lupinových
+      - lupiny
+  14:
+    code: molluscs
+    texts:
+      - mušle
+      - měkkýš
+      - měkkýši
+      - měkkýšů
+      - měkkýše
+      - ústřic
+      - ústřicový
+ignoreTexts:
   - "tučným písmem"
   - "tučně"
   - "tučně."

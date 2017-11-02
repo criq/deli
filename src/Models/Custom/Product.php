@@ -53,7 +53,7 @@ class Product extends \Deli\Models\Product {
 			if ($array) {
 
 				foreach ($array as $allergenCode) {
-					$this->setProductAllergen($allergenCode);
+					$this->setProductAllergen($allergenCode, ProductAllergen::SOURCE_ORIGIN);
 				}
 
 			}
