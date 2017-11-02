@@ -9,7 +9,7 @@ abstract class ProductProperty extends \Deli\Model {
 
 	public function setValue($value) {
 		$value = \Katu\Utils\JSON::encodeInline($value);
-		$this->update('value', in_array($value, ['null', 'false', '""', '[]']) ? null : $value);
+		$this->update('value', in_array($value, ['null', '""', '[]']) ? null : $value);
 
 		return true;
 	}

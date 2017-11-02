@@ -216,11 +216,22 @@ abstract class Product extends \Deli\Model {
 	}
 
 	public function getProductAllergens() {
-		$class = static::getClass();
-		$productAllergenClass = $class . 'Allergen';
+		$class = static::getProductAllergenTopClass();
 
-		if (class_exists($productAllergenClass)) {
-			return $productAllergenClass::getBy([
+		if (class_exists($class)) {
+			return $class::getBy([
+				'productId' => $this->getId(),
+			]);
+		}
+
+		return false;
+	}
+
+	public function getProductEmulgators() {
+		$class = static::getProductEmulgatorTopClass();
+
+		if (class_exists($class)) {
+			return $class::getBy([
 				'productId' => $this->getId(),
 			]);
 		}
@@ -485,40 +496,40 @@ abstract class Product extends \Deli\Model {
 				$this->setProductEmulgator(ProductEmulgator::SOURCE_VISCOJIS_CZ, $emulgator);
 			}
 
+			// Palm oil.
+			$this->setProductProperty(ProductEmulgator::SOURCE_VISCOJIS_CZ, 'isPalmOil', $res->po);
+			$this->setProductProperty(ProductEmulgator::SOURCE_VISCOJIS_CZ, 'isHfcs', $res->gf);
+
+		}
+
+		/***************************************************************************
+		 * Load by EAN.
+		 */
+		if ($this->ean) {
+
+			$viscojisCzProduct = $this->getViscojisCzProduct();
+			if ($viscojisCzProduct) {
+
+				// Allergens.
+				$productAllergens = $viscojisCzProduct->getProductAllergens();
+				foreach ($productAllergens as $productAllergen) {
+					$this->setProductAllergen(ProductAllergen::SOURCE_VISCOJIS_CZ, $productAllergen->allergenCode);
+				}
+
+				// Emulgators.
+				$productEmulgators = $viscojisCzProduct->getProductEmulgators();
+				foreach ($productEmulgators as $productEmulgator) {
+					$this->setProductEmulgator(ProductEmulgator::SOURCE_VISCOJIS_CZ, Emulgator::get($productEmulgator->emulgatorId));
+				}
+
+			}
+
 		}
 
 		$this->update('timeLoadedFromViscojisCz', new \Katu\Utils\DateTime);
 		$this->save();
 
 		return true;
-
-		/*
-		die;
-		var_dump($res->po);
-		var_dump($res->gf);
-
-		die;
-
-		if ($this->ean) {
-
-			$viscojisCzProduct = $this->getViscojisCzProduct();
-			if ($viscojisCzProduct) {
-
-				$productAllergens = $viscojisCzProduct->getProductAllergens();
-				foreach ($productAllergens as $productAllergen) {
-
-					$this->setProductAllergen(ProductAllergen::SOURCE_VISCOJIS_CZ, $productAllergen->allergenCode);
-
-				}
-
-			}
-
-
-
-		}
-
-		return false;
-		*/
 	}
 
 }
