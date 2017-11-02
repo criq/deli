@@ -482,12 +482,12 @@ abstract class Product extends \Deli\Model {
 
 			// Allergens.
 			$config = ProductAllergen::getConfig();
-			foreach ($res->a as $allergenId) {
+			foreach ((array)$res->a as $allergenId) {
 				$this->setProductAllergen(ProductAllergen::SOURCE_VISCOJIS_CZ, $config['list'][$allergenId]['code']);
 			}
 
 			// Emulgators.
-			foreach ($res->e as $emulgatorData) {
+			foreach ((array)$res->e as $emulgatorData) {
 				$emulgator = Emulgator::upsert([
 					'code' => $emulgatorData->id,
 				], [
