@@ -229,11 +229,32 @@ abstract class Product extends \Deli\Model {
 
 	public function getProductEmulgators() {
 		$class = static::getProductEmulgatorTopClass();
-
 		if (class_exists($class)) {
+
 			return $class::getBy([
 				'productId' => $this->getId(),
 			]);
+
+		}
+
+		return false;
+	}
+
+	public function getProductViscojisCzEmulgators() {
+		$class = static::getProductEmulgatorTopClass();
+		if (class_exists($class)) {
+
+			$sql = SX::select()
+				->select(\Deli\Models\ViscojisCz\Emulgator::getTable())
+				->from($class::getTable())
+				->join(SX::join(\Deli\Models\ViscojisCz\Emulgator::getTable(), SX::lgcAnd([
+					SX::eq(\Deli\Models\ViscojisCz\Emulgator::getColumn('emulgatorId'), $class::getColumn('emulgatorId')),
+				]), SX::kw('left')))
+				->where(SX::eq($class::getColumn('productId'), $this->getId()))
+				;
+
+			return \Deli\Models\ViscojisCz\Emulgator::getBySql($sql);
+
 		}
 
 		return false;
@@ -410,13 +431,13 @@ abstract class Product extends \Deli\Model {
 	}
 
 	public function getProductPrice() {
-		$productPriceClass = static::getProductPriceTopClass();
-		if (class_exists($productPriceClass)) {
+		$class = static::getProductPriceTopClass();
+		if (class_exists($class)) {
 
-			return $productPriceClass::getOneBy([
+			return $class::getOneBy([
 				'productId' => $this->id,
 			], [
-				'orderBy' => SX::orderBy($productPriceClass::getColumn('timeCreated'), SX::kw('desc')),
+				'orderBy' => SX::orderBy($class::getColumn('timeCreated'), SX::kw('desc')),
 			]);
 
 		}
