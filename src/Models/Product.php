@@ -532,4 +532,32 @@ abstract class Product extends \Deli\Model {
 		return true;
 	}
 
+	public function isPalmOil() {
+		$viscojisCzProduct = $this->getViscojisCzProduct();
+		if ($viscojisCzProduct) {
+			return (bool)$viscojisCzProduct->isPalmOil;
+		}
+
+		$productProperty = $this->getProductProperty('isPalmOil');
+		if ($productProperty) {
+			return $productProperty->getValue();
+		}
+
+		return null;
+	}
+
+	public function isHfcs() {
+		$viscojisCzProduct = $this->getViscojisCzProduct();
+		if ($viscojisCzProduct) {
+			return (bool)$viscojisCzProduct->isHfcs;
+		}
+
+		$productProperty = $this->getProductProperty('isHfcs');
+		if ($productProperty) {
+			return $productProperty->getValue();
+		}
+
+		return null;
+	}
+
 }

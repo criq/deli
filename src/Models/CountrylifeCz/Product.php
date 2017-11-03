@@ -343,7 +343,7 @@ class Product extends \Deli\Models\Product {
 					if ($dom->filter('.product-price .tr-price .other')->count()) {
 
 						$str = (new \Katu\Types\TString($dom->filter('.product-price .tr-price')->eq(0)->filter('.other')->text()))->normalizeSpaces()->trim();
-						if (preg_match('/(?<price>[0-9\,\s]+)\s+(?<currencyCode>Kč)\s+za\s+(?<unitAmount>[0-9\,\s]+)\s+(?<unitCode>g)/u', $str, $match)) {
+						if (preg_match('/(?<price>[0-9\,\s]+)\s+(?<currencyCode>Kč)\s+za\s+(?<unitAmount>[0-9\,\s]+)\s+(?<unitCode>g|ml)/u', $str, $match)) {
 
 							$productPrice->update('pricePerUnit', (new \Katu\Types\TString($match['price']))->getAsFloat());
 							$productPrice->update('unitAmount', (new \Katu\Types\TString($match['unitAmount']))->getAsFloat());
@@ -363,7 +363,7 @@ class Product extends \Deli\Models\Product {
 			if (method_exists($e, 'getAbbr') && $e->getAbbr() == 'urlUnavailable') {
 
 			} else {
-				var_dump($e); die;
+				//var_dump($e); die;
 			}
 		}
 
