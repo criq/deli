@@ -460,26 +460,51 @@ abstract class Product extends \Deli\Model {
 	public function getCombinedEmulgators() {
 		$sqls = [];
 
+		// ProductEmulgator table.
+		$class = static::getProductEmulgatorTopClass();
+		if (class_exists($class)) {
+
+			$sqls[] = SX::select()
+				->setOptGetTotalRows(false)
+				->select(SX::aka(\Deli\Models\Emulgator::getIdColumn(), SX::a('emulgatorId')))
+				->from($class::getTable())
+				->where(SX::eq($class::getColumn('productId'), $this->getId()))
+				->joinColumns($class::getColumn('emulgatorId'), \Deli\Models\Emulgator::getIdColumn())
+				;
+
+		}
+
+		// EAN.
 		if ($this->ean) {
 
 			$sqls[] = SX::select()
 				->setOptGetTotalRows(false)
-				->select(\Deli\Models\Emulgator::getTable())
+				->select(SX::aka(\Deli\Models\Emulgator::getIdColumn(), SX::a('emulgatorId')))
 				->from(\Deli\Models\ViscojisCz\Product::getTable())
 				->where(SX::eq(\Deli\Models\ViscojisCz\Product::getColumn('ean'), $this->ean))
 				->joinColumns(\Deli\Models\ViscojisCz\Product::getIdColumn(), \Deli\Models\ViscojisCz\ProductEmulgator::getColumn('productId'))
 				->joinColumns(\Deli\Models\ViscojisCz\ProductEmulgator::getColumn('emulgatorId'), \Deli\Models\Emulgator::getIdColumn())
 				->joinColumns(\Deli\Models\Emulgator::getIdColumn(), \Deli\Models\ViscojisCz\Emulgator::getColumn('emulgatorId'))
-				->orderBy([
-					\Deli\Models\ViscojisCz\Emulgator::getColumn('rating'),
-					\Deli\Models\Emulgator::getColumn('code'),
-				])
 				;
 
 		}
 
+		if (!$sqls) {
+			return false;
+		}
 
-
+		$sql = SX::select()
+			->select(\Deli\Models\Emulgator::getTable())
+			->from(SX::aka(SX::union($sqls), SX::a('_t')))
+			->join(SX::join(\Deli\Models\Emulgator::getTable(), SX::lgcAnd([
+				SX::eq(\Deli\Models\Emulgator::getIdColumn(), SX::a('_t.emulgatorId')),
+			])))
+			->joinColumns(\Deli\Models\Emulgator::getIdColumn(), \Deli\Models\ViscojisCz\Emulgator::getColumn('emulgatorId'))
+			->orderBy([
+				\Deli\Models\ViscojisCz\Emulgator::getColumn('rating'),
+				\Deli\Models\Emulgator::getColumn('code'),
+			])
+			;
 
 		return \Deli\Models\Emulgator::getBySql($sql);
 	}
