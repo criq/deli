@@ -457,10 +457,12 @@ abstract class Product extends \Deli\Model {
 		return false;
 	}
 
-	public function getViscojisCzEmulgators() {
+	public function getCombinedEmulgators() {
+		$sqls = [];
+
 		if ($this->ean) {
 
-			$sql = SX::select()
+			$sqls[] = SX::select()
 				->setOptGetTotalRows(false)
 				->select(\Deli\Models\Emulgator::getTable())
 				->from(\Deli\Models\ViscojisCz\Product::getTable())
@@ -474,11 +476,12 @@ abstract class Product extends \Deli\Model {
 				])
 				;
 
-			return \Deli\Models\Emulgator::getBySql($sql);
-
 		}
 
-		return false;
+
+
+
+		return \Deli\Models\Emulgator::getBySql($sql);
 	}
 
 	public function loadProductDataFromViscojisCz() {
