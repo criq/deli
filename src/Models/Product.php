@@ -240,26 +240,6 @@ abstract class Product extends \Deli\Model {
 		return false;
 	}
 
-	public function getProductViscojisCzEmulgators() {
-		$class = static::getProductEmulgatorTopClass();
-		if (class_exists($class)) {
-
-			$sql = SX::select()
-				->select(\Deli\Models\ViscojisCz\Emulgator::getTable())
-				->from($class::getTable())
-				->join(SX::join(\Deli\Models\ViscojisCz\Emulgator::getTable(), SX::lgcAnd([
-					SX::eq(\Deli\Models\ViscojisCz\Emulgator::getColumn('emulgatorId'), $class::getColumn('emulgatorId')),
-				]), SX::kw('left')))
-				->where(SX::eq($class::getColumn('productId'), $this->getId()))
-				;
-
-			return \Deli\Models\ViscojisCz\Emulgator::getBySql($sql);
-
-		}
-
-		return false;
-	}
-
 	static function getForLoadSql() {
 		$sql = SX::select()
 			->from(static::getTable())
