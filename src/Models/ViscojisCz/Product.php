@@ -10,7 +10,7 @@ class Product extends \Deli\Models\Product {
 	static function buildProductList() {
 		try {
 
-			\Katu\Utils\Lock::run(['deli', static::SOURCE, __FUNCTION__], 3600, function() {
+			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__], 3600, function() {
 
 				@ini_set('memory_limit', '512M');
 
