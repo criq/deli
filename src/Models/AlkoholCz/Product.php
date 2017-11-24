@@ -17,8 +17,6 @@ class Product extends \Deli\Models\Product {
 				$src = (new \Curl\Curl)->get('https://www.alkohol.cz/export/?type=affilcz&hash=CE7bqK2NhDGkFdTQJZWnH6k35f2M4qKR');
 				foreach ($src->SHOPITEM as $item) {
 
-					var_dump($item); die;
-
 					$product = static::upsert([
 						'remoteId' => $item->ITEM_ID,
 					], [
@@ -26,7 +24,6 @@ class Product extends \Deli\Models\Product {
 					], [
 						'name' => (string)$item->PRODUCT,
 						'uri' => (string)$item->URL,
-						'ean' => (string)$item->EAN,
 						'isAvailable' => 1,
 						'remoteCategory' => (string)$item->CATEGORYTEXT,
 					]);
