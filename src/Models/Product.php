@@ -597,4 +597,11 @@ abstract class Product extends \Deli\Model {
 		return true;
 	}
 
+	public function unban() {
+		$this->update('isBanned', 0);
+		$this->save();
+
+		return true;
+	}
+
 }
