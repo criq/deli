@@ -24,7 +24,6 @@ class Product extends \Deli\Models\Product {
 					], [
 						'name' => (string)$item->PRODUCT,
 						'uri' => (string)$item->URL,
-						'ean' => (string)$item->EAN,
 						'isAvailable' => 1,
 						'remoteCategory' => (string)$item->CATEGORYTEXT,
 					]);
