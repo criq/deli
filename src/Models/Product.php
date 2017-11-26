@@ -47,6 +47,7 @@ abstract class Product extends \Deli\Model {
 	static function getAllSources() {
 		$sources = [
 			\Deli\Models\Custom\Product::SOURCE              => \Deli\Models\Custom\Product::getTopClass(),
+			\Deli\Models\AlkoholCz\Product::SOURCE           => \Deli\Models\AlkoholCz\Product::getTopClass(),
 			\Deli\Models\CountrylifeCz\Product::SOURCE       => \Deli\Models\CountrylifeCz\Product::getTopClass(),
 			\Deli\Models\ITescoCz\Product::SOURCE            => \Deli\Models\ITescoCz\Product::getTopClass(),
 			\Deli\Models\Kaloricke_TabulkyCz\Product::SOURCE => \Deli\Models\Kaloricke_TabulkyCz\Product::getTopClass(),

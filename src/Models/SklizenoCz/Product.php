@@ -17,25 +17,29 @@ class Product extends \Deli\Models\Product {
 				$src = (new \Curl\Curl)->get('https://www.sklizeno.cz/heureka.xml');
 				foreach ($src->SHOPITEM as $item) {
 
-					$product = static::upsert([
-						'remoteId' => $item->ITEM_ID,
-					], [
-						'timeCreated' => new \Katu\Utils\DateTime,
-					], [
-						'name' => (string)$item->PRODUCTNAME,
-						'uri' => (string)$item->URL,
-						'ean' => (string)$item->EAN,
-						'isAvailable' => 1,
-						'remoteCategory' => (string)$item->CATEGORYTEXT,
-					]);
+					\Katu\Utils\Cache::get(function($item) {
 
-					$product->setProductProperty(\Deli\Models\ProductProperty::SOURCE_ORIGIN, 'description', (string)$item->DESCRIPTION);
-					$product->setProductProperty(\Deli\Models\ProductProperty::SOURCE_ORIGIN, 'imageUrl', (string)$item->IMGURL);
-					$product->setProductProperty(\Deli\Models\ProductProperty::SOURCE_ORIGIN, 'manufacturer', (string)$item->MANUFACTURER);
+						$product = static::upsert([
+							'remoteId' => $item->ITEM_ID,
+						], [
+							'timeCreated' => new \Katu\Utils\DateTime,
+						], [
+							'name' => (string)$item->PRODUCTNAME,
+							'uri' => (string)$item->URL,
+							'ean' => (string)$item->EAN,
+							'isAvailable' => 1,
+							'remoteCategory' => (string)$item->CATEGORYTEXT,
+						]);
+
+						$product->setProductProperty(\Deli\Models\ProductProperty::SOURCE_ORIGIN, 'description', (string)$item->DESCRIPTION);
+						$product->setProductProperty(\Deli\Models\ProductProperty::SOURCE_ORIGIN, 'imageUrl', (string)$item->IMGURL);
+						$product->setProductProperty(\Deli\Models\ProductProperty::SOURCE_ORIGIN, 'manufacturer', (string)$item->MANUFACTURER);
+
+					}, 86400, $item);
 
 				}
 
-			}, !in_array(\Katu\Env::getPlatform(), ['dev']));
+			}, !in_array(\Katu\Env::getPlatform(), ['prod', 'dev']));
 
 		} catch (\Katu\Exceptions\LockException $e) {
 			// Nevermind.
