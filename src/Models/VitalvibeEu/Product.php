@@ -4,6 +4,8 @@ namespace Deli\Models\VitalvibeEu;
 
 class Product extends \Deli\Models\Product {
 
+	// https://portadesign1.basecamphq.com/projects/13421499-jidelni-plan/todo_items/223579569/comments#comment_376477145
+
 	const TABLE = 'deli_vitalvibe_eu_products';
 	const SOURCE = 'vitalvibe_eu';
 
@@ -37,7 +39,7 @@ class Product extends \Deli\Models\Product {
 						$product->setProductProperty(\Deli\Models\ProductProperty::SOURCE_ORIGIN, 'imageUrl', (string)$item->IMGURL);
 						$product->setProductProperty(\Deli\Models\ProductProperty::SOURCE_ORIGIN, 'manufacturer', (string)$item->MANUFACTURER);
 
-					}, 86400, $item);
+					}, static::TIMEOUT, $item);
 
 				}
 

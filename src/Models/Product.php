@@ -510,7 +510,7 @@ abstract class Product extends \Deli\Model {
 
 				return $res;
 
-			}, 86400 * 28, $string);
+			}, static::TIMEOUT, $string);
 
 			// Allergens.
 			$config = ProductAllergen::getConfig();

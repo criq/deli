@@ -1,11 +1,13 @@
 <?php
 
-namespace Deli\Models\AlkoholCz;
+namespace Deli\Models\LekarnaCz;
 
 class Product extends \Deli\Models\Product {
 
-	const TABLE = 'deli_alkohol_cz_products';
-	const SOURCE = 'alkohol_cz';
+	// https://portadesign1.basecamphq.com/projects/13421499-jidelni-plan/todo_items/223539045/comments#376381050
+
+	const TABLE = 'deli_lekarna_cz_products';
+	const SOURCE = 'lekarna_cz';
 
 	static function buildProductList() {
 		try {
@@ -14,40 +16,39 @@ class Product extends \Deli\Models\Product {
 
 				@ini_set('memory_limit', '512M');
 
-				$curl = new \Curl\Curl;
-				$src = $curl->get('https://www.alkohol.cz/export/?type=affilcz&hash=CE7bqK2NhDGkFdTQJZWnH6k35f2M4qKR');
-				foreach ($src->SHOPITEM as $item) {
+				$src = \Katu\Utils\Cache::get(function() {
+
+					$curl = new \Curl\Curl;
+					$curl->setConnectTimeout(30);
+					$curl->setTimeout(300);
+					$src = $curl->get('https://www.lekarna.cz/feed/srovnavace-products.xml?a_box=nmhf5uvw');
+
+					return $curl->rawResponse;
+
+				}, static::TIMEOUT);
+
+				$xml = new \SimpleXMLElement($src);
+
+				foreach ($xml->SHOPITEM as $item) {
 
 					\Katu\Utils\Cache::get(function($item) {
 
 						$product = static::upsert([
-							'remoteId' => $item->ITEM_ID,
+							'uri' => (string)$item->URL,
 						], [
 							'timeCreated' => new \Katu\Utils\DateTime,
 						], [
-							'name' => (string)$item->PRODUCT,
+							'name' => (string)$item->PRODUCTNAME,
 							'uri' => (string)$item->URL,
+							'ean' => (string)$item->EAN,
 							'isAvailable' => 1,
+							'remoteId' => (string)$item->ITEM_ID,
 							'remoteCategory' => (string)$item->CATEGORYTEXT,
 						]);
 
 						$product->setProductProperty(\Deli\Models\ProductProperty::SOURCE_ORIGIN, 'description', (string)$item->DESCRIPTION);
 						$product->setProductProperty(\Deli\Models\ProductProperty::SOURCE_ORIGIN, 'imageUrl', (string)$item->IMGURL);
 						$product->setProductProperty(\Deli\Models\ProductProperty::SOURCE_ORIGIN, 'manufacturer', (string)$item->MANUFACTURER);
-
-						foreach ($item->PARAM as $param) {
-							switch ($param->PARAM_NAME) {
-								case 'Země' :
-									$product->setProductProperty(\Deli\Models\ProductProperty::SOURCE_ORIGIN, 'country', trim($param->VAL));
-								break;
-								case 'Obsah alkoholu' :
-									$product->setProductProperty(\Deli\Models\ProductProperty::SOURCE_ORIGIN, 'alcoholContent', (string)$param->VAL);
-								break;
-								case 'Objem' :
-									$product->setProductProperty(\Deli\Models\ProductProperty::SOURCE_ORIGIN, 'volume', (string)$param->VAL);
-								break;
-							}
-						}
 
 					}, static::TIMEOUT, $item);
 
