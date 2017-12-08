@@ -5,7 +5,7 @@ namespace Deli\Models\VitalvibeEu;
 class Product extends \Deli\Models\Product {
 
 	const TABLE = 'deli_vitalvibe_eu_products';
-	const SOURCE = 'vitalvibe_eu;';
+	const SOURCE = 'vitalvibe_eu';
 
 	static function buildProductList() {
 		try {
