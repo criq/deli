@@ -41,7 +41,7 @@ class Product extends \Deli\Models\Product {
 
 				}
 
-			}, !in_array(\Katu\Env::getPlatform(), ['prod', 'dev']));
+			}, !in_array(\Katu\Env::getPlatform(), ['dev']));
 
 		} catch (\Katu\Exceptions\LockException $e) {
 			// Nevermind.
