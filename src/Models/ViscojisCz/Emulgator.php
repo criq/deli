@@ -9,7 +9,7 @@ class Emulgator extends \Deli\Model {
 	static function buildEmulgatorList() {
 		try {
 
-			\Katu\Utils\Lock::run(['deli', Product::SOURCE, __FUNCTION__], 3600, function() {
+			\Katu\Utils\Lock::run(['deli', Product::SOURCE, __FUNCTION__], 120, function() {
 
 				@ini_set('memory_limit', '512M');
 

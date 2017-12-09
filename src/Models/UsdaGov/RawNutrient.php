@@ -9,7 +9,7 @@ class RawNutrient extends \Deli\Model {
 	static function buildRawNutrientList() {
 		try {
 
-			\Katu\Utils\Lock::run(['deli', Product::SOURCE, __FUNCTION__], 3600, function() {
+			\Katu\Utils\Lock::run(['deli', Product::SOURCE, __FUNCTION__], 120, function() {
 
 				$productNutrientFileName = realpath(dirname(__FILE__) . '/../../Resources/UsdaGov/sr28asc/NUT_DATA.txt');
 				$rows = Product::readTextFileToLines($productNutrientFileName);
