@@ -52,6 +52,7 @@ abstract class Product extends \Deli\Model {
 			\Deli\Models\ITescoCz\Product::SOURCE            => \Deli\Models\ITescoCz\Product::getTopClass(),
 			\Deli\Models\Kaloricke_TabulkyCz\Product::SOURCE => \Deli\Models\Kaloricke_TabulkyCz\Product::getTopClass(),
 			\Deli\Models\KalorickeTabulkyCz\Product::SOURCE  => \Deli\Models\KalorickeTabulkyCz\Product::getTopClass(),
+			\Deli\Models\LekarnaCz\Product::SOURCE           => \Deli\Models\LekarnaCz\Product::getTopClass(),
 			\Deli\Models\Pbd_OnlineSk\Product::SOURCE        => \Deli\Models\Pbd_OnlineSk\Product::getTopClass(),
 			\Deli\Models\SklizenoCz\Product::SOURCE          => \Deli\Models\SklizenoCz\Product::getTopClass(),
 			\Deli\Models\StobklubCz\Product::SOURCE          => \Deli\Models\StobklubCz\Product::getTopClass(),
