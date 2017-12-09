@@ -50,12 +50,6 @@ class Product extends \Deli\Models\Product {
 									'remoteCategory' => (string)$item->CATEGORYTEXT,
 								]);
 
-								var_dump($item);
-								var_dump($product);
-								die;
-
-
-
 								$product->setProductProperty(\Deli\Models\ProductProperty::SOURCE_ORIGIN, 'description', (string)$item->DESCRIPTION);
 								$product->setProductProperty(\Deli\Models\ProductProperty::SOURCE_ORIGIN, 'imageUrl', (string)$item->IMGURL);
 								$product->setProductProperty(\Deli\Models\ProductProperty::SOURCE_ORIGIN, 'manufacturer', (string)$item->MANUFACTURER);

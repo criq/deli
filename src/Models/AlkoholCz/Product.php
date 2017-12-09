@@ -36,7 +36,7 @@ class Product extends \Deli\Models\Product {
 						$product->setProductProperty(\Deli\Models\ProductProperty::SOURCE_ORIGIN, 'manufacturer', (string)$item->MANUFACTURER);
 
 						foreach ($item->PARAM as $param) {
-							switch ($param->PARAM_NAME) {
+							switch ((string)$param->PARAM_NAME) {
 								case 'Země' :
 									$product->setProductProperty(\Deli\Models\ProductProperty::SOURCE_ORIGIN, 'country', trim($param->VAL));
 								break;
