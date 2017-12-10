@@ -1,6 +1,6 @@
 <?php
 
-namespace Deli\Models\Custom;
+namespace Deli\Models\custom;
 
 class Product extends \Deli\Models\Product {
 

@@ -9,6 +9,10 @@ abstract class Product extends \Deli\Model {
 
 	const TIMEOUT = 2419200;
 
+	static function getSourceClass($sourceCode) {
+		return static::getAllSources()[$sourceCode];
+	}
+
 	static function getProductAllergenTopClass() {
 		return implode([
 			static::getTopClass(),
@@ -46,18 +50,19 @@ abstract class Product extends \Deli\Model {
 
 	static function getAllSources() {
 		$sources = [
-			\Deli\Models\Custom\Product::SOURCE              => \Deli\Models\Custom\Product::getTopClass(),
-			\Deli\Models\AlkoholCz\Product::SOURCE           => \Deli\Models\AlkoholCz\Product::getTopClass(),
-			\Deli\Models\CountrylifeCz\Product::SOURCE       => \Deli\Models\CountrylifeCz\Product::getTopClass(),
-			\Deli\Models\ITescoCz\Product::SOURCE            => \Deli\Models\ITescoCz\Product::getTopClass(),
-			\Deli\Models\Kaloricke_TabulkyCz\Product::SOURCE => \Deli\Models\Kaloricke_TabulkyCz\Product::getTopClass(),
-			\Deli\Models\KalorickeTabulkyCz\Product::SOURCE  => \Deli\Models\KalorickeTabulkyCz\Product::getTopClass(),
-			\Deli\Models\LekarnaCz\Product::SOURCE           => \Deli\Models\LekarnaCz\Product::getTopClass(),
-			\Deli\Models\Pbd_OnlineSk\Product::SOURCE        => \Deli\Models\Pbd_OnlineSk\Product::getTopClass(),
-			\Deli\Models\SklizenoCz\Product::SOURCE          => \Deli\Models\SklizenoCz\Product::getTopClass(),
-			\Deli\Models\StobklubCz\Product::SOURCE          => \Deli\Models\StobklubCz\Product::getTopClass(),
-			\Deli\Models\UsdaGov\Product::SOURCE             => \Deli\Models\UsdaGov\Product::getTopClass(),
-			\Deli\Models\VitalvibeEu\Product::SOURCE         => \Deli\Models\VitalvibeEu\Product::getTopClass(),
+			\Deli\Models\custom\Product::SOURCE               => \Deli\Models\custom\Product::getTopClass(),
+			\Deli\Models\alkohol_cz\Product::SOURCE           => \Deli\Models\alkohol_cz\Product::getTopClass(),
+			\Deli\Models\countrylife_cz\Product::SOURCE       => \Deli\Models\countrylife_cz\Product::getTopClass(),
+			#\Deli\Models\fajnejidlo_eu\Product::SOURCE        => \Deli\Models\fajnejidlo_eu\Product::getTopClass(),
+			\Deli\Models\itesco_cz\Product::SOURCE            => \Deli\Models\itesco_cz\Product::getTopClass(),
+			\Deli\Models\kaloricke_tabulky_cz\Product::SOURCE => \Deli\Models\kaloricke_tabulky_cz\Product::getTopClass(),
+			\Deli\Models\kaloricketabulky_cz\Product::SOURCE  => \Deli\Models\kaloricketabulky_cz\Product::getTopClass(),
+			\Deli\Models\lekarna_cz\Product::SOURCE           => \Deli\Models\lekarna_cz\Product::getTopClass(),
+			\Deli\Models\pbd_online_sk\Product::SOURCE        => \Deli\Models\pbd_online_sk\Product::getTopClass(),
+			\Deli\Models\sklizeno_cz\Product::SOURCE          => \Deli\Models\sklizeno_cz\Product::getTopClass(),
+			\Deli\Models\stobklub_cz\Product::SOURCE          => \Deli\Models\stobklub_cz\Product::getTopClass(),
+			\Deli\Models\usda_gov\Product::SOURCE             => \Deli\Models\usda_gov\Product::getTopClass(),
+			\Deli\Models\vitalvibe_eu\Product::SOURCE         => \Deli\Models\vitalvibe_eu\Product::getTopClass(),
 		];
 
 		return $sources;
@@ -432,7 +437,7 @@ abstract class Product extends \Deli\Model {
 	public function getViscojisCzProduct() {
 		if ($this->ean) {
 
-			return ViscojisCz\Product::getOneBy([
+			return viscojis_cz\Product::getOneBy([
 				'ean' => $this->ean,
 			]);
 
@@ -464,11 +469,11 @@ abstract class Product extends \Deli\Model {
 			$sqls[] = SX::select()
 				->setOptGetTotalRows(false)
 				->select(SX::aka(\Deli\Models\Emulgator::getIdColumn(), SX::a('emulgatorId')))
-				->from(\Deli\Models\ViscojisCz\Product::getTable())
-				->where(SX::eq(\Deli\Models\ViscojisCz\Product::getColumn('ean'), $this->ean))
-				->joinColumns(\Deli\Models\ViscojisCz\Product::getIdColumn(), \Deli\Models\ViscojisCz\ProductEmulgator::getColumn('productId'))
-				->joinColumns(\Deli\Models\ViscojisCz\ProductEmulgator::getColumn('emulgatorId'), \Deli\Models\Emulgator::getIdColumn())
-				->joinColumns(\Deli\Models\Emulgator::getIdColumn(), \Deli\Models\ViscojisCz\Emulgator::getColumn('emulgatorId'))
+				->from(\Deli\Models\viscojis_cz\Product::getTable())
+				->where(SX::eq(\Deli\Models\viscojis_cz\Product::getColumn('ean'), $this->ean))
+				->joinColumns(\Deli\Models\viscojis_cz\Product::getIdColumn(), \Deli\Models\viscojis_cz\ProductEmulgator::getColumn('productId'))
+				->joinColumns(\Deli\Models\viscojis_cz\ProductEmulgator::getColumn('emulgatorId'), \Deli\Models\Emulgator::getIdColumn())
+				->joinColumns(\Deli\Models\Emulgator::getIdColumn(), \Deli\Models\viscojis_cz\Emulgator::getColumn('emulgatorId'))
 				;
 
 		}
@@ -483,9 +488,9 @@ abstract class Product extends \Deli\Model {
 			->join(SX::join(\Deli\Models\Emulgator::getTable(), SX::lgcAnd([
 				SX::eq(\Deli\Models\Emulgator::getIdColumn(), SX::a('_t.emulgatorId')),
 			])))
-			->joinColumns(\Deli\Models\Emulgator::getIdColumn(), \Deli\Models\ViscojisCz\Emulgator::getColumn('emulgatorId'))
+			->joinColumns(\Deli\Models\Emulgator::getIdColumn(), \Deli\Models\viscojis_cz\Emulgator::getColumn('emulgatorId'))
 			->orderBy([
-				\Deli\Models\ViscojisCz\Emulgator::getColumn('rating'),
+				\Deli\Models\viscojis_cz\Emulgator::getColumn('rating'),
 				\Deli\Models\Emulgator::getColumn('code'),
 			])
 			;
