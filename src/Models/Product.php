@@ -89,6 +89,20 @@ abstract class Product extends \Deli\Model {
 		return true;
 	}
 
+	public function setCategory($category) {
+		$this->update('categoryId', $category->getId());
+
+		return true;
+	}
+
+	public function getCategory() {
+		return Category::get($this->categoryId);
+	}
+
+	public function getShoppingList() {
+		return Category::get($this->shoppingListId);
+	}
+
 	public function setShoppingList($shoppingList) {
 		$this->update('shoppingListId', $shoppingList->getId());
 
@@ -202,7 +216,7 @@ abstract class Product extends \Deli\Model {
 	public function getProductNutrients() {
 		$class = static::getProductNutrientTopClass();
 
-		if (class_exists($productNutrientClass)) {
+		if (class_exists($class)) {
 			return $class::getBy([
 				'productId' => $this->getId(),
 			]);
@@ -212,11 +226,10 @@ abstract class Product extends \Deli\Model {
 	}
 
 	public function getProductNutrientByCode($code) {
-		$class = static::getClass();
-		$productNutrientClass = $class . 'Nutrient';
+		$class = static::getProductNutrientTopClass();
 
-		if (class_exists($productNutrientClass)) {
-			return $productNutrientClass::getBy([
+		if (class_exists($class)) {
+			return $class::getBy([
 				'productId' => $this->getId(),
 				'nutrientCode' => $code,
 			])->getOne();

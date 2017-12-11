@@ -30,6 +30,7 @@ class Product extends \Deli\Models\Product {
 											'timeCreated' => new \Katu\Utils\DateTime,
 										], [
 											'name' => $product->name,
+											'remoteId' => $product->id,
 										]);
 
 										$product->setRemoteCategory([

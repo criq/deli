@@ -69,4 +69,8 @@ class Product extends \Deli\Models\Product {
 		}
 	}
 
+	public function getUrl() {
+		return $this->uri;
+	}
+
 }
