@@ -311,8 +311,11 @@ abstract class Product extends \Deli\Model {
 		$sql = SX::select()
 			->from(static::getTable())
 			->where(SX::lgcOr([
-				SX::cmpIsNull(static::getColumn('timeLoadedFromViscojisCz')),
-				SX::cmpLessThan(static::getColumn('timeLoadedFromViscojisCz'), new \Katu\Utils\DateTime('- ' . static::TIMEOUT . ' seconds')),
+				SX::lgcOr([
+					SX::cmpIsNull(static::getColumn('timeLoadedFromViscojisCz')),
+					SX::cmpLessThan(static::getColumn('timeLoadedFromViscojisCz'), new \Katu\Utils\DateTime('- ' . static::TIMEOUT . ' seconds')),
+				]),
+				SX::cmpIsNull(static::getColumn('isViscojisCzValid'))
 			]))
 			->where(SX::eq(static::getColumn('isBanned'), 0))
 			;
@@ -328,10 +331,11 @@ abstract class Product extends \Deli\Model {
 
 				$sqls[] = $sourceClass::getForLoadProductDataFromViscojisCzSql()
 					->setOptGetTotalRows(false)
-					->select(SX::aka(SX::val($sourceClass), SX::a('class')))
+					->select(SX::aka(SX::val($sourceCode), SX::a('sourceCode')))
 					->select($sourceClass::getIdColumn())
 					->select($sourceClass::getColumn('name'))
 					->select($sourceClass::getColumn('timeLoadedFromViscojisCz'))
+					->select($sourceClass::getColumn('isViscojisCzValid'))
 					;
 
 			}
@@ -342,9 +346,9 @@ abstract class Product extends \Deli\Model {
 			->from(SX::aka(SX::union($sqls), SX::a('_t')))
 			->orderBy([
 				SX::orderBy(SX::a('timeLoadedFromViscojisCz')),
-				SX::orderBy(SX::a('name')),
 				SX::orderBy(SX::a('id')),
-				SX::orderBy(SX::a('class')),
+				SX::orderBy(SX::a('sourceCode')),
+				SX::orderBy(SX::a('name')),
 			])
 			;
 
@@ -413,11 +417,16 @@ abstract class Product extends \Deli\Model {
 
 	public function getProductProperty($property) {
 		$class = static::getProductPropertyTopClass();
+		if (class_exists($class)) {
 
-		return $class::getOneBy([
-			'productId' => $this->getId(),
-			'property' => trim($property),
-		]);
+			return $class::getOneBy([
+				'productId' => $this->getId(),
+				'property' => trim($property),
+			]);
+
+		}
+
+		return null;
 	}
 
 	public function getContents() {
@@ -513,12 +522,15 @@ abstract class Product extends \Deli\Model {
 	}
 
 	public function loadProductDataFromViscojisCz() {
+		$isViscojisCzValid = false;
 		/***************************************************************************
 		 * Load by contents.
 		 */
 
 		$string = (string)trim($this->getContentsString());
 		if ($string) {
+
+			$isViscojisCzValid = true;
 
 			$res = \Katu\Utils\Cache::get(function($string) {
 
@@ -562,6 +574,8 @@ abstract class Product extends \Deli\Model {
 			$viscojisCzProduct = $this->getViscojisCzProduct();
 			if ($viscojisCzProduct) {
 
+				$isViscojisCzValid = true;
+
 				// Allergens.
 				$productAllergens = $viscojisCzProduct->getProductAllergens();
 				foreach ($productAllergens as $productAllergen) {
@@ -579,6 +593,7 @@ abstract class Product extends \Deli\Model {
 		}
 
 		$this->update('timeLoadedFromViscojisCz', new \Katu\Utils\DateTime);
+		$this->update('isViscojisCzValid', $isViscojisCzValid ? 1 : 0);
 		$this->save();
 
 		return true;

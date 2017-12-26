@@ -50,10 +50,6 @@ class Product extends \Deli\Models\Product {
 		return $this->uri;
 	}
 
-	public function getAffiliateUrl() {
-		return 'http://www.anrdoezrs.net/links/XXXXXXX/type/dlg/sid/test/http://www.cedok.cz/zajezdy/samostatna-letenka-maltahtm/?DestinationID=532&TermID=93778&DepartureStationID=74';
-	}
-
 	public function getSrc($timeout = null) {
 		if (is_null($timeout)) {
 			$timeout = static::TIMEOUT;

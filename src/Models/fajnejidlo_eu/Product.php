@@ -4,8 +4,6 @@ namespace Deli\Models\fajnejidlo_eu;
 
 class Product extends \Deli\Models\Product {
 
-	// https://portadesign1.basecamphq.com/projects/13421499-jidelni-plan/todo_items/223522139/comments#376346830
-
 	const TABLE = 'deli_fajnejidlo_eu_products';
 	const SOURCE = 'fajnejidlo_eu';
 

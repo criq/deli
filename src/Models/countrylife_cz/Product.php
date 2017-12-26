@@ -4,8 +4,6 @@ namespace Deli\Models\countrylife_cz;
 
 class Product extends \Deli\Models\Product {
 
-	// https://portadesign1.basecamphq.com/projects/13421499-jidelni-plan/todo_items/223597644/comments
-
 	const TABLE = 'deli_countrylife_cz_products';
 	const SOURCE = 'countrylife_cz';
 
