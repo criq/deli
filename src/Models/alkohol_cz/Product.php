@@ -6,25 +6,7 @@ class Product extends \Deli\Models\Product {
 
 	const TABLE = 'deli_alkohol_cz_products';
 	const SOURCE = 'alkohol_cz';
-
-	static function loadXml() {
-		$src = \Katu\Utils\Cache::get(function() {
-
-			$curl = new \Curl\Curl;
-			$curl->setConnectTimeout(600);
-			$curl->setTimeout(600);
-			$curl->get('https://www.alkohol.cz/export/?type=affilcz&hash=CE7bqK2NhDGkFdTQJZWnH6k35f2M4qKR');
-
-			if ($curl->error) {
-				throw new \Katu\Exceptions\DoNotCacheException;
-			}
-
-			return $curl->rawResponse;
-
-		}, static::TIMEOUT);
-
-		return new \SimpleXMLElement($src);
-	}
+	const XML_URL = 'https://www.alkohol.cz/export/?type=affilcz&hash=CE7bqK2NhDGkFdTQJZWnH6k35f2M4qKR';
 
 	static function makeProductFromXml($item) {
 		$product = static::upsert([
@@ -98,7 +80,7 @@ class Product extends \Deli\Models\Product {
 
 							foreach ($item->PARAM as $param) {
 								if ($param->PARAM_NAME == 'Objem') {
-									if (preg_match('/^([0-9\.]+) (l)$/', $param->VAL, $match)) {
+									if (preg_match('/^([0-9\.]+)\s*(l)$/', $param->VAL, $match)) {
 
 										ProductPrice::insert([
 											'timeCreated' => new \Katu\Utils\DateTime,

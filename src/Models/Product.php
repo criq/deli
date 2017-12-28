@@ -69,6 +69,25 @@ abstract class Product extends \Deli\Model {
 		return $sources;
 	}
 
+	static function loadXml() {
+		$src = \Katu\Utils\Cache::get(function() {
+
+			$curl = new \Curl\Curl;
+			$curl->setConnectTimeout(600);
+			$curl->setTimeout(600);
+			$curl->get(static::XML_URL);
+
+			if ($curl->error) {
+				throw new \Katu\Exceptions\DoNotCacheException;
+			}
+
+			return $curl->rawResponse;
+
+		}, static::TIMEOUT);
+
+		return new \SimpleXMLElement($src);
+	}
+
 	public function getSource() {
 		return static::SOURCE;
 	}
