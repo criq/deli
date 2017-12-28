@@ -6,6 +6,10 @@ abstract class ProductPrice extends \Deli\Model {
 
 	const TIMEOUT = 432000;
 
+	public function isInTimeout() {
+		return (new \Katu\Utils\DateTime($this->timeCreated))->isInTimeout(static::TIMEOUT);
+	}
+
 	public function getProductPricePerIngredientAmount($amount) {
 		if ($this->unitAmount) {
 			switch ($this->unitCode) {
