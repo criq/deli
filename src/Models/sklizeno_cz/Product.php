@@ -105,8 +105,6 @@ class Product extends \Deli\Models\Product {
 		} catch (\Katu\Exceptions\LockException $e) {
 			// Nevermind.
 		}
-
-		die;
 	}
 
 	public function getUrl() {
