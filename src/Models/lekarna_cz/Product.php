@@ -4,32 +4,74 @@ namespace Deli\Models\lekarna_cz;
 
 class Product extends \Deli\Models\Product {
 
-	// https://portadesign1.basecamphq.com/projects/13421499-jidelni-plan/todo_items/223539045/comments#376381050
-
 	const TABLE = 'deli_lekarna_cz_products';
 	const SOURCE = 'lekarna_cz';
+	const XML_URL = 'https://www.lekarna.cz/feed/srovnavace-products.xml?a_box=nmhf5uvw';
+
+	static function makeProductFromXml($item) {
+		$product = static::upsert([
+			'uri' => (string)$item->URL,
+		], [
+			'timeCreated' => new \Katu\Utils\DateTime,
+		], [
+			'name' => (string)$item->PRODUCTNAME,
+			'uri' => (string)$item->URL,
+			'ean' => (string)$item->EAN,
+			'isAvailable' => 1,
+			'remoteId' => (string)$item->ITEM_ID,
+			'remoteCategory' => (string)$item->CATEGORYTEXT,
+		]);
+
+		$product->setProductProperty(\Deli\Models\ProductProperty::SOURCE_ORIGIN, 'description', (string)$item->DESCRIPTION);
+		$product->setProductProperty(\Deli\Models\ProductProperty::SOURCE_ORIGIN, 'imageUrl', (string)$item->IMGURL);
+		$product->setProductProperty(\Deli\Models\ProductProperty::SOURCE_ORIGIN, 'manufacturer', (string)$item->MANUFACTURER);
+
+		return $product;
+	}
 
 	static function buildProductList() {
 		try {
 
-			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__], 120, function() {
+			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__], 600, function() {
 
 				@ini_set('memory_limit', '512M');
 
 				\Katu\Utils\Cache::get(function() {
 
-					$src = \Katu\Utils\Cache::get(function() {
+					$xml = static::loadXml();
+					$chunks = array_chunk($xml->xpath('//SHOP/SHOPITEM'), 200);
+					foreach ($chunks as $chunk) {
 
-						$curl = new \Curl\Curl;
-						$curl->setConnectTimeout(30);
-						$curl->setTimeout(300);
-						$src = $curl->get('https://www.lekarna.cz/feed/srovnavace-products.xml?a_box=nmhf5uvw');
+						\Katu\Utils\Cache::get(function($chunk) {
 
-						return $curl->rawResponse;
+							foreach ($chunk as $item) {
+								$product = static::makeProductFromXml($item);
+							}
 
-					}, static::TIMEOUT);
+						}, static::TIMEOUT, $chunk);
 
-					$xml = new \SimpleXMLElement($src);
+					}
+
+				}, static::TIMEOUT);
+
+			}, !in_array(\Katu\Env::getPlatform(), ['dev']));
+
+		} catch (\Katu\Exceptions\LockException $e) {
+			// Nevermind.
+		}
+	}
+
+	static function loadProductPrices() {
+		try {
+
+			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__], 600, function() {
+
+				@ini_set('memory_limit', '512M');
+				@ini_set('display_errors', true);
+
+				\Katu\Utils\Cache::get(function() {
+
+					$xml = static::loadXml();
 					$chunks = array_chunk($xml->xpath('//SHOP/SHOPITEM'), 200);
 					foreach ($chunks as $chunk) {
 
@@ -37,22 +79,40 @@ class Product extends \Deli\Models\Product {
 
 							foreach ($chunk as $item) {
 
-								$product = static::upsert([
-									'uri' => (string)$item->URL,
-								], [
-									'timeCreated' => new \Katu\Utils\DateTime,
-								], [
-									'name' => (string)$item->PRODUCTNAME,
-									'uri' => (string)$item->URL,
-									'ean' => (string)$item->EAN,
-									'isAvailable' => 1,
-									'remoteId' => (string)$item->ITEM_ID,
-									'remoteCategory' => (string)$item->CATEGORYTEXT,
-								]);
+								unset($pricePerProduct, $pricePerUnit, $unitAmount, $unitCode);
 
-								$product->setProductProperty(\Deli\Models\ProductProperty::SOURCE_ORIGIN, 'description', (string)$item->DESCRIPTION);
-								$product->setProductProperty(\Deli\Models\ProductProperty::SOURCE_ORIGIN, 'imageUrl', (string)$item->IMGURL);
-								$product->setProductProperty(\Deli\Models\ProductProperty::SOURCE_ORIGIN, 'manufacturer', (string)$item->MANUFACTURER);
+								$product = static::makeProductFromXml($item);
+								$productPrice = $product->getProductPrice();
+								if (!$productPrice || !$productPrice->isInTimeout()) {
+
+									if (isset($item->PRICE_VAT)) {
+
+										if (preg_match('/(([0-9\.\,]+)\s*x\s*)?([0-9\.\,]+)\s*(g|mg|kg|ml|l)/', $item->PRODUCTNAME, $match)) {
+
+											$pricePerProduct = (new \Katu\Types\TString((string)$item->PRICE_VAT))->getAsFloat();
+											$pricePerUnit = (new \Katu\Types\TString((string)$item->PRICE_VAT))->getAsFloat();
+											$unitAmount = (new \Katu\Types\TString(ltrim((string)$match[2], '.') ?: 1))->getAsFloat() * (new \Katu\Types\TString((string)$match[3]))->getAsFloat();
+											$unitCode = trim($match[4]);
+
+										}
+
+										if (isset($pricePerProduct, $pricePerUnit, $unitAmount, $unitCode)) {
+
+											ProductPrice::insert([
+												'timeCreated' => new \Katu\Utils\DateTime,
+												'productId' => $product->getId(),
+												'currencyCode' => 'CZK',
+												'pricePerProduct' => $pricePerProduct,
+												'pricePerUnit' => $pricePerUnit,
+												'unitAmount' => $unitAmount,
+												'unitCode' => $unitCode,
+											]);
+
+										}
+
+									}
+
+								}
 
 							}
 

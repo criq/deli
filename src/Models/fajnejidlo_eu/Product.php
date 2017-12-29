@@ -32,7 +32,7 @@ class Product extends \Deli\Models\Product {
 	static function buildProductList() {
 		try {
 
-			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__], 120, function() {
+			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__], 600, function() {
 
 				@ini_set('memory_limit', '512M');
 
@@ -69,6 +69,8 @@ class Product extends \Deli\Models\Product {
 				$xml = static::loadXml();
 				foreach ($xml->SHOPITEM as $item) {
 
+					unset($pricePerProduct, $pricePerUnit, $unitAmount, $unitCode);
+
 					$product = static::makeProductFromXml($item);
 					$productPrice = $product->getProductPrice();
 					if (!$productPrice || !$productPrice->isInTimeout()) {
@@ -79,34 +81,12 @@ class Product extends \Deli\Models\Product {
 
 								if ($param->PARAM_NAME == 'Hmotnost') {
 
-									unset($pricePerProduct, $pricePerUnit, $unitAmount, $unitCode);
-
-									if (preg_match('/([0-9]+)\s*x\s*([0-9\.\,]+)\s*(g|kg|ml)/', $param->VAL, $match)) {
+									if (preg_match('/(([0-9]+)\s*x\s*)?([0-9\.\,]+)\s*(g|kg|ml)/', $param->VAL, $match)) {
 
 										$pricePerProduct = (new \Katu\Types\TString((string)$item->PRICE_VAT))->getAsFloat();
 										$pricePerUnit = (new \Katu\Types\TString((string)$item->PRICE_VAT))->getAsFloat();
-										$unitAmount = (new \Katu\Types\TString((string)$match[1]))->getAsFloat() * (new \Katu\Types\TString((string)$match[2]))->getAsFloat();
-										$unitCode = trim($match[3]);
-
-									} elseif (preg_match('/([0-9\.\,]+)\s*(g|kg|ml)/', $param->VAL, $match)) {
-
-										$pricePerProduct = (new \Katu\Types\TString((string)$item->PRICE_VAT))->getAsFloat();
-										$pricePerUnit = (new \Katu\Types\TString((string)$item->PRICE_VAT))->getAsFloat();
-										$unitAmount = (new \Katu\Types\TString((string)$match[1]))->getAsFloat();
-										$unitCode = trim($match[2]);
-
-									} else {
-
-										/*
-										$ignore = [
-											3,
-											1,
-										];
-
-										if (!in_array((string)$param->VAL, $ignore)) {
-											echo $param->VAL; die;
-										}
-										*/
+										$unitAmount = (new \Katu\Types\TString((string)$match[2] ?: 1))->getAsFloat() * (new \Katu\Types\TString((string)$match[3]))->getAsFloat();
+										$unitCode = trim($match[4]);
 
 									}
 
