@@ -72,8 +72,7 @@ class Product extends \Deli\Models\Product {
 					unset($pricePerProduct, $pricePerUnit, $unitAmount, $unitCode);
 
 					$product = static::makeProductFromXml($item);
-					$productPrice = $product->getProductPrice();
-					if (!$productPrice || !$productPrice->isInTimeout()) {
+					if ($product->shouldLoadProductPrice()) {
 
 						if (isset($item->PRICE_VAT)) {
 
@@ -101,6 +100,9 @@ class Product extends \Deli\Models\Product {
 											'unitAmount' => $unitAmount,
 											'unitCode' => $unitCode,
 										]);
+
+										$product->update('timeLoadedPrice', new \Katu\Utils\DateTime);
+										$product->save();
 
 									}
 

@@ -374,12 +374,25 @@ abstract class Product extends \Deli\Model {
 		return $sql;
 	}
 
+	public function shouldLoadProductPrice() {
+		if (!$this->timeLoadedPrice) {
+			return true;
+		}
+
+		$productPrice = $this->getProductPrice();
+		if (!$productPrice) {
+			return true;
+		}
+
+		return !$productPrice->isInTimeout();
+	}
+
 	static function getForLoadPriceSql() {
 		$sql = SX::select()
 			->from(static::getTable())
 			->where(SX::lgcOr([
 				SX::cmpIsNull(static::getColumn('timeLoadedPrice')),
-				SX::cmpLessThan(static::getColumn('timeLoadedPrice'), new \Katu\Utils\DateTime('- 1 week')),
+				SX::cmpLessThan(static::getColumn('timeLoadedPrice'), new \Katu\Utils\DateTime('- ' . ProductPrice::TIMEOUT . ' seconds')),
 			]))
 			->orderBy(static::getColumn('timeCreated'))
 			;

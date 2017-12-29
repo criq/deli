@@ -66,8 +66,7 @@ class Product extends \Deli\Models\Product {
 						unset($pricePerProduct, $pricePerUnit, $unitAmount, $unitCode);
 
 						$product = static::makeProductFromXml($item);
-						$productPrice = $product->getProductPrice();
-						if (!$productPrice || !$productPrice->isInTimeout()) {
+						if ($product->shouldLoadProductPrice()) {
 
 							if (preg_match('/(([0-9\.\,]+)\s*x\s*)?([0-9\.\,]+)\s*(g|mg|kg|ml|l)/', $item->PRODUCTNAME, $match)) {
 
@@ -89,6 +88,9 @@ class Product extends \Deli\Models\Product {
 									'unitAmount' => $unitAmount,
 									'unitCode' => $unitCode,
 								]);
+
+								$product->update('timeLoadedPrice', new \Katu\Utils\DateTime);
+								$product->save();
 
 							}
 

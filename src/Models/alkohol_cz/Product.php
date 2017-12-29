@@ -73,8 +73,7 @@ class Product extends \Deli\Models\Product {
 				foreach ($xml->SHOPITEM as $item) {
 
 					$product = static::makeProductFromXml($item);
-					$productPrice = $product->getProductPrice();
-					if (!$productPrice || !$productPrice->isInTimeout()) {
+					if ($product->shouldLoadProductPrice()) {
 
 						if (isset($item->PRICE)) {
 
@@ -91,6 +90,9 @@ class Product extends \Deli\Models\Product {
 											'unitAmount' => (new \Katu\Types\TString((string)$match[1]))->getAsFloat(),
 											'unitCode' => trim($match[2]),
 										]);
+
+										$product->update('timeLoadedPrice', new \Katu\Utils\DateTime);
+										$product->save();
 
 									}
 								}
