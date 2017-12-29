@@ -73,8 +73,8 @@ abstract class Product extends \Deli\Model {
 		$src = \Katu\Utils\Cache::get(function($xmlUrl) {
 
 			$curl = new \Curl\Curl;
-			$curl->setConnectTimeout(600);
-			$curl->setTimeout(600);
+			$curl->setConnectTimeout(3600);
+			$curl->setTimeout(3600);
 			$curl->get($xmlUrl);
 
 			if ($curl->error) {

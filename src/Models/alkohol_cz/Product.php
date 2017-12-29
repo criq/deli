@@ -44,7 +44,7 @@ class Product extends \Deli\Models\Product {
 	static function buildProductList() {
 		try {
 
-			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__], 600, function() {
+			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__], 3600, function() {
 
 				@ini_set('memory_limit', '512M');
 
@@ -67,7 +67,7 @@ class Product extends \Deli\Models\Product {
 	static function loadProductPrices() {
 		try {
 
-			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__], 600, function() {
+			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__], 3600, function() {
 
 				$xml = static::loadXml();
 				foreach ($xml->SHOPITEM as $item) {
