@@ -4,7 +4,6 @@ namespace Deli\Models\vitalvibe_eu;
 
 class Product extends \Deli\Models\Product {
 
-	// https://portadesign1.basecamphq.com/projects/13421499-jidelni-plan/todo_items/223579569/comments#comment_376477145
 
 	const TABLE = 'deli_vitalvibe_eu_products';
 	const SOURCE = 'vitalvibe_eu';

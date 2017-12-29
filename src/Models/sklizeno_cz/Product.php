@@ -62,7 +62,38 @@ class Product extends \Deli\Models\Product {
 				foreach ($xml->SHOPITEM as $item) {
 
 					\Katu\Utils\Cache::get(function($item) {
+
+						unset($pricePerProduct, $pricePerUnit, $unitAmount, $unitCode);
+
 						$product = static::makeProductFromXml($item);
+						$productPrice = $product->getProductPrice();
+						if (!$productPrice || !$productPrice->isInTimeout()) {
+
+							if (preg_match('/(([0-9\.\,]+)\s*x\s*)?([0-9\.\,]+)\s*(g|mg|kg|ml|l)/', $item->PRODUCTNAME, $match)) {
+
+								$pricePerProduct = (new \Katu\Types\TString((string)$item->PRICE_VAT))->getAsFloat();
+								$pricePerUnit = (new \Katu\Types\TString((string)$item->PRICE_VAT))->getAsFloat();
+								$unitAmount = (new \Katu\Types\TString(ltrim((string)$match[2], '.') ?: 1))->getAsFloat() * (new \Katu\Types\TString((string)$match[3]))->getAsFloat();
+								$unitCode = trim($match[4]);
+
+							}
+
+							if (isset($pricePerProduct, $pricePerUnit, $unitAmount, $unitCode)) {
+
+								ProductPrice::insert([
+									'timeCreated' => new \Katu\Utils\DateTime,
+									'productId' => $product->getId(),
+									'currencyCode' => 'CZK',
+									'pricePerProduct' => $pricePerProduct,
+									'pricePerUnit' => $pricePerUnit,
+									'unitAmount' => $unitAmount,
+									'unitCode' => $unitCode,
+								]);
+
+							}
+
+						}
+
 					}, static::TIMEOUT, $item);
 
 				}
