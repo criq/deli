@@ -70,12 +70,12 @@ abstract class Product extends \Deli\Model {
 	}
 
 	static function loadXml() {
-		$src = \Katu\Utils\Cache::get(function() {
+		$src = \Katu\Utils\Cache::get(function($xmlUrl) {
 
 			$curl = new \Curl\Curl;
 			$curl->setConnectTimeout(600);
 			$curl->setTimeout(600);
-			$curl->get(static::XML_URL);
+			$curl->get($xmlUrl);
 
 			if ($curl->error) {
 				throw new \Katu\Exceptions\DoNotCacheException;
@@ -83,7 +83,7 @@ abstract class Product extends \Deli\Model {
 
 			return $curl->rawResponse;
 
-		}, static::TIMEOUT);
+		}, static::TIMEOUT, static::XML_URL);
 
 		return new \SimpleXMLElement($src);
 	}
