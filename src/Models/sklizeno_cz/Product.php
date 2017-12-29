@@ -96,7 +96,7 @@ class Product extends \Deli\Models\Product {
 
 						}
 
-					}, static::TIMEOUT, $item);
+					}, ProductPrice::TIMEOUT, $item);
 
 				}
 

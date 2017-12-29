@@ -118,11 +118,11 @@ class Product extends \Deli\Models\Product {
 
 							}
 
-						}, static::TIMEOUT, $chunk);
+						}, ProductPrice::TIMEOUT, $chunk);
 
 					}
 
-				}, static::TIMEOUT);
+				}, ProductPrice::TIMEOUT);
 
 			}, !in_array(\Katu\Env::getPlatform(), ['dev']));
 
