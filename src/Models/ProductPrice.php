@@ -13,7 +13,7 @@ abstract class ProductPrice extends \Deli\Model {
 	}
 
 	public function getProductPricePerIngredientAmount($amount) {
-		if ($this->unitAmount) {
+		if ((float)$this->unitAmount) {
 			switch ($this->unitCode) {
 				case 'mg' :
 					return new \Effekt\PricePerAmountWithUnit(new \Effekt\Price($this->pricePerUnit / $this->unitAmount / .001 * $amount, $this->currencyCode), new \Effekt\AmountWithUnit($amount, 'g'));
