@@ -71,8 +71,6 @@ class Product extends \Deli\Models\Product {
 
 					\Katu\Utils\Cache::get(function($item) {
 
-
-
 						$product = static::makeProductFromXml($item);
 						if ($product->shouldLoadProductPrice()) {
 

@@ -72,35 +72,43 @@ class Product extends \Deli\Models\Product {
 				$xml = static::loadXml();
 				foreach ($xml->SHOPITEM as $item) {
 
-					$product = static::makeProductFromXml($item);
-					if ($product->shouldLoadProductPrice()) {
+					\Katu\Utils\Cache::get(function($item) {
 
-						if (isset($item->PRICE)) {
+						$product = static::makeProductFromXml($item);
+						if ($product->shouldLoadProductPrice()) {
 
-							foreach ($item->PARAM as $param) {
-								if ($param->PARAM_NAME == 'Objem') {
-									if (preg_match('/^([0-9\.]+)\s*(l)$/', $param->VAL, $match)) {
+							if (isset($item->PRICE)) {
 
-										ProductPrice::insert([
-											'timeCreated' => new \Katu\Utils\DateTime,
-											'productId' => $product->getId(),
-											'currencyCode' => 'CZK',
-											'pricePerProduct' => (new \Katu\Types\TString((string)$item->PRICE))->getAsFloat(),
-											'pricePerUnit' => (new \Katu\Types\TString((string)$item->PRICE))->getAsFloat(),
-											'unitAmount' => (new \Katu\Types\TString((string)$match[1]))->getAsFloat(),
-											'unitCode' => trim($match[2]),
-										]);
+								foreach ($item->PARAM as $param) {
 
-										$product->update('timeLoadedPrice', new \Katu\Utils\DateTime);
-										$product->save();
+									if ($param->PARAM_NAME == 'Objem') {
+
+										if (preg_match('/^([0-9\.]+)\s*(l)$/', $param->VAL, $match)) {
+
+											ProductPrice::insert([
+												'timeCreated' => new \Katu\Utils\DateTime,
+												'productId' => $product->getId(),
+												'currencyCode' => 'CZK',
+												'pricePerProduct' => (new \Katu\Types\TString((string)$item->PRICE))->getAsFloat(),
+												'pricePerUnit' => (new \Katu\Types\TString((string)$item->PRICE))->getAsFloat(),
+												'unitAmount' => (new \Katu\Types\TString((string)$match[1]))->getAsFloat(),
+												'unitCode' => trim($match[2]),
+											]);
+
+											$product->update('timeLoadedPrice', new \Katu\Utils\DateTime);
+											$product->save();
+
+										}
 
 									}
+
 								}
+
 							}
 
 						}
 
-					}
+					}, ProductPrice::TIMEOUT, $item);
 
 				}
 

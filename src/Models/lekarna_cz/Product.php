@@ -69,17 +69,17 @@ class Product extends \Deli\Models\Product {
 				@ini_set('memory_limit', '512M');
 				@ini_set('display_errors', true);
 
-				\Katu\Utils\Cache::get(function() {
 
-					$xml = static::loadXml();
-					$chunks = array_chunk($xml->xpath('//SHOP/SHOPITEM'), 200);
-					foreach ($chunks as $chunk) {
 
-						\Katu\Utils\Cache::get(function($chunk) {
+				$xml = static::loadXml();
+				$chunks = array_chunk($xml->xpath('//SHOP/SHOPITEM'), 200);
+				foreach ($chunks as $chunk) {
 
-							foreach ($chunk as $item) {
+					\Katu\Utils\Cache::get(function($chunk) {
 
-								unset($pricePerProduct, $pricePerUnit, $unitAmount, $unitCode);
+						foreach ($chunk as $item) {
+
+							\Katu\Utils\Cache::get(function($item) {
 
 								$product = static::makeProductFromXml($item);
 								if ($product->shouldLoadProductPrice()) {
@@ -116,13 +116,13 @@ class Product extends \Deli\Models\Product {
 
 								}
 
-							}
+							}, ProductPrice::TIMEOUT, $item);
 
-						}, ProductPrice::TIMEOUT, $chunk);
+						}
 
-					}
+					}, ProductPrice::TIMEOUT, $chunk);
 
-				}, ProductPrice::TIMEOUT);
+				}
 
 			}, !in_array(\Katu\Env::getPlatform(), ['dev']));
 
