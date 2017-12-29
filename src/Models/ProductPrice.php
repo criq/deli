@@ -30,9 +30,6 @@ abstract class ProductPrice extends \Deli\Model {
 				case 'l' :
 					return new \Effekt\PricePerAmountWithUnit(new \Effekt\Price($this->pricePerUnit / $this->unitAmount / 1000 * $amount, $this->currencyCode), new \Effekt\AmountWithUnit($amount, 'ml'));
 				break;
-				default :
-					return new \Effekt\PricePerAmountWithUnit(new \Effekt\Price($this->pricePerUnit / $this->unitAmount, $this->currencyCode), new \Effekt\AmountWithUnit(1, $this->unitCode));
-				break;
 			}
 		}
 
