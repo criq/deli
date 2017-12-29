@@ -332,28 +332,24 @@ class Product extends \Deli\Models\Product {
 				$str = (new \Katu\Types\TString($dom->filter('.product-price .tr-price')->eq(0)->filter('.right')->html()))->normalizeSpaces()->trim();
 				if (preg_match('/^(?<price>[0-9\,\s]+)\s+(?<currencyCode>Kč)$/u', $str, $match)) {
 
-					$productPrice = $productPriceClass::insert([
-						'timeCreated' => new \Katu\Utils\DateTime,
-						'productId' => $this->getId(),
-						'currencyCode' => 'CZK',
-					]);
-
-					$productPrice->update('pricePerProduct', (new \Katu\Types\TString($match['price']))->getAsFloat());
+					$pricePerProduct = (new \Katu\Types\TString($match['price']))->getAsFloat();
+					$pricePerUnit = $unitAmount = $unitCode = null;
 
 					if ($dom->filter('.product-price .tr-price .other')->count()) {
 
 						$str = (new \Katu\Types\TString($dom->filter('.product-price .tr-price')->eq(0)->filter('.other')->text()))->normalizeSpaces()->trim();
-						if (preg_match('/(?<price>[0-9\,\s]+)\s+(?<currencyCode>Kč)\s+za\s+(?<unitAmount>[0-9\,\s]+)\s+(?<unitCode>g|ml)/u', $str, $match)) {
+						$acceptableUnitCodes = implode('|', ProductPrice::$acceptableUnitCodes);
+						if (preg_match("/(?<price>[0-9\,\s]+)\s+(?<currencyCode>Kč)\s+za\s+(?<unitAmount>[0-9\,\s]+)\s+(?<unitCode>$acceptableUnitCodes)/u", $str, $match)) {
 
-							$productPrice->update('pricePerUnit', (new \Katu\Types\TString($match['price']))->getAsFloat());
-							$productPrice->update('unitAmount', (new \Katu\Types\TString($match['unitAmount']))->getAsFloat());
-							$productPrice->update('unitCode', trim($match['unitCode']));
+							$pricePerUnit = (new \Katu\Types\TString($match['price']))->getAsFloat();
+							$unitAmount = (new \Katu\Types\TString($match['unitAmount']))->getAsFloat();
+							$unitCode = $match['unitCode'];
 
 						}
 
 					}
 
-					$productPrice->save();
+					$this->setProductPrice('CZK', $pricePerProduct, $pricePerUnit, $unitAmount, $unitCode);
 
 				}
 

@@ -474,6 +474,25 @@ abstract class Product extends \Deli\Model {
 		return trim(preg_replace('/\s+/', ' ', preg_replace('/\v/u', ' ', strip_tags((new \Katu\Types\TString((string)$contents->getValue()))->normalizeSpaces()))));
 	}
 
+	public function setProductPrice($currencyCode, $pricePerProduct, $pricePerUnit = null, $unitAmount = null, $unitCode = null) {
+		$class = static::getProductPriceTopClass();
+
+		$data = [
+			'timeCreated' => new \Katu\Utils\DateTime,
+			'productId' => $this->getId(),
+			'currencyCode' => $currencyCode,
+			'pricePerProduct' => $pricePerProduct,
+		];
+
+		if ($pricePerUnit && $unitAmount && $unitCode && in_array($unitCode, $class::$acceptableUnitCodes)) {
+			$data['pricePerUnit'] = $pricePerUnit;
+			$data['unitAmount'] = $unitAmount;
+			$data['unitCode'] = $unitCode;
+		}
+
+		return $class::insert($data);
+	}
+
 	public function getProductPrice() {
 		$class = static::getProductPriceTopClass();
 		if (class_exists($class)) {

@@ -77,34 +77,29 @@ class Product extends \Deli\Models\Product {
 						$product = static::makeProductFromXml($item);
 						if ($product->shouldLoadProductPrice()) {
 
-							if (isset($item->PRICE)) {
+							$pricePerProduct = (new \Katu\Types\TString((string)$item->PRICE))->getAsFloat();
+							$pricePerUnit = $unitAmount = $unitCode = null;
 
-								foreach ($item->PARAM as $param) {
+							foreach ($item->PARAM as $param) {
 
-									if ($param->PARAM_NAME == 'Objem') {
+								if ($param->PARAM_NAME == 'Objem') {
 
-										if (preg_match('/^([0-9\.]+)\s*(l)$/', $param->VAL, $match)) {
+									$acceptableUnitCodes = implode('|', ProductPrice::$acceptableUnitCodes);
+									if (preg_match("/^([0-9\.]+)\s*($acceptableUnitCodes)$/", $param->VAL, $match)) {
 
-											ProductPrice::insert([
-												'timeCreated' => new \Katu\Utils\DateTime,
-												'productId' => $product->getId(),
-												'currencyCode' => 'CZK',
-												'pricePerProduct' => (new \Katu\Types\TString((string)$item->PRICE))->getAsFloat(),
-												'pricePerUnit' => (new \Katu\Types\TString((string)$item->PRICE))->getAsFloat(),
-												'unitAmount' => (new \Katu\Types\TString((string)$match[1]))->getAsFloat(),
-												'unitCode' => trim($match[2]),
-											]);
-
-											$product->update('timeLoadedPrice', new \Katu\Utils\DateTime);
-											$product->save();
-
-										}
+										$pricePerUnit = (new \Katu\Types\TString((string)$item->PRICE))->getAsFloat();
+										$unitAmount = (new \Katu\Types\TString((string)$match[1]))->getAsFloat();
+										$unitCode = trim($match[2]);
 
 									}
 
 								}
 
 							}
+
+							$product->setProductPrice('CZK', $pricePerProduct, $pricePerUnit, $unitAmount, $unitCode);
+							$product->update('timeLoadedPrice', new \Katu\Utils\DateTime);
+							$product->save();
 
 						}
 

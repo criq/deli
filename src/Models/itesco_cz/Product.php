@@ -462,28 +462,19 @@ class Product extends \Deli\Models\Product {
 			$chakulaProduct = $this->getChakulaProduct();
 			$chakulaProductPrice = $chakulaProduct->getPrice($productPriceClass::TIMEOUT);
 
-			$productPrice = $productPriceClass::insert([
-				'timeCreated' => new \Katu\Utils\DateTime,
-				'productId' => $this->getId(),
-				'currencyCode' => $chakulaProductPrice->price->currency,
-			]);
+			$currencyCode = $chakulaProductPrice->price->currency;
+			$pricePerProduct = $chakulaProductPrice->price->amount;
+			$pricePerUnit = $chakulaProductPrice->pricePerQuantity->price->amount;
+			$unitAmount = $chakulaProductPrice->pricePerQuantity->quantity->amount;
+			$unitCode = $chakulaProductPrice->pricePerQuantity->quantity->unit;
 
-			// Price per item.
-			$productPrice->update('pricePerProduct', (float)$chakulaProductPrice->price->amount);
-
-			// Price per quantity.
-			$productPrice->update('pricePerUnit', (float)$chakulaProductPrice->pricePerQuantity->price->amount);
-			$productPrice->update('unitAmount', (string)$chakulaProductPrice->pricePerQuantity->quantity->amount);
-			$productPrice->update('unitCode', (string)$chakulaProductPrice->pricePerQuantity->quantity->unit);
-
-			$productPrice->save();
+			$this->setProductPrice($currencyCode, $pricePerProduct, $pricePerUnit, $unitAmount, $unitCode);
+			$this->update('timeLoadedPrice', new \Katu\Utils\DateTime);
+			$this->save();
 
 		} catch (\Exception $e) {
 			// Nevermind.
 		}
-
-		$this->update('timeLoadedPrice', new \Katu\Utils\DateTime);
-		$this->save();
 
 		return true;
 	}
