@@ -379,7 +379,7 @@ abstract class Product extends \Deli\Model {
 			return true;
 		}
 
-		$productPrice = $this->getProductPrice();
+		$productPrice = $this->getLatestProductPrice();
 		if (!$productPrice) {
 			return true;
 		}
@@ -493,7 +493,7 @@ abstract class Product extends \Deli\Model {
 		return $class::insert($data);
 	}
 
-	public function getProductPrice() {
+	public function getLatestProductPrice() {
 		$class = static::getProductPriceTopClass();
 		if (class_exists($class)) {
 
