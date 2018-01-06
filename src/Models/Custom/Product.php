@@ -8,12 +8,7 @@ class Product extends \Deli\Models\Product {
 	const SOURCE = 'custom';
 
 	public function getUrl() {
-		$productProperty = $this->getProductProperty('url');
-		if ($productProperty) {
-			return $productProperty->value;
-		}
-
-		return false;
+		return $this->getProductPropertyValue('url');
 	}
 
 	public function load() {
