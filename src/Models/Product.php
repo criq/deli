@@ -461,6 +461,15 @@ abstract class Product extends \Deli\Model {
 		return null;
 	}
 
+	public function getProductPropertyValue($property) {
+		$productProperty = $this->getProductProperty($property);
+		if ($productProperty) {
+			return $productProperty->getValue();
+		}
+
+		return null;
+	}
+
 	public function getContents() {
 		return $this->getProductProperty('contents');
 	}
@@ -472,6 +481,19 @@ abstract class Product extends \Deli\Model {
 		}
 
 		return trim(preg_replace('/\s+/', ' ', preg_replace('/\v/u', ' ', strip_tags((new \Katu\Types\TString((string)$contents->getValue()))->normalizeSpaces()))));
+	}
+
+	public function getSanitizedContentsString() {
+		$string = $this->getContentsString();
+
+		$allergenInfoString = implode("|", array_map(function($i) {
+			return preg_quote($i, "/");
+		}, ProductAllergen::$allergenAdviceStrings));
+
+		$preg = "/\s*$allergenInfoString\s*/";
+		$string = preg_replace($preg, ' ', $string);
+
+		return $string;
 	}
 
 	public function setProductPrice($currencyCode, $pricePerProduct, $pricePerUnit = null, $unitAmount = null, $unitCode = null) {
