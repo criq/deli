@@ -492,7 +492,7 @@ abstract class Product extends \Deli\Model {
 		}, ProductAllergen::$allergenAdviceStrings));
 
 		$preg = "/\s*$allergenInfoString\s*/";
-		$string = preg_replace($preg, ' ', $string);
+		$string = trim(preg_replace($preg, ' ', $string));
 
 		return $string;
 	}
