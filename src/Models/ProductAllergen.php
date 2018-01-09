@@ -12,11 +12,11 @@ abstract class ProductAllergen extends \Deli\Model {
 		"Alergeny jsou označeny tučným písmem.",
 		"Alergeny jsou ve složení vyznačeny <b>tučně</b>.",
 		"Alergeny jsou ve složení vyznačeny tučně.",
-		"Informace pro alergiky: Výrobek neobsahuje alergeny.",
-		"Výrobek neobsahuje alergeny.",
-		"Výrobek neobsahuje alergeny",
-		"Informace pro alergiky: neobsahuje alergeny, ani jejich stopy.",
-		"Informace pro alergiky: Alergeny, včetně obilovin obsahujících lepek, jsou ve složení vyznačeny tučně",
+		#"Informace pro alergiky: Výrobek neobsahuje alergeny.",
+		#"Výrobek neobsahuje alergeny.",
+		#"Výrobek neobsahuje alergeny",
+		#"Informace pro alergiky: neobsahuje alergeny, ani jejich stopy.",
+		#"Informace pro alergiky: Alergeny, včetně obilovin obsahujících lepek, jsou ve složení vyznačeny tučně",
 	];
 
 	static function getConfig(){
