@@ -65,6 +65,7 @@ abstract class Product extends \Deli\Model {
 			\Deli\Models\stobklub_cz\Product::SOURCE          => \Deli\Models\stobklub_cz\Product::getTopClass(),
 			\Deli\Models\usda_gov\Product::SOURCE             => \Deli\Models\usda_gov\Product::getTopClass(),
 			\Deli\Models\vitalvibe_eu\Product::SOURCE         => \Deli\Models\vitalvibe_eu\Product::getTopClass(),
+			\Deli\Models\veganza_cz\Product::SOURCE           => \Deli\Models\veganza_cz\Product::getTopClass(),
 		];
 
 		return $sources;
