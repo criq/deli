@@ -60,7 +60,7 @@ abstract class Product extends \Deli\Model {
 			\Deli\Models\kaloricketabulky_cz\Product::SOURCE  => \Deli\Models\kaloricketabulky_cz\Product::getTopClass(),
 			\Deli\Models\lekarna_cz\Product::SOURCE           => \Deli\Models\lekarna_cz\Product::getTopClass(),
 			\Deli\Models\pbd_online_sk\Product::SOURCE        => \Deli\Models\pbd_online_sk\Product::getTopClass(),
-			\Deli\Models\rohlik_cz\Product::SOURCE             => \Deli\Models\rohlik_cz\Product::getTopClass(),
+			\Deli\Models\rohlik_cz\Product::SOURCE            => \Deli\Models\rohlik_cz\Product::getTopClass(),
 			\Deli\Models\sklizeno_cz\Product::SOURCE          => \Deli\Models\sklizeno_cz\Product::getTopClass(),
 			\Deli\Models\stobklub_cz\Product::SOURCE          => \Deli\Models\stobklub_cz\Product::getTopClass(),
 			\Deli\Models\usda_gov\Product::SOURCE             => \Deli\Models\usda_gov\Product::getTopClass(),
@@ -96,6 +96,10 @@ abstract class Product extends \Deli\Model {
 
 	public function getName() {
 		return $this->name;
+	}
+
+	public function getOriginalName() {
+		return isset($this->originalName) ? $this->originalName : null;
 	}
 
 	public function setRemoteCategory($source, $property = 'remoteCategory') {
