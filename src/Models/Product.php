@@ -624,19 +624,27 @@ abstract class Product extends \Deli\Model {
 			}, static::TIMEOUT, $string);
 
 			// Allergens.
-			$config = ProductAllergen::getConfig();
-			foreach ((array)$res->a as $allergenId) {
-				$this->setProductAllergen(ProductAllergen::SOURCE_VISCOJIS_CZ, $config['list'][$allergenId]['code']);
+			if (isset($res->a)) {
+
+				$config = ProductAllergen::getConfig();
+				foreach ((array)$res->a as $allergenId) {
+					$this->setProductAllergen(ProductAllergen::SOURCE_VISCOJIS_CZ, $config['list'][$allergenId]['code']);
+				}
+
 			}
 
 			// Emulgators.
-			foreach ((array)$res->e as $emulgatorData) {
-				$emulgator = Emulgator::upsert([
-					'code' => $emulgatorData->id,
-				], [
-					'timeCreated' => new \Katu\Utils\DateTime,
-				]);
-				$this->setProductEmulgator(ProductEmulgator::SOURCE_VISCOJIS_CZ, $emulgator);
+			if (isset($res->e)) {
+
+				foreach ((array)$res->e as $emulgatorData) {
+					$emulgator = Emulgator::upsert([
+						'code' => $emulgatorData->id,
+					], [
+						'timeCreated' => new \Katu\Utils\DateTime,
+					]);
+					$this->setProductEmulgator(ProductEmulgator::SOURCE_VISCOJIS_CZ, $emulgator);
+				}
+
 			}
 
 			// Palm oil.
