@@ -648,8 +648,14 @@ abstract class Product extends \Deli\Model {
 			}
 
 			// Palm oil.
-			$this->setProductProperty(ProductEmulgator::SOURCE_VISCOJIS_CZ, 'isPalmOil', $res->po);
-			$this->setProductProperty(ProductEmulgator::SOURCE_VISCOJIS_CZ, 'isHfcs', $res->gf);
+			if (isset($res->po)) {
+				$this->setProductProperty(ProductEmulgator::SOURCE_VISCOJIS_CZ, 'isPalmOil', $res->po);
+			}
+
+			// HFCS.
+			if (isset($res->gf)) {
+				$this->setProductProperty(ProductEmulgator::SOURCE_VISCOJIS_CZ, 'isHfcs', $res->gf);
+			}
 
 		}
 
