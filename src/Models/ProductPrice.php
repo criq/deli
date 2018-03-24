@@ -39,7 +39,7 @@ abstract class ProductPrice extends \Deli\Model {
 	static function getUnitAmountWithCode($string) {
 		$acceptableUnitCodes = implode('|', static::$acceptableUnitCodes);
 		if (preg_match("/([0-9\.\,]+)\s*($acceptableUnitCodes)/", $string, $match)) {
-			return new \App\Classes\AmountWithUnit((new \Katu\Types\TString((string)$match[1]))->getAsFloat(), trim($match[2]));
+			return new \Effekt\AmountWithUnit((new \Katu\Types\TString((string)$match[1]))->getAsFloat(), trim($match[2]));
 		}
 
 		return false;
