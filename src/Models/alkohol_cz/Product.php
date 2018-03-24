@@ -84,15 +84,24 @@ class Product extends \Deli\Models\Product {
 
 								if ($param->PARAM_NAME == 'Objem') {
 
-									$acceptableUnitCodes = implode('|', ProductPrice::$acceptableUnitCodes);
-									if (preg_match("/^([0-9\.]+)\s*($acceptableUnitCodes)$/", $param->VAL, $match)) {
-
-										$pricePerUnit = (new \Katu\Types\TString((string)$item->PRICE))->getAsFloat();
-										$unitAmount = (new \Katu\Types\TString((string)$match[1]))->getAsFloat();
-										$unitCode = trim($match[2]);
-
+									$amountWithUnit = ProductPrice::getUnitAmountWithCode((string)$param->VAL);
+									if ($amountWithUnit) {
+										$pricePerUnit = $pricePerProduct;
+										$unitAmount = $amountWithUnit->amount;
+										$unitCode = $amountWithUnit->unit;
 									}
 
+								}
+
+							}
+
+							if (!$pricePerUnit || !$unitAmount || !$unitCode) {
+
+								$amountWithUnit = ProductPrice::getUnitAmountWithCode((string)$item->PRODUCT);
+								if ($amountWithUnit) {
+									$pricePerUnit = $pricePerProduct;
+									$unitAmount = $amountWithUnit->amount;
+									$unitCode = $amountWithUnit->unit;
 								}
 
 							}
