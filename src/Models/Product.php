@@ -381,7 +381,7 @@ abstract class Product extends \Deli\Model {
 	}
 
 	public function shouldLoadProductPrice() {
-		if (!$this->timeLoadedPrice) {
+		if (!$this->timeAttemptedPrice || !$this->timeLoadedPrice) {
 			return true;
 		}
 
@@ -397,8 +397,8 @@ abstract class Product extends \Deli\Model {
 		$sql = SX::select()
 			->from(static::getTable())
 			->where(SX::lgcOr([
-				SX::cmpIsNull(static::getColumn('timeLoadedPrice')),
-				SX::cmpLessThan(static::getColumn('timeLoadedPrice'), new \Katu\Utils\DateTime('- ' . ProductPrice::TIMEOUT . ' seconds')),
+				SX::cmpIsNull(static::getColumn('timeAttemptedPrice')),
+				SX::cmpLessThan(static::getColumn('timeAttemptedPrice'), new \Katu\Utils\DateTime('- ' . ProductPrice::TIMEOUT . ' seconds')),
 			]))
 			->orderBy(static::getColumn('timeCreated'))
 			;

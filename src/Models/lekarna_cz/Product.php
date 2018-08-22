@@ -80,6 +80,9 @@ class Product extends \Deli\Models\Product {
 							\Katu\Utils\Cache::get(function($item) {
 
 								$product = static::makeProductFromXml($item);
+								$product->update('timeAttemptedPrice', new \Katu\Utils\DateTime);
+								$product->save();
+
 								if ($product->shouldLoadProductPrice()) {
 
 									$pricePerProduct = (new \Katu\Types\TString((string)$item->PRICE_VAT))->getAsFloat();

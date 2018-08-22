@@ -320,6 +320,9 @@ class Product extends \Deli\Models\Product {
 	}
 
 	public function loadPrice() {
+		$this->update('timeAttemptedPrice', new \Katu\Utils\DateTime);
+		$this->save();
+
 		try {
 
 			$productPriceClass = static::getProductPriceTopClass();

@@ -455,6 +455,9 @@ class Product extends \Deli\Models\Product {
 	}
 
 	public function loadPrice() {
+		$this->update('timeAttemptedPrice', new \Katu\Utils\DateTime);
+		$this->save();
+
 		try {
 
 			$productPriceClass = static::getProductPriceTopClass();
@@ -469,13 +472,12 @@ class Product extends \Deli\Models\Product {
 			$unitCode = $chakulaProductPrice->pricePerQuantity->quantity->unit;
 
 			$this->setProductPrice($currencyCode, $pricePerProduct, $pricePerUnit, $unitAmount, $unitCode);
+			$this->update('timeLoadedPrice', new \Katu\Utils\DateTime);
+			$this->save();
 
 		} catch (\Exception $e) {
 			// Nevermind.
 		}
-
-		$this->update('timeLoadedPrice', new \Katu\Utils\DateTime);
-		$this->save();
 
 		return true;
 	}
