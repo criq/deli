@@ -7,11 +7,11 @@ class Emulgator extends \Deli\Model {
 	const TABLE = 'deli_viscojis_cz_emulgators';
 
 	static function buildEmulgatorList() {
+		@ini_set('memory_limit', '512M');
+
 		try {
 
 			\Katu\Utils\Lock::run(['deli', Product::SOURCE, __FUNCTION__], 3600, function() {
-
-				@ini_set('memory_limit', '512M');
 
 				$array = \Katu\Utils\Cache::get(function() {
 

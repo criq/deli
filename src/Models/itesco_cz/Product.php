@@ -8,11 +8,11 @@ class Product extends \Deli\Models\Product {
 	const SOURCE = 'itesco_cz';
 
 	static function buildProductList() {
+		@ini_set('memory_limit', '512M');
+
 		try {
 
 			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__], 3600, function() {
-
-				@ini_set('memory_limit', '512M');
 
 				foreach (\Chakula\Tesco::getDepartmentTree() as $superDepartment) {
 					foreach ($superDepartment->departments as $department) {

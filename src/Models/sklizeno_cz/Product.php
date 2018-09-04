@@ -29,11 +29,11 @@ class Product extends \Deli\Models\Product {
 	}
 
 	static function buildProductList() {
+		@ini_set('memory_limit', '512M');
+
 		try {
 
 			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__], 3600, function() {
-
-				@ini_set('memory_limit', '512M');
 
 				$xml = static::loadXml();
 				foreach ($xml->SHOPITEM as $item) {
@@ -52,11 +52,11 @@ class Product extends \Deli\Models\Product {
 	}
 
 	static function loadProductPrices() {
+		@ini_set('memory_limit', '512M');
+
 		try {
 
 			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__], 3600, function() {
-
-				@ini_set('memory_limit', '512M');
 
 				$xml = static::loadXml();
 				foreach ($xml->SHOPITEM as $item) {
@@ -64,10 +64,10 @@ class Product extends \Deli\Models\Product {
 					\Katu\Utils\Cache::get(function($item) {
 
 						$product = static::makeProductFromXml($item);
-						$product->update('timeAttemptedPrice', new \Katu\Utils\DateTime);
-						$product->save();
-
 						if ($product->shouldLoadProductPrice()) {
+
+							$product->update('timeAttemptedPrice', new \Katu\Utils\DateTime);
+							$product->save();
 
 							$pricePerProduct = (new \Katu\Types\TString((string)$item->PRICE_VAT))->getAsFloat();
 							$pricePerUnit = $unitAmount = $unitCode = null;

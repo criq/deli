@@ -10,11 +10,11 @@ class Product extends \Deli\Models\Product {
 	const TIMEOUT = 14515200;
 
 	static function buildProductList() {
+		@ini_set('memory_limit', '512M');
+
 		try {
 
 			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__], 3600, function() {
-
-				@ini_set('memory_limit', '512M');
 
 				$url = 'http://www.kaloricke-tabulky.cz/';
 				$src = \Katu\Utils\Cache::getUrl($url);

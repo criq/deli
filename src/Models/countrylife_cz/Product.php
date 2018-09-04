@@ -8,11 +8,11 @@ class Product extends \Deli\Models\Product {
 	const SOURCE = 'countrylife_cz';
 
 	static function buildProductList() {
+		@ini_set('memory_limit', '512M');
+
 		try {
 
 			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__], 3600, function() {
-
-				@ini_set('memory_limit', '512M');
 
 				$src = \Katu\Utils\Cache::getUrl('https://www.countrylife.cz/biopotraviny', static::TIMEOUT);
 				$dom = \Katu\Utils\DOM::crawlHtml($src);
@@ -61,11 +61,11 @@ class Product extends \Deli\Models\Product {
 	}
 
 	static function loadProductEans() {
+		@ini_set('memory_limit', '512M');
+
 		try {
 
 			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__], 3600, function() {
-
-				@ini_set('memory_limit', '512M');
 
 				$src = \Katu\Utils\Cache::get(function() {
 

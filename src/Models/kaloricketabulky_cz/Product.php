@@ -10,11 +10,11 @@ class Product extends \Deli\Models\Product {
 	const TIMEOUT = 14515200;
 
 	static function buildProductList() {
+		@ini_set('memory_limit', '512M');
+
 		try {
 
 			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__], 3600, function() {
-
-				@ini_set('memory_limit', '512M');
 
 				$filters = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'Č', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'Š', 'S', 'Š', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z', 'Ž'];
 				foreach ($filters as $filter) {
