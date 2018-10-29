@@ -9,6 +9,15 @@ abstract class Product extends \Deli\Model {
 
 	const TIMEOUT = 2419200;
 
+	static function getBySourceAndId($source, $id) {
+		$productClass = '\\Deli\\Models\\' . $source . '\\Product';
+		if (!class_exists($productClass)) {
+			throw new \Exception("Product class " . $productClass . " doesn't exist.");
+		}
+
+		return $productClass::get($id);
+	}
+
 	static function getSourceClass($sourceCode) {
 		return static::getAllSources()[$sourceCode];
 	}
