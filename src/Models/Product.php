@@ -389,7 +389,7 @@ abstract class Product extends \Deli\Model {
 		return $sql;
 	}
 
-	static function getAllSourcesForLoadProductPricesSql() {
+	static function getAllSourcesForLoadPriceSql() {
 		$sqls = [];
 		foreach (static::getAllSources() as $sourceCode => $sourceClass) {
 
