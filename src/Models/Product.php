@@ -389,22 +389,27 @@ abstract class Product extends \Deli\Model {
 		return $sql;
 	}
 
-	static function getAllSourcesForLoadProductPrices() {
+	static function getAllSourcesForLoadProductPricesSql() {
 		$sqls = [];
 		foreach (static::getAllSources() as $sourceCode => $sourceClass) {
 
 			if (in_array('timeAttemptedPrice', $sourceClass::getTable()->getColumnNames())) {
 
 				$sourceProductPriceClass = $sourceClass::getProductPriceTopClass();
-				if (class_exists($sourceProductPriceClass)) {
+				if (method_exists($sourceClass, 'loadPrice') && class_exists($sourceProductPriceClass)) {
 
-					$sqls[] = $sourceClass::getTable()
+					$sqls[] = SX::select()
 						->setOptGetTotalRows(false)
 						->select(SX::aka(SX::val($sourceCode), SX::a('sourceCode')))
 						->select($sourceClass::getIdColumn())
 						->select($sourceClass::getColumn('name'))
 						->select($sourceClass::getColumn('timeAttemptedPrice'))
 						->select($sourceClass::getColumn('timeLoadedPrice'))
+						->from($sourceClass::getTable())
+						->where(SX::lgcOr([
+							SX::cmpIsNull($sourceClass::getColumn('timeAttemptedPrice')),
+							SX::cmpLessThan($sourceClass::getColumn('timeAttemptedPrice'), new \Katu\Utils\DateTime('- ' . ProductPrice::TIMEOUT . ' seconds')),
+						]))
 						;
 
 				}
@@ -422,8 +427,6 @@ abstract class Product extends \Deli\Model {
 				SX::orderBy(SX::a('name')),
 			])
 			;
-
-		echo $sql; die;
 
 		return $sql;
 	}
