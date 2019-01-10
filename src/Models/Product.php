@@ -389,6 +389,45 @@ abstract class Product extends \Deli\Model {
 		return $sql;
 	}
 
+	static function getAllSourcesForLoadProductPrices() {
+		$sqls = [];
+		foreach (static::getAllSources() as $sourceCode => $sourceClass) {
+
+			if (in_array('timeAttemptedPrice', $sourceClass::getTable()->getColumnNames())) {
+
+				$sourceProductPriceClass = $sourceClass::getProductPriceTopClass();
+				if (class_exists($sourceProductPriceClass)) {
+
+					$sqls[] = $sourceClass::getTable()
+						->setOptGetTotalRows(false)
+						->select(SX::aka(SX::val($sourceCode), SX::a('sourceCode')))
+						->select($sourceClass::getIdColumn())
+						->select($sourceClass::getColumn('name'))
+						->select($sourceClass::getColumn('timeAttemptedPrice'))
+						->select($sourceClass::getColumn('timeLoadedPrice'))
+						;
+
+				}
+
+			}
+
+		}
+
+		$sql = SX::select()
+			->from(SX::aka(SX::union($sqls), SX::a('_t')))
+			->orderBy([
+				SX::orderBy(SX::a('timeAttemptedPrice')),
+				SX::orderBy(SX::a('id')),
+				SX::orderBy(SX::a('sourceCode')),
+				SX::orderBy(SX::a('name')),
+			])
+			;
+
+		echo $sql; die;
+
+		return $sql;
+	}
+
 	public function shouldLoadProductPrice() {
 		if (!$this->timeAttemptedPrice || !$this->timeLoadedPrice) {
 			return true;
