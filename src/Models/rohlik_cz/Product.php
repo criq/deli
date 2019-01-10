@@ -63,65 +63,48 @@ class Product extends \Deli\Models\Product {
 		return \Katu\Utils\Cache::getUrl($this->getUrl());
 	}
 
+	public function getJsonUrl() {
+		return new \Katu\Types\TUrl('https://www.rohlik.cz/services/frontend-service/product/' . $this->remoteId . '/full');
+	}
+
+	public function getJson($timeout = null) {
+		if (is_null($timeout)) {
+			$timeout = static::TIMEOUT;
+		}
+
+		return \Katu\Cache\Url::get($this->getJsonUrl(), $timeout);
+	}
+
 	public function loadPrice() {
 		$this->update('timeAttemptedPrice', new \Katu\Utils\DateTime);
 		$this->save();
 
 		try {
 
-			$dom = \Katu\Utils\DOM::crawlHtml($this->getSrc());
+			$json = $this->getJson();
 
-			$el = $dom->filter('.product-detail .product-detail__price strong');
-			if ($el->count()) {
+			$currency = $json->data->product->currency;
+			$pricePerProduct = (new \Katu\Types\TString($json->data->product->price))->getAsFloat();
+			$pricePerUnit = $unitAmount = $unitCode = null;
 
-				if (preg_match('/^(?<price>[0-9\,\s]+)\s+(?<currencyCode>Kč)$/u', trim($el->text()), $match)) {
+			try {
 
-					$pricePerProduct = (new \Katu\Types\TString($match['price']))->getAsFloat();
-					$pricePerUnit = $unitAmount = $unitCode = null;
-
-					$el = $dom->filter('.product-detail .product-detail__amount');
-					if ($el->count()) {
-
-						$amountText = trim($el->text());
-						if ($amountText) {
-
-							$amountWithUnit = \Deli\Models\ProductPrice::getUnitAmountWithCode($amountText);
-							if ($amountWithUnit) {
-
-								$pricePerUnit = $pricePerProduct;
-								$unitAmount = $pricePerProduct->amount;
-								$unitCode = $pricePerProduct->unit;
-
-							}
-
-						}
-
-					}
-
-					// Zkontrolovat název, pokud to nemá v tagu.
-					$this->setProductPrice('CZK', $pricePerProduct, $pricePerUnit, $unitAmount, $unitCode);
-
+				$amountWithUnit = \Deli\Models\ProductPrice::getUnitAmountWithCode($json->data->product->textualAmount);
+				if (!$amountWithUnit) {
+					$amountWithUnit = \Deli\Models\ProductPrice::getUnitAmountWithCode($json->data->product->productName);
 				}
 
+				if ($amountWithUnit) {
+					$pricePerUnit = $pricePerProduct;
+					$unitAmount = $amountWithUnit->amount;
+					$unitCode = $amountWithUnit->unit;
+				}
+
+			} catch (\Exception $e) {
+				// Nevermind.
 			}
 
-
-
-			/*
-
-
-
-			$productPriceClass = static::getProductPriceTopClass();
-
-			$chakulaProduct = $this->getChakulaProduct();
-			$chakulaProductPrice = $chakulaProduct->getPrice($productPriceClass::TIMEOUT);
-
-
-
-			$this->setProductPrice($currencyCode, $pricePerProduct, $pricePerUnit, $unitAmount, $unitCode);
-			$this->update('timeLoadedPrice', new \Katu\Utils\DateTime);
-			$this->save();
-			*/
+			$this->setProductPrice($currency, $pricePerProduct, $pricePerUnit, $unitAmount, $unitCode);
 
 		} catch (\Exception $e) {
 			// Nevermind.

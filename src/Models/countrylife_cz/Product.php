@@ -360,9 +360,9 @@ class Product extends \Deli\Models\Product {
 
 		} catch (\Exception $e) {
 			if (method_exists($e, 'getAbbr') && $e->getAbbr() == 'urlUnavailable') {
-
+				// Nevermind.
 			} else {
-				//var_dump($e); die;
+				#var_dump($e); die;
 			}
 		}
 
