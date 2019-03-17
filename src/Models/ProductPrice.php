@@ -6,13 +6,13 @@ abstract class ProductPrice extends \Deli\Model {
 
 	const TIMEOUT = 432000;
 
-	static $acceptableUnitCodes = ['mg', 'g', 'kg', 'ml', 'l'];
+	static $acceptableUnitCodes = ['mg', 'g', 'kg', 'ml', 'l', 'ks'];
 
 	public function isInTimeout() {
 		return (new \Katu\Utils\DateTime($this->timeCreated))->isInTimeout(static::TIMEOUT);
 	}
 
-	public function getProductPricePerIngredientAmount($amount) {
+	public function getPricePerAmount($amount = 100) {
 		if ((float)$this->unitAmount) {
 			switch ($this->unitCode) {
 				case 'mg' :
@@ -29,6 +29,9 @@ abstract class ProductPrice extends \Deli\Model {
 				break;
 				case 'l' :
 					return new \Effekt\PricePerAmountWithUnit(new \Effekt\Price($this->pricePerUnit / $this->unitAmount / 1000 * $amount, $this->currencyCode), new \Effekt\AmountWithUnit($amount, 'ml'));
+				break;
+				case 'ks' :
+					return new \Effekt\PricePerAmountWithUnit(new \Effekt\Price($this->pricePerUnit / $this->unitAmount * $amount, $this->currencyCode), new \Effekt\AmountWithUnit($amount, 'ks'));
 				break;
 			}
 		}

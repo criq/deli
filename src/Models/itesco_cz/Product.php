@@ -75,6 +75,14 @@ class Product extends \Deli\Models\Product {
 		return $this->getChakulaProduct()->getUrl();
 	}
 
+	public function getSrc($timeout = null) {
+		if (is_null($timeout)) {
+			$timeout = static::TIMEOUT;
+		}
+
+		return \Katu\Utils\Cache::getUrl($this->getUrl());
+	}
+
 	public function load() {
 		return static::transaction(function() {
 
@@ -462,24 +470,63 @@ class Product extends \Deli\Models\Product {
 
 			$productPriceClass = static::getProductPriceTopClass();
 
-			$chakulaProduct = $this->getChakulaProduct();
-			$chakulaProductPrice = $chakulaProduct->getPrice($productPriceClass::TIMEOUT);
+			$src = $this->getSrc($productPriceClass::TIMEOUT);
+			$dom = \Katu\Utils\DOM::crawlHtml($src);
 
-			$currencyCode = $chakulaProductPrice->price->currency;
-			$pricePerProduct = $chakulaProductPrice->price->amount;
-			$pricePerUnit = $chakulaProductPrice->pricePerQuantity->price->amount;
-			$unitAmount = $chakulaProductPrice->pricePerQuantity->quantity->amount;
-			$unitCode = $chakulaProductPrice->pricePerQuantity->quantity->unit;
+			$pricePerProduct = null;
+			$pricePerUnit = null;
+			$unitAmount = null;
+			$unitCode = null;
 
-			$this->setProductPrice($currencyCode, $pricePerProduct, $pricePerUnit, $unitAmount, $unitCode);
-			$this->update('timeLoadedPrice', new \Katu\Utils\DateTime);
-			$this->save();
+			$ePricePerProduct = $dom->filter('.price-per-sellable-unit .value');
+			if ($ePricePerProduct->count()) {
+				$pricePerProduct = (new \Katu\Types\TString($ePricePerProduct->text()))->getAsFloat();
+			}
 
-		} catch (\Exception $e) {
-			// Nevermind.
+			$ePricePerUnit = $dom->filter('.price-per-quantity-weight .value');
+			$eUnitCode = $dom->filter('.price-per-quantity-weight .weight');
+			if ($ePricePerUnit->count() && $eUnitCode->count()) {
+				$pricePerUnit = (new \Katu\Types\TString($ePricePerUnit->text()))->getAsFloat();
+				switch ($eUnitCode->text()) {
+					case "/kg" :
+						$unitAmount = 1;
+						$unitCode = 'kg';
+					break;
+					case "/l" :
+						$unitAmount = 1;
+						$unitCode = 'l';
+					break;
+					case "/Kus" :
+						$unitAmount = 1;
+						$unitCode = 'ks';
+					break;
+				}
+			}
+
+			if ($pricePerProduct || ($pricePerUnit && $unitAmount && $unitCode)) {
+				$this->setProductPrice('CZK', $pricePerProduct, $pricePerUnit, $unitAmount, $unitCode);
+				$this->update('timeLoadedPrice', new \Katu\Utils\DateTime);
+				$this->save();
+			}
+
+			return true;
+
+		} catch (\Katu\Exceptions\Exception $e) {
+
+			switch ($e->getAbbr()) {
+				case 'urlUnavailable' :
+					$this->update('isAvailable', 0);
+					$this->save();
+				break;
+				default :
+					// Nevermind.
+				break;
+			}
+
+			return false;
+
 		}
 
-		return true;
 	}
 
 }
