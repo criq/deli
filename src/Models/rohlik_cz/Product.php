@@ -75,6 +75,65 @@ class Product extends \Deli\Models\Product {
 		return \Katu\Cache\Url::get($this->getJsonUrl(), $timeout);
 	}
 
+	public function load() {
+		try {
+
+			$this->loadNutrients();
+
+			$this->update('isAvailable', 1);
+
+		} catch (\Exception $e) {
+
+			$this->update('isAvailable', 0);
+
+		}
+
+		$this->update('timeLoaded', new \Katu\Utils\DateTime);
+		$this->save();
+
+		return true;
+	}
+
+	public function loadNutrients() {
+		$json = $this->getJson();
+
+		if (preg_match('/^(?<amount>[0-9]+)\s?(?<unit>[a-z]+)$/', $json->data->product->composition->nutritionalValues->dose, $match)) {
+
+			$productAmountWithUnit = new \Effekt\AmountWithUnit($match['amount'], $match['unit']);
+
+			if (isset($json->data->product->composition->nutritionalValues->energyValueKJ)) {
+				$this->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, 'energy', new \Effekt\AmountWithUnit($json->data->product->composition->nutritionalValues->energyValueKJ, 'kJ'), $productAmountWithUnit);
+			}
+			if (isset($json->data->product->composition->nutritionalValues->energyValueKcal)) {
+				$this->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, 'calories', new \Effekt\AmountWithUnit($json->data->product->composition->nutritionalValues->energyValueKcal, 'kcal'), $productAmountWithUnit);
+			}
+			if (isset($json->data->product->composition->nutritionalValues->fats)) {
+				$this->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, 'fats', new \Effekt\AmountWithUnit($json->data->product->composition->nutritionalValues->fats, 'g'), $productAmountWithUnit);
+			}
+			if (isset($json->data->product->composition->nutritionalValues->saturatedFattyAcids)) {
+				$this->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, 'saturatedFattyAcids', new \Effekt\AmountWithUnit($json->data->product->composition->nutritionalValues->saturatedFattyAcids, 'g'), $productAmountWithUnit);
+			}
+			if (isset($json->data->product->composition->nutritionalValues->carbohydrates)) {
+				$this->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, 'carbs', new \Effekt\AmountWithUnit($json->data->product->composition->nutritionalValues->carbohydrates, 'g'), $productAmountWithUnit);
+			}
+			if (isset($json->data->product->composition->nutritionalValues->sugars)) {
+				$this->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, 'sugar', new \Effekt\AmountWithUnit($json->data->product->composition->nutritionalValues->sugars, 'g'), $productAmountWithUnit);
+			}
+			if (isset($json->data->product->composition->nutritionalValues->proteins)) {
+				$this->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, 'proteins', new \Effekt\AmountWithUnit($json->data->product->composition->nutritionalValues->proteins, 'g'), $productAmountWithUnit);
+			}
+			if (isset($json->data->product->composition->nutritionalValues->salt)) {
+				$this->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, 'salt', new \Effekt\AmountWithUnit($json->data->product->composition->nutritionalValues->salt, 'g'), $productAmountWithUnit);
+			}
+			if (isset($json->data->product->composition->nutritionalValues->fiber)) {
+				$this->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, 'fiber', new \Effekt\AmountWithUnit($json->data->product->composition->nutritionalValues->fiber, 'g'), $productAmountWithUnit);
+			}
+
+		} else {
+			var_dump($json->data->product->composition->nutritionalValues->dose);die;
+		}
+	}
+
 	public function loadPrice() {
 		$this->update('timeAttemptedPrice', new \Katu\Utils\DateTime);
 		$this->save();
