@@ -79,6 +79,8 @@ class Product extends \Deli\Models\Product {
 		try {
 
 			$this->loadNutrients();
+			$this->loadAllergens();
+			$this->loadEmulgators();
 
 			$this->update('isAvailable', 1);
 
@@ -97,7 +99,7 @@ class Product extends \Deli\Models\Product {
 	public function loadNutrients() {
 		$json = $this->getJson();
 
-		if (preg_match('/^(?<amount>[0-9]+)\s?(?<unit>[a-z]+)$/', $json->data->product->composition->nutritionalValues->dose, $match)) {
+		if (isset($json->data->product->composition->nutritionalValues->dose) && preg_match('/^(?<amount>[0-9]+)\s?(?<unit>[a-z]+)$/', $json->data->product->composition->nutritionalValues->dose, $match)) {
 
 			$productAmountWithUnit = new \Effekt\AmountWithUnit($match['amount'], $match['unit']);
 
@@ -129,9 +131,77 @@ class Product extends \Deli\Models\Product {
 				$this->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, 'fiber', new \Effekt\AmountWithUnit($json->data->product->composition->nutritionalValues->fiber, 'g'), $productAmountWithUnit);
 			}
 
-		} else {
-			var_dump($json->data->product->composition->nutritionalValues->dose);die;
 		}
+
+		return true;
+	}
+
+	public function loadAllergens() {
+		$json = $this->getJson();
+
+		$map = [
+			'Obiloviny obsahující lepek' => 'gluten',         //  1
+			'Korýši'                     => 'crustaceans',    //  2
+			'Vejce'                      => 'eggs',           //  3
+			'Ryby'                       => 'fish',           //  4
+			'Podzemnice olejná'          => 'peanuts',        //  5
+			'Sójové boby'                => 'soybeans',       //  6
+			'Mléko'                      => 'lactose',        //  7
+			'Skořápkové plody'           => 'nuts',           //  8
+			'Celer'                      => 'celery',         //  9
+			'Hořčice'                    => 'mustard',        // 10
+			'Sezamová semena'            => 'sesame',         // 11
+			'Oxid siřičitý a siřičitany' => 'sulphurDioxide', // 12
+			'Měkkýši'                    => 'molluscs',       // 14
+		];
+
+		$allergenCodes = [];
+
+		if (isset($json->data->product->composition->allergens->contained)) {
+			foreach ($json->data->product->composition->allergens->contained as $allergenString) {
+				if (isset($map[$allergenString])) {
+					$allergenCodes[] = $map[$allergenString];
+				} else {
+					var_dump($allergenString);die;
+				}
+			}
+		}
+
+		foreach ($allergenCodes as $allergenCode) {
+			$this->setProductAllergen(ProductAllergen::SOURCE_ORIGIN, $allergenCode);
+		}
+
+		return true;
+	}
+
+	public function loadEmulgators() {
+		$json = $this->getJson();
+
+		$emulgatorCodes = [];
+
+		if (isset($json->data->product->composition->ingredients)) {
+
+			foreach ($json->data->product->composition->ingredients as $ingredient) {
+				if (isset($ingredient->code) && preg_match('/^E[0-9]+/i', $ingredient->code)) {
+					$emulgatorCodes[] = strtolower(preg_replace('/[^a-z0-9]/i', null, $ingredient->code));
+				}
+			}
+
+		}
+
+		foreach ($emulgatorCodes as $emulgatorCode) {
+
+			$emulgator = \Deli\Models\Emulgator::upsert([
+				'code' => $emulgatorCode,
+			], [
+				'timeCreated' => new \Katu\Utils\DateTime,
+			]);
+
+			$this->setProductEmulgator(ProductEmulgator::SOURCE_ORIGIN, $emulgator);
+
+		}
+
+		return true;
 	}
 
 	public function loadPrice() {
