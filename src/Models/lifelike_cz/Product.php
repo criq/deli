@@ -61,6 +61,80 @@ class Product extends \Deli\Models\Product {
 		}
 	}
 
+	public function load() {
+		try {
+
+			$this->loadNutrients();
+
+			$this->update('isAvailable', 1);
+
+		} catch (\Exception $e) {
+
+			var_dump($e);die;
+			$this->update('isAvailable', 0);
+
+		}
+
+		$this->update('timeLoaded', new \Katu\Utils\DateTime);
+		$this->save();
+
+		return true;
+	}
+
+	public function loadNutrients() {
+		$description = (new \Katu\Types\TString($this->getProductPropertyValue('description')))->normalizeSpaces();
+
+		if (preg_match('/Nutriční hodnoty na (?<amount>[0-9]+)(?<unit>g|ml)/', $description, $match)) {
+
+			echo($description);
+
+			$productAmountWithUnit = new \Effekt\AmountWithUnit($match['amount'], $match['unit']);
+
+			if (preg_match('/([0-9]+)\s*kJ/', $description, $match)) {
+				$this->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, 'energy', new \Effekt\AmountWithUnit($match[1], 'kJ'), $productAmountWithUnit);
+			}
+
+			if (preg_match('/([0-9]+)\s*kcal/', $description, $match)) {
+				$this->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, 'calories', new \Effekt\AmountWithUnit($match[1], 'kcal'), $productAmountWithUnit);
+			}
+
+			if (preg_match('/Bílkoviny\s*:\s*([0-9,]+)\s*g/x', $description, $match)) {
+				$this->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, 'proteins', new \Effekt\AmountWithUnit($match[1], 'g'), $productAmountWithUnit);
+			} else {
+				var_dump("A"); die;
+			}
+
+			if (preg_match('/Sacharidy\s*\/\s*cukry:\s*([0-9,]+)\s*g\s*\/\s*([0-9,]+)\s*g/x', $description, $match)) {
+				$this->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, 'carbs', new \Effekt\AmountWithUnit($match[1], 'g'), $productAmountWithUnit);
+				$this->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, 'sugar', new \Effekt\AmountWithUnit($match[2], 'g'), $productAmountWithUnit);
+			} elseif (preg_match('/Sacharidy\s*:\s*10,5\s*g\s*z\s*toho\s*cukry\s*2,4\s*g/x')) {
+				var_dump("A"); die;
+			}
+
+			if (preg_match('/Tuky\s*\/\s*Nasycené\s*:\s*([0-9,]+)\s*g\s*\/\s*([0-9,]+)\s*g/x', $description, $match)) {
+				$this->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, 'fats', new \Effekt\AmountWithUnit($match[1], 'g'), $productAmountWithUnit);
+				$this->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, 'saturatedFattyAcids', new \Effekt\AmountWithUnit($match[2], 'g'), $productAmountWithUnit);
+			} else {
+				var_dump("A"); die;
+			}
+
+			if (preg_match('/Vláknina\s*:\s*([0-9,]+)\s*g/x', $description, $match)) {
+				$this->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, 'fiber', new \Effekt\AmountWithUnit($match[1], 'g'), $productAmountWithUnit);
+			} else {
+				var_dump("A"); die;
+			}
+
+			if (preg_match('/Sůl\s*:\s*([0-9,]+)\s*g/x', $description, $match)) {
+				$this->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, 'salt', new \Effekt\AmountWithUnit($match[1], 'g'), $productAmountWithUnit);
+			} else {
+				var_dump("A"); die;
+			}
+
+		}
+
+		return true;
+	}
+
 	static function loadProductPrices() {
 		try {
 
