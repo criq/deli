@@ -107,7 +107,10 @@ class Product extends \Deli\Models\Product {
 			if (preg_match('/Sacharidy\s*\/\s*cukry:\s*([0-9,]+)\s*g\s*\/\s*([0-9,]+)\s*g/x', $description, $match)) {
 				$this->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, 'carbs', new \Effekt\AmountWithUnit($match[1], 'g'), $productAmountWithUnit);
 				$this->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, 'sugar', new \Effekt\AmountWithUnit($match[2], 'g'), $productAmountWithUnit);
-			} elseif (preg_match('/Sacharidy\s*:\s*10,5\s*g\s*z\s*toho\s*cukry\s*2,4\s*g/x')) {
+			} elseif (preg_match('/Sacharidy\s*:\s*([0-9,]+)\s*g\s*z\s*toho\s*cukry\s*([0-9,]+)\s*g/x')) {
+				$this->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, 'carbs', new \Effekt\AmountWithUnit($match[1], 'g'), $productAmountWithUnit);
+				$this->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, 'sugar', new \Effekt\AmountWithUnit($match[2], 'g'), $productAmountWithUnit);
+			} else {
 				var_dump("A"); die;
 			}
 
