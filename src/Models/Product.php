@@ -68,6 +68,7 @@ abstract class Product extends \Deli\Model {
 			\Deli\Models\kaloricke_tabulky_cz\Product::SOURCE => \Deli\Models\kaloricke_tabulky_cz\Product::getTopClass(),
 			\Deli\Models\kaloricketabulky_cz\Product::SOURCE  => \Deli\Models\kaloricketabulky_cz\Product::getTopClass(),
 			\Deli\Models\lekarna_cz\Product::SOURCE           => \Deli\Models\lekarna_cz\Product::getTopClass(),
+			\Deli\Models\lifelike_cz\Product::SOURCE          => \Deli\Models\lifelike_cz\Product::getTopClass(),
 			\Deli\Models\pbd_online_sk\Product::SOURCE        => \Deli\Models\pbd_online_sk\Product::getTopClass(),
 			\Deli\Models\rohlik_cz\Product::SOURCE            => \Deli\Models\rohlik_cz\Product::getTopClass(),
 			\Deli\Models\sklizeno_cz\Product::SOURCE          => \Deli\Models\sklizeno_cz\Product::getTopClass(),
