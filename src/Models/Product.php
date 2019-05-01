@@ -9,37 +9,17 @@ abstract class Product extends \Deli\Model {
 	const TIMEOUT = 2419200;
 
 	static function getAllSources() {
-		$file = new \Katu\Utils\File('./vendor/jabli/deli/src/Models');
-		var_dump($file->getDirs());
-		var_dump($file->getFiles());
-		die;
+		$sources = [];
 
-
-		foreach (get_declared_classes() as $class) {
-			var_dump($class);
+		$deliDir = new \Katu\Utils\File('./vendor/jabli/deli/src/Models');
+		foreach ($deliDir->getDirs() as $dir) {
+			foreach ($dir->getFiles() as $file) {
+				if ($file->getBasename() == 'Product.php' && preg_match('/\/(?<source>[a-z_]+)\/Product\.php/', $file, $match)) {
+					$class = '\\Deli\\Models\\custom\\Product';
+					$sources[$match['source']] = $class::getTopClass();
+				}
+			}
 		}
-		die;
-
-
-		$sources = [
-			\Deli\Models\custom\Product::SOURCE               => \Deli\Models\custom\Product::getTopClass(),
-			\Deli\Models\alkohol_cz\Product::SOURCE           => \Deli\Models\alkohol_cz\Product::getTopClass(),
-			\Deli\Models\countrylife_cz\Product::SOURCE       => \Deli\Models\countrylife_cz\Product::getTopClass(),
-			\Deli\Models\fajnejidlo_eu\Product::SOURCE        => \Deli\Models\fajnejidlo_eu\Product::getTopClass(),
-			\Deli\Models\itesco_cz\Product::SOURCE            => \Deli\Models\itesco_cz\Product::getTopClass(),
-			\Deli\Models\fajnejidlo_eu\Product::SOURCE        => \Deli\Models\fajnejidlo_eu\Product::getTopClass(),
-			\Deli\Models\kaloricke_tabulky_cz\Product::SOURCE => \Deli\Models\kaloricke_tabulky_cz\Product::getTopClass(),
-			\Deli\Models\kaloricketabulky_cz\Product::SOURCE  => \Deli\Models\kaloricketabulky_cz\Product::getTopClass(),
-			\Deli\Models\lekarna_cz\Product::SOURCE           => \Deli\Models\lekarna_cz\Product::getTopClass(),
-			\Deli\Models\lifelike_cz\Product::SOURCE          => \Deli\Models\lifelike_cz\Product::getTopClass(),
-			\Deli\Models\pbd_online_sk\Product::SOURCE        => \Deli\Models\pbd_online_sk\Product::getTopClass(),
-			\Deli\Models\rohlik_cz\Product::SOURCE            => \Deli\Models\rohlik_cz\Product::getTopClass(),
-			\Deli\Models\sklizeno_cz\Product::SOURCE          => \Deli\Models\sklizeno_cz\Product::getTopClass(),
-			\Deli\Models\stobklub_cz\Product::SOURCE          => \Deli\Models\stobklub_cz\Product::getTopClass(),
-			\Deli\Models\usda_gov\Product::SOURCE             => \Deli\Models\usda_gov\Product::getTopClass(),
-			\Deli\Models\vitalvibe_eu\Product::SOURCE         => \Deli\Models\vitalvibe_eu\Product::getTopClass(),
-			\Deli\Models\veganza_cz\Product::SOURCE           => \Deli\Models\veganza_cz\Product::getTopClass(),
-		];
 
 		return $sources;
 	}
