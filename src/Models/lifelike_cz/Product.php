@@ -86,8 +86,6 @@ class Product extends \Deli\Models\Product {
 
 		if (preg_match('/Nutriční hodnoty na (?<amount>[0-9]+)(?<unit>g|ml)/', $description, $match)) {
 
-			echo($description);
-
 			$productAmountWithUnit = new \Effekt\AmountWithUnit($match['amount'], $match['unit']);
 
 			if (preg_match('/([0-9]+)\s*kJ/x', $description, $match)) {
