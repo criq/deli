@@ -9,25 +9,12 @@ abstract class Product extends \Deli\Model {
 	const TIMEOUT = 2419200;
 
 	static function getAllSources() {
-		/*
-		$sources = [];
-
-		$deliDir = new \Katu\Utils\File('./vendor/jabli/deli/src/Models');
-		foreach ($deliDir->getDirs() as $dir) {
-			foreach ($dir->getFiles() as $file) {
-				if ($file->getBasename() == 'Product.php' && preg_match('/\/(?<source>[a-z_]+)\/Product\.php/', $file, $match)) {
-					$class = '\\Deli\\Models\\custom\\Product';
-					$sources[$match['source']] = $class::getTopClass();
-				}
-			}
-		}
-		*/
-
 		$sources = [
 			\Deli\Models\custom\Product::SOURCE               => \Deli\Models\custom\Product::getTopClass(),
 			\Deli\Models\alkohol_cz\Product::SOURCE           => \Deli\Models\alkohol_cz\Product::getTopClass(),
 			\Deli\Models\countrylife_cz\Product::SOURCE       => \Deli\Models\countrylife_cz\Product::getTopClass(),
 			\Deli\Models\fajnejidlo_eu\Product::SOURCE        => \Deli\Models\fajnejidlo_eu\Product::getTopClass(),
+			\Deli\Models\goodie_cz\Product::SOURCE            => \Deli\Models\goodie_cz\Product::getTopClass(),
 			\Deli\Models\itesco_cz\Product::SOURCE            => \Deli\Models\itesco_cz\Product::getTopClass(),
 			\Deli\Models\fajnejidlo_eu\Product::SOURCE        => \Deli\Models\fajnejidlo_eu\Product::getTopClass(),
 			\Deli\Models\kaloricke_tabulky_cz\Product::SOURCE => \Deli\Models\kaloricke_tabulky_cz\Product::getTopClass(),
