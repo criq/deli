@@ -137,6 +137,7 @@ class Product extends \Deli\Models\Product {
 		$nutrientAssoc = $this->scrapeNutrientAssoc();
 
 		if (isset($nutrientAssoc['Kategorie'])) {
+			// TODO
 			$this->setRemoteCategory($nutrientAssoc['Kategorie']);
 			$this->save();
 		}

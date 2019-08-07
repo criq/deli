@@ -4,8 +4,9 @@ namespace Deli\Models;
 
 use \Sexy\Sexy as SX;
 
-abstract class Product extends \Deli\Model {
+class Product extends \Deli\Model {
 
+	const TABLE = 'deli_products';
 	const TIMEOUT = 2419200;
 
 	static function getAllSources() {
@@ -42,8 +43,8 @@ abstract class Product extends \Deli\Model {
 		return $productClass::get($id);
 	}
 
-	static function getSourceClass($sourceCode) {
-		return static::getAllSources()[$sourceCode];
+	static function getSourceClass($source) {
+		return static::getAllSources()[$source];
 	}
 
 	static function getProductAllergenTopClass() {
@@ -112,10 +113,33 @@ abstract class Product extends \Deli\Model {
 		return isset($this->originalName) ? $this->originalName : null;
 	}
 
-	public function setRemoteCategory($source, $property = 'remoteCategory') {
-		$this->update($property, \Katu\Utils\JSON::encodeInline(array_values(array_filter(array_map('trim', (array)$source)))));
+	static function getRemoteCategoryArray($text) {
+		return preg_split('/[>\|\/]/', $text);
+	}
 
-		return true;
+	static function getRemoteCategoryJSON($text) {
+		return \Katu\Utils\JSON::encodeInline(array_values(array_filter(array_map('trim', (array)static::getRemoteCategoryArray($text)))));
+	}
+
+	static function getSanitizedRemoteCategoryJSON($remoteCategory) {
+		// Is null - return null.
+		if ($remoteCategory === null) {
+			return null;
+		}
+
+		// Is string.
+		if (is_string($remoteCategory) && strlen($remoteCategory)) {
+
+			$array = json_decode($remoteCategory);
+			if ($array === null) {
+				return static::getRemoteCategoryJSON($remoteCategory);
+			} else {
+				return $remoteCategory;
+			}
+
+		}
+
+		return null;
 	}
 
 	public function setEan($ean) {
@@ -248,31 +272,6 @@ abstract class Product extends \Deli\Model {
 		]);
 	}
 
-	public function getProductNutrients() {
-		$class = static::getProductNutrientTopClass();
-
-		if (class_exists($class)) {
-			return $class::getBy([
-				'productId' => $this->getId(),
-			]);
-		}
-
-		return false;
-	}
-
-	public function getProductNutrientByCode($code) {
-		$class = static::getProductNutrientTopClass();
-
-		if (class_exists($class)) {
-			return $class::getBy([
-				'productId' => $this->getId(),
-				'nutrientCode' => $code,
-			])->getOne();
-		}
-
-		return false;
-	}
-
 	public function getProductAllergens() {
 		$class = static::getProductAllergenTopClass();
 
@@ -298,6 +297,55 @@ abstract class Product extends \Deli\Model {
 		return false;
 	}
 
+	public function getProductNutrients() {
+		$class = static::getProductNutrientTopClass();
+
+		if (class_exists($class)) {
+			return $class::getBy([
+				'productId' => $this->getId(),
+			]);
+		}
+
+		return false;
+	}
+
+	public function getProductNutrientByCode($code) {
+		$class = static::getProductNutrientTopClass();
+
+		if (class_exists($class)) {
+			return $class::getBy([
+				'productId' => $this->getId(),
+				'nutrientCode' => $code,
+			])->getOne();
+		}
+
+		return false;
+	}
+
+	public function getProductPrices() {
+		$class = static::getProductPriceTopClass();
+
+		if (class_exists($class)) {
+			return $class::getBy([
+				'productId' => $this->getId(),
+			]);
+		}
+
+		return false;
+	}
+
+	public function getProductProperties() {
+		$class = static::getProductPropertyTopClass();
+
+		if (class_exists($class)) {
+			return $class::getBy([
+				'productId' => $this->getId(),
+			]);
+		}
+
+		return false;
+	}
+
 	static function getForLoadSql() {
 		$sql = SX::select()
 			->from(static::getTable())
@@ -317,7 +365,7 @@ abstract class Product extends \Deli\Model {
 
 	static function getAllSourcesForLoadSql() {
 		$sqls = [];
-		foreach (static::getAllSources() as $sourceCode => $sourceClass) {
+		foreach (static::getAllSources() as $source => $sourceClass) {
 
 			$sqls[] = $sourceClass::getForLoadSql()
 				->setOptGetTotalRows(false)
@@ -360,13 +408,13 @@ abstract class Product extends \Deli\Model {
 
 	static function getAllSourcesForLoadProductDataFromViscojisCzSql() {
 		$sqls = [];
-		foreach (static::getAllSources() as $sourceCode => $sourceClass) {
+		foreach (static::getAllSources() as $source => $sourceClass) {
 
 			if (in_array('timeLoadedFromViscojisCz', $sourceClass::getTable()->getColumnNames())) {
 
 				$sqls[] = $sourceClass::getForLoadProductDataFromViscojisCzSql()
 					->setOptGetTotalRows(false)
-					->select(SX::aka(SX::val($sourceCode), SX::a('sourceCode')))
+					->select(SX::aka(SX::val($source), SX::a('source')))
 					->select($sourceClass::getIdColumn())
 					->select($sourceClass::getColumn('name'))
 					->select($sourceClass::getColumn('timeLoadedFromViscojisCz'))
@@ -382,7 +430,7 @@ abstract class Product extends \Deli\Model {
 			->orderBy([
 				SX::orderBy(SX::a('timeLoadedFromViscojisCz')),
 				SX::orderBy(SX::a('id')),
-				SX::orderBy(SX::a('sourceCode')),
+				SX::orderBy(SX::a('source')),
 				SX::orderBy(SX::a('name')),
 			])
 			;
@@ -392,7 +440,7 @@ abstract class Product extends \Deli\Model {
 
 	static function getAllSourcesForLoadPriceSql() {
 		$sqls = [];
-		foreach (static::getAllSources() as $sourceCode => $sourceClass) {
+		foreach (static::getAllSources() as $source => $sourceClass) {
 
 			if (in_array('timeAttemptedPrice', $sourceClass::getTable()->getColumnNames())) {
 
@@ -401,7 +449,7 @@ abstract class Product extends \Deli\Model {
 
 					$sqls[] = SX::select()
 						->setOptGetTotalRows(false)
-						->select(SX::aka(SX::val($sourceCode), SX::a('sourceCode')))
+						->select(SX::aka(SX::val($source), SX::a('source')))
 						->select($sourceClass::getIdColumn())
 						->select($sourceClass::getColumn('name'))
 						->select($sourceClass::getColumn('timeAttemptedPrice'))
@@ -424,7 +472,7 @@ abstract class Product extends \Deli\Model {
 			->orderBy([
 				SX::orderBy(SX::a('timeAttemptedPrice')),
 				SX::orderBy(SX::a('id')),
-				SX::orderBy(SX::a('sourceCode')),
+				SX::orderBy(SX::a('source')),
 				SX::orderBy(SX::a('name')),
 			])
 			;

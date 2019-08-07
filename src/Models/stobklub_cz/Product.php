@@ -73,6 +73,7 @@ class Product extends \Deli\Models\Product {
 									$product->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, $nutrientCode, $nutrientAmountWithUnit, $productAmountWithUnit);
 								}
 
+								// TODO
 								$product->setRemoteCategory([
 									$category['name'],
 									$subcategory['name'],

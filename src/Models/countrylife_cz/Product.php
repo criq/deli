@@ -38,12 +38,15 @@ class Product extends \Deli\Models\Product {
 						$dom->filter('.product-list .item')->each(function($i) use($categoryName) {
 
 							$product = static::upsert([
+								'source' => static::SOURCE,
 								'uri' => trim($i->filter('a.top')->attr('href')),
 							], [
 								'timeCreated' => new \Katu\Utils\DateTime,
 							], [
 								'name' => trim($i->filter('h2 .name')->html()),
+								'originalName' => trim($i->filter('h2 .name')->html()),
 							]);
+							// TODO
 							$product->setRemoteCategory($categoryName);
 							$product->save();
 

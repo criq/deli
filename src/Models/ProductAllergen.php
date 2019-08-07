@@ -2,8 +2,10 @@
 
 namespace Deli\Models;
 
-abstract class ProductAllergen extends \Deli\Model {
+class ProductAllergen extends \Deli\Model {
 
+	const TABLE = 'deli_product_allergens';
+	
 	const SOURCE_ORIGIN = 'origin';
 	const SOURCE_VISCOJIS_CZ = 'viscojis_cz';
 
@@ -13,10 +15,6 @@ abstract class ProductAllergen extends \Deli\Model {
 		"Alergeny jsou ve složení vyznačeny <b>tučně</b>.",
 		"Alergeny jsou ve složení vyznačeny tučně.",
 		"Informace pro alergiky: Alergeny, včetně obilovin obsahujících lepek, jsou ve složení vyznačeny tučně",
-		#"Informace pro alergiky: Výrobek neobsahuje alergeny.",
-		#"Výrobek neobsahuje alergeny.",
-		#"Výrobek neobsahuje alergeny",
-		#"Informace pro alergiky: neobsahuje alergeny, ani jejich stopy.",
 	];
 
 	static function getConfig(){

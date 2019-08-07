@@ -8,16 +8,18 @@ class Product extends \Deli\Models\Product {
 	const SOURCE = 'alkohol_cz';
 	const XML_URL = 'https://www.alkohol.cz/export/?type=affilcz&hash=CE7bqK2NhDGkFdTQJZWnH6k35f2M4qKR';
 
-	static function makeProductFromXml($item) {
+	static function makeProductFromXML($item) {
 		$product = static::upsert([
 			'remoteId' => $item->ITEM_ID,
 		], [
 			'timeCreated' => new \Katu\Utils\DateTime,
 		], [
-			'name' => (string)$item->PRODUCT,
+			'source' => static::SOURCE,
 			'uri' => (string)$item->URL,
-			'isAvailable' => 1,
-			'remoteCategory' => (string)$item->CATEGORYTEXT,
+			'name' => (string)$item->PRODUCT,
+			'originalName' => (string)$item->PRODUCT,
+			'remoteCategory' => static::getRemoteCategoryJSON((string)$item->CATEGORYTEXT),
+			'originalRemoteCategory' => static::getRemoteCategoryJSON((string)$item->CATEGORYTEXT),
 		]);
 
 		$product->setProductProperty(\Deli\Models\ProductProperty::SOURCE_ORIGIN, 'description', (string)$item->DESCRIPTION);
@@ -52,7 +54,7 @@ class Product extends \Deli\Models\Product {
 				foreach ($xml->SHOPITEM as $item) {
 
 					\Katu\Utils\Cache::get(function($item) {
-						return static::makeProductFromXml($item);
+						return static::makeProductFromXML($item);
 					}, static::TIMEOUT, $item);
 
 				}
@@ -74,7 +76,7 @@ class Product extends \Deli\Models\Product {
 
 					\Katu\Utils\Cache::get(function($item) {
 
-						$product = static::makeProductFromXml($item);
+						$product = static::makeProductFromXML($item);
 						if ($product->shouldLoadProductPrice()) {
 
 							$product->update('timeAttemptedPrice', new \Katu\Utils\DateTime);

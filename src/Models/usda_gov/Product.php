@@ -63,6 +63,7 @@ class Product extends \Deli\Models\Product {
 						'originalName' => $productLine[2],
 					]);
 
+					// TODO
 					$product->setRemoteCategory($categories[$productLine[1]], 'remoteOriginalCategory');
 					$product->save();
 
@@ -105,6 +106,7 @@ class Product extends \Deli\Models\Product {
 			}
 		}
 
+		// TODO
 		$this->setRemoteCategory($categories);
 		$this->save();
 

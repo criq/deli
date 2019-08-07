@@ -2,8 +2,6 @@
 
 namespace App\Classes\Filters\Properties;
 
-use \Sexy\Sexy as SX;
-
 class ObjectProperty extends \App\Classes\Filters\Property {
 
 	public function getTitle() {

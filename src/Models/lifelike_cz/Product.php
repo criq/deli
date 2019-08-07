@@ -8,7 +8,7 @@ class Product extends \Deli\Models\Product {
 	const SOURCE = 'lifelike_cz';
 	const XML_URL = 'https://www.lifelike.cz/feed-heureka-cz.xml';
 
-	static function makeProductFromXml($item) {
+	static function makeProductFromXML($item) {
 		$product = static::upsert([
 			'uri' => (string)$item->URL,
 		], [
@@ -45,7 +45,7 @@ class Product extends \Deli\Models\Product {
 						\Katu\Utils\Cache::get(function($chunk) {
 
 							foreach ($chunk as $item) {
-								$product = static::makeProductFromXml($item);
+								$product = static::makeProductFromXML($item);
 							}
 
 						}, static::TIMEOUT, $chunk);
@@ -145,7 +145,7 @@ class Product extends \Deli\Models\Product {
 
 					\Katu\Utils\Cache::get(function($item) {
 
-						$product = static::makeProductFromXml($item);
+						$product = static::makeProductFromXML($item);
 						if ($product->shouldLoadProductPrice()) {
 
 							$product->update('timeAttemptedPrice', new \Katu\Utils\DateTime);

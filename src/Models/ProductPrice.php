@@ -2,8 +2,10 @@
 
 namespace Deli\Models;
 
-abstract class ProductPrice extends \Deli\Model {
+class ProductPrice extends \Deli\Model {
 
+	const TABLE = 'deli_product_prices';
+	
 	const TIMEOUT = 432000;
 
 	static $acceptableUnitCodes = ['mg', 'g', 'kg', 'ml', 'l', 'ks'];

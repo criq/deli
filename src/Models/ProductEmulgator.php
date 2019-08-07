@@ -2,8 +2,10 @@
 
 namespace Deli\Models;
 
-abstract class ProductEmulgator extends \Deli\Model {
+class ProductEmulgator extends \Deli\Model {
 
+	const TABLE = 'deli_product_emulgators';
+	
 	const SOURCE_ORIGIN = 'origin';
 	const SOURCE_VISCOJIS_CZ = 'viscojis_cz';
 

@@ -2,8 +2,10 @@
 
 namespace Deli\Models;
 
-abstract class ProductNutrient extends \Deli\Model {
+class ProductNutrient extends \Deli\Model {
 
+	const TABLE = 'deli_product_nutrients';
+	
 	const SOURCE_ORIGIN = 'origin';
 	const SOURCE_VISCOJIS_CZ = 'viscojis_cz';
 

@@ -33,6 +33,7 @@ class Product extends \Deli\Models\Product {
 											'remoteId' => $product->id,
 										]);
 
+										// TODO
 										$product->setRemoteCategory([
 											$superDepartment->name,
 											$department->name,

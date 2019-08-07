@@ -8,7 +8,7 @@ class Product extends \Deli\Models\Product {
 	const SOURCE = 'vitalvibe_eu';
 	const XML_URL = 'http://www.vitalvibe.eu/xml/cs_zbozi_seznam.xml';
 
-	static function makeProductFromXml($item) {
+	static function makeProductFromXML($item) {
 		$product = static::upsert([
 			'uri' => (string)$item->URL,
 		], [
@@ -40,7 +40,7 @@ class Product extends \Deli\Models\Product {
 				foreach ($xml->SHOPITEM as $item) {
 
 					\Katu\Utils\Cache::get(function($item) {
-						$product = static::makeProductFromXml($item);
+						$product = static::makeProductFromXML($item);
 					}, static::TIMEOUT, $item);
 
 				}
@@ -64,7 +64,7 @@ class Product extends \Deli\Models\Product {
 
 					\Katu\Utils\Cache::get(function($item) {
 
-						$product = static::makeProductFromXml($item);
+						$product = static::makeProductFromXML($item);
 						if ($product->shouldLoadProductPrice()) {
 
 							$product->update('timeAttemptedPrice', new \Katu\Utils\DateTime);

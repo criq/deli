@@ -49,6 +49,7 @@ class Product extends \Deli\Models\Product {
 								'baseUnit' => $baseUnit,
 							]);
 
+							// TODO
 							$product->setRemoteCategory($category);
 							$product->save();
 
