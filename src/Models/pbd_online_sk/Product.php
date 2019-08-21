@@ -126,23 +126,23 @@ class Product extends \Deli\Models\Product {
 			if (preg_match('#^(?<amount>[0-9\.]+)\s+(?<unit>[a-z]+)$#ui', $nutrientAmountSource, $match)) {
 				switch ($match['unit']) {
 					case 'g' :
-						$amountWithUnit = new \Effekt\AmountWithUnit($match['amount'], 'g');
+						$amountWithUnit = new \Deli\Classes\AmountWithUnit($match['amount'], 'g');
 					break;
 					case 'mg' :
-						$amountWithUnit = new \Effekt\AmountWithUnit($match['amount'] * .001, 'g');
+						$amountWithUnit = new \Deli\Classes\AmountWithUnit($match['amount'] * .001, 'g');
 					break;
 					case 'ug' :
-						$amountWithUnit = new \Effekt\AmountWithUnit($match['amount'] * .000001, 'g');
+						$amountWithUnit = new \Deli\Classes\AmountWithUnit($match['amount'] * .000001, 'g');
 					break;
 					case 'RE' :
-						$amountWithUnit = new \Effekt\AmountWithUnit($match['amount'], 'RE');
+						$amountWithUnit = new \Deli\Classes\AmountWithUnit($match['amount'], 'RE');
 					break;
 					case 'kcal' :
 					case 'kJ' :
 						$amountWithUnit = (new \Effekt\Joules($match['amount'], $match['unit']))->toJ();
 					break;
 					case 'PCT' :
-						$amountWithUnit = new \Effekt\AmountWithUnit($match['amount'], 'percent');
+						$amountWithUnit = new \Deli\Classes\AmountWithUnit($match['amount'], 'percent');
 					break;
 				}
 			}
@@ -157,7 +157,7 @@ class Product extends \Deli\Models\Product {
 	}
 
 	public function getProductAmountWithUnit() {
-		return new \Effekt\AmountWithUnit(100, 'g');
+		return new \Deli\Classes\AmountWithUnit(100, 'g');
 	}
 
 	public function loadNutrients() {

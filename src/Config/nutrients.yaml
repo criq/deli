@@ -1,0 +1,52 @@
+list:
+  energy:
+    strings:
+      - "energie (100 g)"
+  calories:
+    strings:
+      - "kalorie"
+      - "kalorie (100 g)"
+  proteins:
+    strings:
+      - "bílkoviny"
+      - "bílkoviny (100 g)"
+  carbs:
+    strings:
+      - "sacharidy"
+      - "sacharidy (100 g)"
+  fats:
+    strings:
+      - "tuky"
+      - "tuky (100 g)"
+  sugar:
+    strings:
+      - "cukry"
+      - "z toho cukry"
+  saturatedFattyAcids:
+    strings:
+      - "nasycené mastné kyseliny"
+      - "z toho nasycené mastné kyseliny"
+  transFattyAcids:
+    strings:
+      - "trans mastné kyseliny"
+  monounsaturatedFattyAcids:
+    strings:
+      - "mononenasycené"
+  polyunsaturatedFattyAcids:
+    strings:
+      - "polynenasycené"
+  cholesterol:
+    strings:
+      - "cholesterol"
+  fiber:
+    strings:
+      - "vláknina"
+  salt:
+    strings:
+      - "sůl"
+  sodium:
+    strings:
+      - "sodík"
+  calcium:
+    strings:
+      - "vápník"

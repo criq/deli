@@ -133,9 +133,9 @@ class Product extends \Deli\Models\Product {
 			}
 
 			if (preg_match('/(?<amount>[0-9]+)\s*(?<unit>g|ml)/ui', $e->html(), $match)) {
-				return new \Effekt\AmountWithUnit($match['amount'], $match['unit']);
+				return new \Deli\Classes\AmountWithUnit($match['amount'], $match['unit']);
 			} elseif (preg_match('/Na (?<amount>[0-9]+) výrobku/ui', $e->html(), $match)) {
-				return new \Effekt\AmountWithUnit($match['amount'], 'g');
+				return new \Deli\Classes\AmountWithUnit($match['amount'], 'g');
 			}
 
 		}
@@ -219,34 +219,34 @@ class Product extends \Deli\Models\Product {
 
 					if (preg_match('/([0-9\.\,]+)\s*kJ\s*\/\s*([0-9\.\,\s]+)\s*kcal/', $nutrientAmountSource, $match)) {
 
-						$nutrients['energy'] = new \Effekt\AmountWithUnit($match[1], 'kJ');
-						$nutrients['calories'] = new \Effekt\AmountWithUnit($match[2], 'kcal');
+						$nutrients['energy'] = new \Deli\Classes\AmountWithUnit($match[1], 'kJ');
+						$nutrients['calories'] = new \Deli\Classes\AmountWithUnit($match[2], 'kcal');
 
 					} elseif (preg_match('/([0-9\.\,]+)\s*kcal\s*\/\s*([0-9\.\,\s]+)\s*kJ/', $nutrientAmountSource, $match)) {
 
-						$nutrients['calories'] = new \Effekt\AmountWithUnit($match[1], 'kcal');
-						$nutrients['energy'] = new \Effekt\AmountWithUnit($match[2], 'kJ');
+						$nutrients['calories'] = new \Deli\Classes\AmountWithUnit($match[1], 'kcal');
+						$nutrients['energy'] = new \Deli\Classes\AmountWithUnit($match[2], 'kJ');
 
 					} elseif (preg_match('/([0-9\.\,]+)\s*kJ/', $nutrientAmountSource, $match)) {
 
-						$nutrients['energy'] = new \Effekt\AmountWithUnit($match[1], 'kJ');
+						$nutrients['energy'] = new \Deli\Classes\AmountWithUnit($match[1], 'kJ');
 
 					} elseif (preg_match('/([0-9\.\,]+)\s*kcal/', $nutrientAmountSource, $match)) {
 
-						$nutrients['calories'] = new \Effekt\AmountWithUnit($match[1], 'kcal');
+						$nutrients['calories'] = new \Deli\Classes\AmountWithUnit($match[1], 'kcal');
 
 					} elseif (preg_match('/(Energie \(kJ\)|Energie kJ)/', $nutrientName) && preg_match('/([0-9\.\,]+)/', $nutrientAmountSource, $match)) {
 
-						$nutrients['energy'] = new \Effekt\AmountWithUnit($match[1], 'kJ');
+						$nutrients['energy'] = new \Deli\Classes\AmountWithUnit($match[1], 'kJ');
 
 					} elseif (preg_match('/(Energie \(kcal\)|Energie kcal)/', $nutrientName) && preg_match('/([0-9\.\,]+)/', $nutrientAmountSource, $match)) {
 
-						$nutrients['calories'] = new \Effekt\AmountWithUnit($match[1], 'kcal');
+						$nutrients['calories'] = new \Deli\Classes\AmountWithUnit($match[1], 'kcal');
 
 					} elseif (preg_match('/Energetická hodnota \(kJ\s*\/\s*kcal\)/', $nutrientName) && preg_match('/([0-9\.\,]+)\s*\/\s*([0-9\.\,]+)/', $nutrientAmountSource, $match)) {
 
-						$nutrients['energy'] = new \Effekt\AmountWithUnit($match[1], 'kJ');
-						$nutrients['calories'] = new \Effekt\AmountWithUnit($match[2], 'kcal');
+						$nutrients['energy'] = new \Deli\Classes\AmountWithUnit($match[1], 'kJ');
+						$nutrients['calories'] = new \Deli\Classes\AmountWithUnit($match[2], 'kcal');
 
 					}
 
@@ -256,9 +256,9 @@ class Product extends \Deli\Models\Product {
 					$nutrientAmountWithUnit = null;
 
 					if (preg_match('/^([0-9\.\,]+)\s*(g)?$/', $nutrientAmountSource, $match)) {
-						$nutrientAmountWithUnit = new \Effekt\AmountWithUnit($match[1], 'g');
+						$nutrientAmountWithUnit = new \Deli\Classes\AmountWithUnit($match[1], 'g');
 					} elseif (preg_match('/^([0-9\.\,]+)\s*(mg)?$/', $nutrientAmountSource, $match)) {
-						$nutrientAmountWithUnit = new \Effekt\AmountWithUnit($match[1], 'mg');
+						$nutrientAmountWithUnit = new \Deli\Classes\AmountWithUnit($match[1], 'mg');
 					}
 
 					/* Monounsaturated fatty acids **************************************/
@@ -407,7 +407,7 @@ class Product extends \Deli\Models\Product {
 	}
 
 	public function loadAllergens() {
-		foreach (static::getAllergenCodesFromTexts($this->scrapeAllergensInContents()) as $allergenCode) {
+		foreach (\Deli\Models\ProductAllergen::getCodesFromStrings($this->scrapeAllergensInContents()) as $allergenCode) {
 			$this->setProductAllergen(ProductAllergen::SOURCE_ORIGIN, $allergenCode);
 		}
 

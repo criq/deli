@@ -7,104 +7,57 @@ use \Sexy\Sexy as SX;
 class Product extends \Deli\Model {
 
 	const TABLE = 'deli_products';
-	const TIMEOUT = 2419200;
 
-	static function getAllSources() {
-		$sources = [
-			\Deli\Models\custom\Product::SOURCE               => \Deli\Models\custom\Product::getTopClass(),
-			\Deli\Models\alkohol_cz\Product::SOURCE           => \Deli\Models\alkohol_cz\Product::getTopClass(),
-			\Deli\Models\countrylife_cz\Product::SOURCE       => \Deli\Models\countrylife_cz\Product::getTopClass(),
-			\Deli\Models\fajnejidlo_eu\Product::SOURCE        => \Deli\Models\fajnejidlo_eu\Product::getTopClass(),
-			\Deli\Models\goodie_cz\Product::SOURCE            => \Deli\Models\goodie_cz\Product::getTopClass(),
-			\Deli\Models\itesco_cz\Product::SOURCE            => \Deli\Models\itesco_cz\Product::getTopClass(),
-			\Deli\Models\fajnejidlo_eu\Product::SOURCE        => \Deli\Models\fajnejidlo_eu\Product::getTopClass(),
-			\Deli\Models\kaloricke_tabulky_cz\Product::SOURCE => \Deli\Models\kaloricke_tabulky_cz\Product::getTopClass(),
-			\Deli\Models\kaloricketabulky_cz\Product::SOURCE  => \Deli\Models\kaloricketabulky_cz\Product::getTopClass(),
-			\Deli\Models\lekarna_cz\Product::SOURCE           => \Deli\Models\lekarna_cz\Product::getTopClass(),
-			\Deli\Models\lifelike_cz\Product::SOURCE          => \Deli\Models\lifelike_cz\Product::getTopClass(),
-			\Deli\Models\pbd_online_sk\Product::SOURCE        => \Deli\Models\pbd_online_sk\Product::getTopClass(),
-			\Deli\Models\rohlik_cz\Product::SOURCE            => \Deli\Models\rohlik_cz\Product::getTopClass(),
-			\Deli\Models\sklizeno_cz\Product::SOURCE          => \Deli\Models\sklizeno_cz\Product::getTopClass(),
-			\Deli\Models\stobklub_cz\Product::SOURCE          => \Deli\Models\stobklub_cz\Product::getTopClass(),
-			\Deli\Models\usda_gov\Product::SOURCE             => \Deli\Models\usda_gov\Product::getTopClass(),
-			\Deli\Models\vitalvibe_eu\Product::SOURCE         => \Deli\Models\vitalvibe_eu\Product::getTopClass(),
-			\Deli\Models\veganza_cz\Product::SOURCE           => \Deli\Models\veganza_cz\Product::getTopClass(),
-		];
-
-		return $sources;
+	/****************************************************************************
+	 * Source.
+	 */
+	public function getSourceClass() {
+		return '\\Deli\\Classes\\Sources\\' . $this->source . '\\Source';
 	}
 
-	static function getBySourceAndId($source, $id) {
-		$productClass = '\\Deli\\Models\\' . $source . '\\Product';
-		if (!class_exists($productClass)) {
-			throw new \Exception("Product class " . $productClass . " doesn't exist.");
-		}
-
-		return $productClass::get($id);
-	}
-
-	static function getSourceClass($source) {
-		return static::getAllSources()[$source];
-	}
-
-	static function getProductAllergenTopClass() {
-		return implode([
-			static::getTopClass(),
-			'Allergen',
-		]);
-	}
-
-	static function getProductEmulgatorTopClass() {
-		return implode([
-			static::getTopClass(),
-			'Emulgator',
-		]);
-	}
-
-	static function getProductNutrientTopClass() {
-		return implode([
-			static::getTopClass(),
-			'Nutrient',
-		]);
-	}
-
-	static function getProductPriceTopClass() {
-		return implode([
-			static::getTopClass(),
-			'Price',
-		]);
-	}
-
-	static function getProductPropertyTopClass() {
-		return implode([
-			static::getTopClass(),
-			'Property',
-		]);
-	}
-
-	static function loadXml() {
-		$src = \Katu\Utils\Cache::get(function($xmlUrl) {
-
-			$curl = new \Curl\Curl;
-			$curl->setConnectTimeout(3600);
-			$curl->setTimeout(3600);
-			$curl->get($xmlUrl);
-
-			if ($curl->error) {
-				throw new \Katu\Exceptions\DoNotCacheException;
-			}
-
-			return $curl->rawResponse;
-
-		}, static::TIMEOUT, static::XML_URL);
-
-		return new \SimpleXMLElement($src);
+	public function getSourceProductClass() {
+		return '\\Deli\\Classes\\Sources\\' . $this->source . '\\SourceProduct';
 	}
 
 	public function getSource() {
-		return static::SOURCE;
+		$class = $this->getSourceClass();
+
+		return new $class;
 	}
 
+	public function getSourceProduct() {
+		$class = $this->getSourceProductClass();
+
+		return new $class($this);
+	}
+
+	/****************************************************************************
+	 * Timestamps.
+	 */
+	public function setTimeLoadedDetails() {
+		$this->update('timeLoadedDetails', new \Katu\Utils\DateTime);
+		$this->save();
+
+		return true;
+	}
+
+	public function setTimeLoadedAllergens() {
+		$this->update('timeLoadedAllergens', new \Katu\Utils\DateTime);
+		$this->save();
+
+		return true;
+	}
+
+	public function setTimeLoadedNutrients() {
+		$this->update('timeLoadedNutrients', new \Katu\Utils\DateTime);
+		$this->save();
+
+		return true;
+	}
+
+	/****************************************************************************
+	 * Properties.
+	 */
 	public function getName() {
 		return $this->name;
 	}
@@ -191,10 +144,19 @@ class Product extends \Deli\Model {
 		return true;
 	}
 
-	public function setProductAllergen($source, $allergenCode) {
-		$class = static::getProductAllergenTopClass();
+	/****************************************************************************
+	 * Allergens.
+	 */
+	public function setProductAllergens($source, $allergenCodes) {
+		foreach ($allergenCodes as $allergenCode) {
+			$this->setProductAllergen($source, $allergenCode);
+		}
 
-		return $class::upsert([
+		return true;
+	}
+
+	public function setProductAllergen($source, $allergenCode) {
+		return ProductAllergen::upsert([
 			'productId' => $this->getId(),
 			'source' => $source,
 			'allergenCode' => $allergenCode,
@@ -202,6 +164,86 @@ class Product extends \Deli\Model {
 			'timeCreated' => new \Katu\Utils\DateTime,
 		]);
 	}
+
+	public function getProductAllergens() {
+		return \Deli\Models\ProductAllergen::getBy([
+			'productId' => $this->getId(),
+		]);
+	}
+
+	/****************************************************************************
+	 * Nutrients.
+	 */
+
+	public function setProductNutrients(string $source, \Deli\Classes\AmountWithUnit $productAmountWithUnit, array $nutrients) {
+		foreach ($nutrients as $nutrientAmountWithUnit) {
+			if (is_string($source) && $productAmountWithUnit instanceof \Deli\Classes\AmountWithUnit && $nutrientAmountWithUnit instanceof \Deli\Classes\NutrientAmountWithUnit) {
+				$this->setProductNutrient($source, $productAmountWithUnit, $nutrientAmountWithUnit);
+			}
+		}
+
+		return true;
+	}
+
+	public function setProductNutrient(string $source, \Deli\Classes\AmountWithUnit $productAmountWithUnit, \Deli\Classes\NutrientAmountWithUnit $nutrientAmountWithUnit) {
+		if (!$nutrientAmountWithUnit->nutrientCode || !$nutrientAmountWithUnit->amountWithUnit) {
+			throw new \Exception("Missing nutrient code.");
+		}
+
+		return \Deli\Models\ProductNutrient::upsert([
+			'productId' => $this->getId(),
+			'source' => $source,
+			'nutrientCode' => $nutrientAmountWithUnit->nutrientCode,
+		], [
+			'timeCreated' => new \Katu\Utils\DateTime,
+		], [
+			'timeUpdated' => new \Katu\Utils\DateTime,
+			'nutrientAmount' => $nutrientAmountWithUnit->amountWithUnit->amount,
+			'nutrientUnit' => $nutrientAmountWithUnit->amountWithUnit->unit,
+			'ingredientAmount' => $productAmountWithUnit->amount,
+			'ingredientUnit' => $productAmountWithUnit->unit,
+		]);
+	}
+
+	public function getProductNutrients() {
+		return \Deli\Models\ProductNutrient::getBy([
+			'productId' => $this->getId(),
+		]);
+	}
+
+	public function getProductNutrientByCode($code) {
+		return \Deli\Models\ProductNutrient::getBy([
+			'productId' => $this->getId(),
+			'nutrientCode' => $code,
+		])->getOne();
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	public function setProductEmulgator($source, $emulgator) {
 		$class = static::getProductEmulgatorTopClass();
@@ -215,74 +257,28 @@ class Product extends \Deli\Model {
 		]);
 	}
 
-	public function getProductAmountWithUnit() {
-		$class = static::getProductNutrientTopClass();
 
-		// Look into existing first.
-		$productNutrient = $class::getOneBy([
-			'productId' => $this->getId(),
-		]);
-		if ($productNutrient) {
-			return new \Effekt\AmountWithUnit($productNutrient->ingredientAmount, $productNutrient->ingredientUnit);
-		}
 
-		// Else scrape.
-		if (method_exists($this, 'scrapeProductAmountWithUnit')) {
-			$scraped = $this->scrapeProductAmountWithUnit();
-			if ($scraped) {
-				return $scraped;
-			}
-		}
 
-		// Default.
-		return new \Effekt\AmountWithUnit(100, 'g');
-	}
 
-	public function setProductNutrientIfEmpty($source, $nutrientCode, $nutrientAmountWithUnit) {
-		$class = static::getClass();
-		$productNutrientClass = $class . 'Nutrient';
 
-		$productNutrient = $productNutrientClass::getOneBy([
-			'productId' => $this->getId(),
-			'source' => $source,
-			'nutrientCode' => $nutrientCode,
-		]);
-		if (!$productNutrient) {
-			$productNutrient = $this->setProductNutrient($source, $nutrientCode, $nutrientAmountWithUnit, $this->getProductAmountWithUnit());
-		}
 
-		return $productNutrient;
-	}
 
-	public function setProductNutrient($source, $nutrientCode, $nutrientAmountWithUnit, $productAmountWithUnit) {
-		$class = static::getProductNutrientTopClass();
 
-		return $class::upsert([
-			'productId' => $this->getId(),
-			'source' => $source,
-			'nutrientCode' => $nutrientCode,
-		], [
-			'timeCreated' => new \Katu\Utils\DateTime,
-		], [
-			'timeUpdated' => new \Katu\Utils\DateTime,
-			'nutrientAmount' => $nutrientAmountWithUnit->amount,
-			'nutrientUnit' => $nutrientAmountWithUnit->unit,
-			'ingredientAmount' => $productAmountWithUnit->amount,
-			'ingredientUnit' => $productAmountWithUnit->unit,
-		]);
-	}
 
-	public function getProductAllergens() {
-		$class = static::getProductAllergenTopClass();
 
-		if (class_exists($class)) {
-			return $class::getBy([
-				'productId' => $this->getId(),
-			]);
-		}
 
-		return false;
-	}
+
+
+
+
+
+
+
+
+
+
+
 
 	public function getProductEmulgators() {
 		$class = static::getProductEmulgatorTopClass();
@@ -297,30 +293,7 @@ class Product extends \Deli\Model {
 		return false;
 	}
 
-	public function getProductNutrients() {
-		$class = static::getProductNutrientTopClass();
 
-		if (class_exists($class)) {
-			return $class::getBy([
-				'productId' => $this->getId(),
-			]);
-		}
-
-		return false;
-	}
-
-	public function getProductNutrientByCode($code) {
-		$class = static::getProductNutrientTopClass();
-
-		if (class_exists($class)) {
-			return $class::getBy([
-				'productId' => $this->getId(),
-				'nutrientCode' => $code,
-			])->getOne();
-		}
-
-		return false;
-	}
 
 	public function getProductPrices() {
 		$class = static::getProductPriceTopClass();
@@ -510,37 +483,8 @@ class Product extends \Deli\Model {
 		return \App\Models\ScrapedIngredient::make(static::SOURCE, $this->getName());
 	}
 
-	static function getAllergenCodesFromTexts($texts) {
-		$config = ProductAllergen::getConfig();
-
-		$allergenCodes = [];
-		foreach ($texts as $text) {
-
-			if (in_array($text, $config['ignoreTexts'])) {
-				continue;
-			}
-
-			foreach ($config['list'] as $allergenId => $allergenConfig) {
-
-				foreach ($allergenConfig['texts'] as $allergenText) {
-
-					if (strpos($text, $allergenText) !== false) {
-						$allergenCodes[] = $allergenConfig['code'];
-						continue 3;
-					}
-
-				}
-			}
-
-		}
-
-		return array_values(array_unique($allergenCodes));
-	}
-
 	public function setProductProperty($source, $property, $value) {
-		$class = static::getProductPropertyTopClass();
-
-		$productProperty = $class::upsert([
+		$productProperty = ProductProperty::upsert([
 			'productId' => $this->getId(),
 			'source' => $source,
 			'property' => trim($property),
@@ -553,18 +497,19 @@ class Product extends \Deli\Model {
 		return true;
 	}
 
-	public function getProductProperty($property) {
-		$class = static::getProductPropertyTopClass();
-		if (class_exists($class)) {
-
-			return $class::getOneBy([
-				'productId' => $this->getId(),
-				'property' => trim($property),
-			]);
-
+	public function setProductProperties($source, $properties) {
+		foreach ($properties as $property => $value) {
+			$this->setProductProperty($source, $property, $value);
 		}
 
-		return null;
+		return true;
+	}
+
+	public function getProductProperty($property) {
+		return ProductProperty::getOneBy([
+			'productId' => $this->getId(),
+			'property' => trim($property),
+		]);
 	}
 
 	public function getProductPropertyValue($property) {
@@ -602,23 +547,16 @@ class Product extends \Deli\Model {
 		return $string;
 	}
 
-	public function setProductPrice($currencyCode, $pricePerProduct, $pricePerUnit = null, $unitAmount = null, $unitCode = null) {
-		$class = static::getProductPriceTopClass();
-
-		$data = [
-			'timeCreated' => new \Katu\Utils\DateTime,
-			'productId' => $this->getId(),
-			'currencyCode' => $currencyCode,
-			'pricePerProduct' => $pricePerProduct,
-		];
-
-		if ($pricePerUnit && $unitAmount && $unitCode && in_array($unitCode, $class::$acceptableUnitCodes)) {
-			$data['pricePerUnit'] = $pricePerUnit;
-			$data['unitAmount'] = $unitAmount;
-			$data['unitCode'] = $unitCode;
-		}
-
-		return $class::insert($data);
+	public function setProductPrice($currencyCode, \Deli\Classes\Price $price) {
+		return ProductPrice::insert([
+			'timeCreated'     => new \Katu\Utils\DateTime,
+			'productId'       => $this->getId(),
+			'currencyCode'    => $currencyCode,
+			'pricePerProduct' => $price->pricePerProduct,
+			'pricePerUnit'    => $price->pricePerUnit,
+			'unitAmount'      => $price->unitAmount,
+			'unitCode'        => $price->unitCode,
+		]);
 	}
 
 	public function getLatestProductPrice() {

@@ -1,7 +1,7 @@
 list:
   1:
     code: gluten
-    texts:
+    strings:
       - mouka
       - mouku
       - mouky
@@ -63,7 +63,7 @@ list:
       - otruby
   2:
     code: crustaceans
-    texts:
+    strings:
       - korýšů
       - korýše
       - krevety
@@ -78,7 +78,7 @@ list:
       - chobotnice
   3:
     code: eggs
-    texts:
+    strings:
       - vejce
       - vajec
       - vaječ
@@ -89,7 +89,7 @@ list:
       - bílky
   4:
     code: fish
-    texts:
+    strings:
       - ryb
       - treska
       - tresky
@@ -119,7 +119,7 @@ list:
       - pangasius
   5:
     code: peanuts
-    texts:
+    strings:
       - arašídy
       - arašídů
       - arašidů
@@ -128,7 +128,7 @@ list:
       - arašídové
   6:
     code: soybeans
-    texts:
+    strings:
       - sója
       - sóju
       - soju
@@ -149,7 +149,7 @@ list:
       - miso
   7:
     code: lactose
-    texts:
+    strings:
       - laktóza
       - laktózy
       - laktózu
@@ -202,7 +202,7 @@ list:
       - roquefort
   8:
     code: nuts
-    texts:
+    strings:
       - skořápkových
       - ořechy
       - ořechů
@@ -238,11 +238,11 @@ list:
       - jádra
   9:
     code: celery
-    texts:
+    strings:
       - celer
   10:
     code: mustard
-    texts:
+    strings:
       - hořčice
       - hořčicí
       - hořčici
@@ -253,11 +253,11 @@ list:
       - hořtičnou
   11:
     code: sesame
-    texts:
+    strings:
       - sezam
   12:
     code: sulphurDioxide
-    texts:
+    strings:
       - oxid
       - siřičitý
       - siričitý
@@ -280,7 +280,7 @@ list:
       - e224
   13:
     code: lupin
-    texts:
+    strings:
       - vlčí bob
       - vlčího bobu
       - lupinová
@@ -290,7 +290,7 @@ list:
       - lupiny
   14:
     code: molluscs
-    texts:
+    strings:
       - mušle
       - měkkýš
       - měkkýši
@@ -298,7 +298,7 @@ list:
       - měkkýše
       - ústřic
       - ústřicový
-ignoreTexts:
+ignoreStrings:
   - "tučným písmem"
   - "tučně"
   - "tučně."

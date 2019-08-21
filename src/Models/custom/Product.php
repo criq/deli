@@ -29,8 +29,8 @@ class Product extends \Deli\Models\Product {
 			if ($array) {
 
 				foreach ($array as $nutrientCode => $rawNutrientUnitWithAmount) {
-					$nutrientAmountWithUnit = new \Effekt\AmountWithUnit($rawNutrientUnitWithAmount['amount'], $rawNutrientUnitWithAmount['unit']);
-					$this->setProductNutrientIfEmpty(ProductNutrient::SOURCE_ORIGIN, $nutrientCode, $nutrientAmountWithUnit);
+					$nutrientAmountWithUnit = new \Deli\Classes\AmountWithUnit($rawNutrientUnitWithAmount['amount'], $rawNutrientUnitWithAmount['unit']);
+					$this->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, $nutrientCode, $nutrientAmountWithUnit);
 				}
 
 			}

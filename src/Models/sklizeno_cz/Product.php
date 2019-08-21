@@ -131,7 +131,7 @@ class Product extends \Deli\Models\Product {
 
 				$productAmount = (new \Katu\Types\TString($match[1]))->normalizeSpaces()->trim()->getAsFloat();
 				$productUnit = $match[2];
-				$productAmountWithUnit = new \Effekt\AmountWithUnit($productAmount, $productUnit);
+				$productAmountWithUnit = new \Deli\Classes\AmountWithUnit($productAmount, $productUnit);
 
 				try {
 
@@ -178,7 +178,7 @@ class Product extends \Deli\Models\Product {
 					if ($nutrientCode && (($nutrientCode == 'energy' && $nutrientUnit == 'kJ') || $nutrientCode != 'energy')) {
 						return [
 							'nutrientCode' => $nutrientCode,
-							'nutrientAmountWithUnit' => new \Effekt\AmountWithUnit($nutrientAmount, $nutrientUnit),
+							'nutrientAmountWithUnit' => new \Deli\Classes\AmountWithUnit($nutrientAmount, $nutrientUnit),
 						];
 					}
 

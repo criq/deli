@@ -10,7 +10,7 @@ class Product extends \Deli\Models\Product {
 	const TIMEOUT = 14515200;
 
 	public function getProductAmountWithUnit() {
-		return new \Effekt\AmountWithUnit(100, 'g');
+		return new \Deli\Classes\AmountWithUnit(100, 'g');
 	}
 
 	static function buildProductList() {
@@ -60,12 +60,12 @@ class Product extends \Deli\Models\Product {
 								]);
 
 								$nutrients = [
-									'energy'   => new \Effekt\AmountWithUnit($e->filter('td')->eq(2)->text(), 'kJ'),
-									'proteins' => new \Effekt\AmountWithUnit($e->filter('td')->eq(3)->text(), 'g'),
-									'fats'     => new \Effekt\AmountWithUnit($e->filter('td')->eq(4)->text(), 'g'),
-									'carbs'    => new \Effekt\AmountWithUnit($e->filter('td')->eq(5)->text(), 'g'),
-									'sugar'    => new \Effekt\AmountWithUnit($e->filter('td')->eq(7)->text(), 'g'),
-									'fiber'    => new \Effekt\AmountWithUnit($e->filter('td')->eq(8)->text(), 'g'),
+									'energy'   => new \Deli\Classes\AmountWithUnit($e->filter('td')->eq(2)->text(), 'kJ'),
+									'proteins' => new \Deli\Classes\AmountWithUnit($e->filter('td')->eq(3)->text(), 'g'),
+									'fats'     => new \Deli\Classes\AmountWithUnit($e->filter('td')->eq(4)->text(), 'g'),
+									'carbs'    => new \Deli\Classes\AmountWithUnit($e->filter('td')->eq(5)->text(), 'g'),
+									'sugar'    => new \Deli\Classes\AmountWithUnit($e->filter('td')->eq(7)->text(), 'g'),
+									'fiber'    => new \Deli\Classes\AmountWithUnit($e->filter('td')->eq(8)->text(), 'g'),
 								];
 
 								$productAmountWithUnit = $product->getProductAmountWithUnit();
