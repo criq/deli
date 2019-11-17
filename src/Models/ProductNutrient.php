@@ -31,7 +31,7 @@ class ProductNutrient extends \Deli\Model {
 			}
 		}
 
-		return false;
+		return null;
 	}
 
 	public function getNutrientAmountWithUnit() {

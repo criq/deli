@@ -61,7 +61,7 @@ class Source extends \Deli\Classes\Sources\Source {
 			$this->update('ean', null);
 			$this->save();
 
-			return false;
+			return null;
 
 		}
 

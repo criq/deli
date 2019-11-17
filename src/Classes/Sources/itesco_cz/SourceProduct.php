@@ -58,7 +58,7 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct {
 			$dom = \Katu\Utils\DOM::crawlHtml($this->loadProductInfos()->filterByTitle('Výživové hodnoty')[0]->text);
 			return \Deli\Classes\AmountWithUnit::createFromString($dom->filter('table thead th')->eq(1)->html());
 		} catch (\Throwable $e) {
-			return false;
+			return null;
 		}
 	}
 
@@ -74,7 +74,7 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct {
 				return \Deli\Classes\NutrientAmountWithUnit::createFromStrings($nutrientName, $amountWithUnitString);
 			});
 		} catch (\Throwable $e) {
-			return false;
+			return null;
 		}
 	}
 

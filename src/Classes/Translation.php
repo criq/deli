@@ -23,7 +23,7 @@ class Translation {
 			return $res->data->translations[0]->translatedText;
 		}
 
-		return false;
+		return null;
 	}
 
 }

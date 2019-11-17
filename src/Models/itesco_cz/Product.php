@@ -129,7 +129,7 @@ class Product extends \Deli\Models\Product {
 			$dom = \Katu\Utils\DOM::crawlHtml($productInfo->text);
 			$e = $dom->filter('table thead th[scope="col"]');
 			if (!$e->count()) {
-				return false;
+				return null;
 			}
 
 			if (preg_match('/(?<amount>[0-9]+)\s*(?<unit>g|ml)/ui', $e->html(), $match)) {
@@ -140,7 +140,7 @@ class Product extends \Deli\Models\Product {
 
 		}
 
-		return false;
+		return null;
 	}
 
 	public function scrapeNutrients() {
@@ -434,7 +434,7 @@ class Product extends \Deli\Models\Product {
 			$this->update('ean', null);
 			$this->save();
 
-			return false;
+			return null;
 
 		}
 
@@ -524,7 +524,7 @@ class Product extends \Deli\Models\Product {
 				break;
 			}
 
-			return false;
+			return null;
 
 		}
 

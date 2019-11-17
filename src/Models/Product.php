@@ -308,7 +308,7 @@ class Product extends \Deli\Model {
 
 		}
 
-		return false;
+		return null;
 	}
 
 
@@ -322,7 +322,7 @@ class Product extends \Deli\Model {
 			]);
 		}
 
-		return false;
+		return null;
 	}
 
 	public function getProductProperties() {
@@ -334,7 +334,7 @@ class Product extends \Deli\Model {
 			]);
 		}
 
-		return false;
+		return null;
 	}
 
 	static function getForLoadSql() {
@@ -546,7 +546,7 @@ class Product extends \Deli\Model {
 	public function getContentsString() {
 		$contents = $this->getContents();
 		if (!$contents) {
-			return false;
+			return null;
 		}
 
 		return trim(preg_replace('/\s+/', ' ', preg_replace('/\v/u', ' ', strip_tags((new \Katu\Types\TString((string)$contents->getValue()))->normalizeSpaces()))));
@@ -589,7 +589,7 @@ class Product extends \Deli\Model {
 
 		}
 
-		return false;
+		return null;
 	}
 
 	public function getViscojisCzProduct() {
@@ -601,7 +601,7 @@ class Product extends \Deli\Model {
 
 		}
 
-		return false;
+		return null;
 	}
 
 	public function getCombinedEmulgators() {
@@ -637,7 +637,7 @@ class Product extends \Deli\Model {
 		}
 
 		if (!$sqls) {
-			return false;
+			return null;
 		}
 
 		$sql = SX::select()

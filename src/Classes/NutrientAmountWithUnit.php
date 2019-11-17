@@ -19,7 +19,7 @@ class NutrientAmountWithUnit {
 			return new static($nutrientCode, $amountWithUnit);
 		}
 
-		return false;
+		return null;
 	}
 
 }

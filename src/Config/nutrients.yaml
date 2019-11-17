@@ -3,6 +3,7 @@ list:
     strings:
       - "energie"
       - "energie (100 g)"
+      - "energetická hodnota"
   calories:
     strings:
       - "kalorie"
@@ -54,3 +55,6 @@ list:
   calcium:
     strings:
       - "vápník"
+  iron:
+    strings:
+      - "železo"

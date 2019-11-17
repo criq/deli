@@ -35,7 +35,7 @@ class ProductPrice extends \Deli\Model {
 			}
 		}
 
-		return false;
+		return null;
 	}
 
 }

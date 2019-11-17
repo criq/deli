@@ -129,7 +129,7 @@ abstract class Source {
 			return $this->loadProductsFromSitemap();
 		}
 
-		return false;
+		return null;
 	}
 
 	public function loadProductsFromXML() {
@@ -247,7 +247,7 @@ abstract class Source {
 	 * Load emulgators.
 	 */
 	public function loadProductEmulgators() {
-		return false;
+		return null;
 	}
 
 	/****************************************************************************

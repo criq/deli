@@ -18,7 +18,7 @@ class AmountWithUnit extends \Effekt\AmountWithUnit {
 			return new static((new \Katu\Types\TString((string)$match[1]))->getAsFloat(), trim($match[2]));
 		}
 
-		return false;
+		return null;
 	}
 
 }

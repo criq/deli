@@ -43,7 +43,7 @@ class ProductAllergenTag extends \Deli\Model {
 
 	public function userCanEdit($user) {
 		if (!$user) {
-			return false;
+			return null;
 		}
 
 		return $user->hasPermission('scrapedTescoProductAllergenTags.edit');

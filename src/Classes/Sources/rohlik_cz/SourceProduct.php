@@ -25,9 +25,7 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct {
 	 * Product amount with unit.
 	 */
 	public function loadProductAmountWithUnit() {
-		$json = $this->getJSON();
-
-		return \Deli\Classes\AmountWithUnit::createFromString((string)($json->data->product->composition->nutritionalValues->dose ?? null));
+		return \Deli\Classes\AmountWithUnit::createFromString((string)($this->getJSON()->data->product->composition->nutritionalValues->dose ?? null));
 	}
 
 	/****************************************************************************
