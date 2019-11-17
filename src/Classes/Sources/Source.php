@@ -175,7 +175,7 @@ abstract class Source {
 				foreach ($xml->url as $item) {
 
 					$url = (string)$item->loc;
-					$uri = static::getUriFromURL($url);
+					$uri = static::getURIFromURL($url);
 
 					$product = \Deli\Models\Product::upsert([
 						'source' => $this->getCode(),
@@ -193,11 +193,30 @@ abstract class Source {
 		}
 	}
 
+	static function getURIFromURL($url) {
+		return $url;
+	}
+
 	/****************************************************************************
-	 * Load products.
+	 * Load product details.
 	 */
 	public function loadProductDetails() {
-		return false;
+		$sql = SX::select()
+			->from(\Deli\Models\Product::getTable())
+			->where(SX::eq(\Deli\Models\Product::getColumn('source'), static::getCode()))
+			->where(SX::cmpIsNull(\Deli\Models\Product::getColumn('timeLoadedDetails')))
+			->setPage(SX::page(1, 10))
+			;
+
+		foreach (\Deli\Models\Product::getBySql($sql) as $product) {
+			try {
+				$product->getSourceProduct()->loadDetails();
+			} catch (\Throwable $e) {
+				\App\Extensions\ErrorHandler::log($e);
+			}
+		}
+
+		return true;
 	}
 
 	/****************************************************************************
@@ -274,12 +293,21 @@ abstract class Source {
 			;
 
 		foreach (\Deli\Models\Product::getBySql($sql) as $product) {
+
 			try {
-				var_dump($product->getSourceProduct()->loadPrice());
 
-				die;
+				$product->update('timeAttemptedPrice', new \Katu\Utils\DateTime);
+				$product->save();
 
-				//$product->setTimeLoadedNutrients();
+				$price = $product->getSourceProduct()->loadPrice();
+				if ($price) {
+
+					$product->setProductPrice('CZK', $price);
+					$product->update('timeLoadedPrice', new \Katu\Utils\DateTime);
+					$product->save();
+
+				}
+
 			} catch (\Throwable $e) {
 				\App\Extensions\ErrorHandler::log($e);
 			}

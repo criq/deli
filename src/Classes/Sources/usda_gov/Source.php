@@ -1,5 +1,7 @@
 <?php
 
+// Stačí zmigrovat stará data
+
 namespace Deli\Classes\Sources\usda_gov;
 
 class Source extends \Deli\Classes\Sources\Source {
@@ -11,14 +13,48 @@ class Source extends \Deli\Classes\Sources\Source {
 	const HAS_PRODUCT_NUTRIENTS  = false;
 	const HAS_PRODUCT_PRICES     = false;
 
+	/****************************************************************************
+	 * Load products.
+	 */
+	public function loadProducts() {
+		@ini_set('memory_limit', '512M');
 
+		try {
 
+			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__, __LINE__], 3600, function() {
 
+				$categoryFileName = realpath(dirname(__FILE__) . '/../../../Resources/UsdaGov/sr28asc/FD_GROUP.txt');
+				$categories = [];
+				foreach (static::readTextFileToArray($categoryFileName) as $row) {
+					$categories[$row[0]] = $row[1];
+				}
 
+				$productFileName = realpath(dirname(__FILE__) . '/../../../Resources/UsdaGov/sr28asc/FOOD_DES.txt');
+				$products = static::readTextFileToArray($productFileName);
+				foreach ($products as $productLine) {
 
+					$product = \Deli\Models\Product::upsert([
+						'source' => (string)$this,
+						'uri' => $productLine[0],
+					], [
+						'timeCreated' => new \Katu\Utils\DateTime,
+					], [
+						'originalName' => $productLine[2],
+						'remoteCategory' => $this->getRemoteCategoryJSON($categories[$productLine[1]]),
+					]);
 
+				}
 
+			}, !in_array(\Katu\Env::getPlatform(), ['dev']));
 
+		} catch (\Throwable $e) {
+			// Nevermind.
+		}
+	}
+
+	static function readTextFileToArray($fileName) {
+		return array_map('static::getTextFileLineArray', array_map('static::sanitizeTextFileLine', static::readTextFileToLines($fileName)));
+	}
 
 	static function readTextFileToLines($fileName) {
 		$lines = [];
@@ -34,10 +70,6 @@ class Source extends \Deli\Classes\Sources\Source {
 		return $lines;
 	}
 
-	static function readTextFileToArray($fileName) {
-		return array_map('static::getTextFileLineArray', array_map('static::sanitizeTextFileLine', static::readTextFileToLines($fileName)));
-	}
-
 	static function sanitizeTextFileLine($line) {
 		return iconv('iso-8859-1', 'utf-8', trim($line));
 	}
@@ -48,55 +80,14 @@ class Source extends \Deli\Classes\Sources\Source {
 		}, explode('^', $line));
 	}
 
-	static function buildProductList() {
-		@ini_set('memory_limit', '512M');
 
-		try {
 
-			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__], 3600, function() {
 
-				$categoryFileName = realpath(dirname(__FILE__) . '/../../Resources/UsdaGov/sr28asc/FD_GROUP.txt');
-				$categories = [];
-				foreach (static::readTextFileToArray($categoryFileName) as $row) {
-					$categories[$row[0]] = $row[1];
-				}
-				#var_dump($categories);
 
-				$productFileName = realpath(dirname(__FILE__) . '/../../Resources/UsdaGov/sr28asc/FOOD_DES.txt');
-				$products = static::readTextFileToArray($productFileName);
-				foreach ($products as $productLine) {
 
-					$product = static::upsert([
-						'uri' => $productLine[0],
-					], [
-						'timeCreated' => new \Katu\Utils\DateTime,
-					], [
-						'originalName' => $productLine[2],
-					]);
 
-					// TODO
-					$product->setRemoteCategory($categories[$productLine[1]], 'remoteOriginalCategory');
-					$product->save();
 
-				}
 
-			}, !in_array(\Katu\Env::getPlatform(), ['dev']));
-
-		} catch (\Exception $e) {
-			// Nevermind.
-		}
-	}
-
-	public function load() {
-		$this->loadName();
-		$this->loadCategory();
-		$this->loadNutrients();
-
-		$this->update('timeLoaded', new \Katu\Utils\DateTime);
-		$this->save();
-
-		return true;
-	}
 
 	public function loadName() {
 		$translation = (new \Deli\Classes\Translation('en', 'cs', $this->originalName))->translate();
@@ -117,7 +108,6 @@ class Source extends \Deli\Classes\Sources\Source {
 			}
 		}
 
-		// TODO
 		$this->setRemoteCategory($categories);
 		$this->save();
 

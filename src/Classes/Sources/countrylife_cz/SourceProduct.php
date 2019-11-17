@@ -25,7 +25,6 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct {
 	/****************************************************************************
 	 * Allergens.
 	 */
-
 	public function loadAllergens() {
 		return \Deli\Models\ProductAllergen::getCodesFromStrings([
 			$this->loadProductInfos()->filterByTitle('Složení')[0]->text ?? null,

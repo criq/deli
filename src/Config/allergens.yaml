@@ -64,6 +64,7 @@ list:
   2:
     code: crustaceans
     strings:
+      - korýši
       - korýšů
       - korýše
       - krevety
@@ -91,6 +92,7 @@ list:
     code: fish
     strings:
       - ryb
+      - ryby
       - treska
       - tresky
       - tresek
@@ -126,6 +128,7 @@ list:
       - arašídová
       - arašídový
       - arašídové
+      - podzemnice
   6:
     code: soybeans
     strings:
@@ -203,6 +206,7 @@ list:
   8:
     code: nuts
     strings:
+      - skořápkové
       - skořápkových
       - ořechy
       - ořechů
@@ -255,6 +259,7 @@ list:
     code: sesame
     strings:
       - sezam
+      - sezamová
   12:
     code: sulphurDioxide
     strings:

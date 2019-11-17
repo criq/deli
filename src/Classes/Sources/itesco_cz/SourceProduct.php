@@ -9,6 +9,30 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct {
 	}
 
 	/****************************************************************************
+	 * Product details.
+	 */
+	public function loadDetails() {
+		$product = $this->getProduct();
+
+		$product->setRemoteId($product->uri);
+
+		$name = trim($this->getDOM()->filter('h1.product-details-tile__title')->text());
+		$product->update('name', $name);
+		$product->update('originalName', $name);
+
+		$remoteCategory = array_values(array_filter($this->getDOM()->filter('.breadcrumbs ol li')->each(function($e) {
+			return trim($e->text());
+		})));
+		$product->setRemoteCategory($remoteCategory);
+		$product->setOriginalRemoteCategory($remoteCategory);
+
+		$product->update('timeLoadedDetails', new \Katu\Utils\DateTime);
+		$product->save();
+
+		return true;
+	}
+
+	/****************************************************************************
 	 * Product information.
 	 */
 	public function loadProductInfos() {
@@ -58,10 +82,13 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct {
 	 * Price.
 	 */
 	public function loadPrice() {
-		var_dump(\Deli\Classes\AmountWithUnit::createFromString($this->getDOM()->filter('.product-overview .price-per-sellable-unit')->text(), ['Kč']));
-		var_dump(\Deli\Classes\AmountWithUnit::createFromString($this->getDOM()->filter('.product-overview .price-per-quantity-weight')->text(), ['Kč']));
+		//var_dump(\Deli\Classes\AmountWithUnit::createFromString($this->getDOM()->filter('.product-overview .price-per-quantity-weight')->text(), ['Kč']));
 
-		die;
+		$pricePerProduct = \Deli\Classes\AmountWithUnit::createFromString($this->getDOM()->filter('.product-overview .price-per-sellable-unit')->text(), ['Kč']);
+		$amountWithUnitString = $this->getProduct()->getName();
+		$price = new \Deli\Classes\Price($pricePerProduct, $amountWithUnitString);
+
+		return $price;
 	}
 
 }

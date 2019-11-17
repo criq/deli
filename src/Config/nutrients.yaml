@@ -1,6 +1,7 @@
 list:
   energy:
     strings:
+      - "energie"
       - "energie (100 g)"
   calories:
     strings:
@@ -20,12 +21,15 @@ list:
       - "tuky (100 g)"
   sugar:
     strings:
+      - "cukr"
       - "cukry"
       - "z toho cukry"
   saturatedFattyAcids:
     strings:
       - "nasycené mastné kyseliny"
       - "z toho nasycené mastné kyseliny"
+      - "z toho nas. mast. kys."
+      - "z toho nasycené"
   transFattyAcids:
     strings:
       - "trans mastné kyseliny"

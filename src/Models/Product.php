@@ -66,6 +66,24 @@ class Product extends \Deli\Model {
 		return isset($this->originalName) ? $this->originalName : null;
 	}
 
+	public function setRemoteId($remoteId) {
+		$this->update('remoteId', $remoteId);
+
+		return $this;
+	}
+
+	public function setRemoteCategory(array $remoteCategory) {
+		$this->update('remoteCategory', \Katu\Utils\JSON::encodeInline($remoteCategory));
+
+		return $this;
+	}
+
+	public function setOriginalRemoteCategory(array $remoteCategory) {
+		$this->update('originalRemoteCategory', \Katu\Utils\JSON::encodeInline($remoteCategory));
+
+		return $this;
+	}
+
 	static function getRemoteCategoryArray($text) {
 		return preg_split('/[>\|\/]/', $text);
 	}
@@ -148,7 +166,7 @@ class Product extends \Deli\Model {
 	 * Allergens.
 	 */
 	public function setProductAllergens($source, $allergenCodes) {
-		foreach ($allergenCodes as $allergenCode) {
+		foreach ((array)$allergenCodes as $allergenCode) {
 			$this->setProductAllergen($source, $allergenCode);
 		}
 
@@ -554,8 +572,8 @@ class Product extends \Deli\Model {
 			'currencyCode'    => $currencyCode,
 			'pricePerProduct' => $price->pricePerProduct,
 			'pricePerUnit'    => $price->pricePerUnit,
-			'unitAmount'      => $price->unitAmount,
-			'unitCode'        => $price->unitCode,
+			'unitAmount'      => $price->unitAmount ? $price->unitAmount : null,
+			'unitCode'        => $price->unitAmount ? $price->unitCode : null,
 		]);
 	}
 
