@@ -15,4 +15,38 @@ class Source extends \Deli\Classes\Sources\Source {
 
 	const SITEMAP_URL = 'https://store.veganza.cz/sitemap.xml';
 
+	public function loadProducts() {
+		@ini_set('memory_limit', '512M');
+
+		try {
+
+			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__, __LINE__], static::LOCK_TIMEOUT, function() {
+
+				$xml = static::loadXml(static::SITEMAP_URL);
+				foreach ($xml->url as $item) {
+
+					$url = (string)$item->loc;
+					$src = \Katu\Cache\Url::get($url, static::CACHE_TIMEOUT);
+					$dom = \Katu\Utils\DOM::crawlHtml($src);
+
+					if ($dom->filter('body.type-product')->count()) {
+
+						$product = \Deli\Models\Product::upsert([
+							'source' => $this->getCode(),
+							'uri' => $url,
+						], [
+							'timeCreated' => new \Katu\Utils\DateTime,
+						]);
+
+					}
+
+				}
+
+			}, !in_array(\Katu\Env::getPlatform(), ['dev']));
+
+		} catch (\Katu\Exceptions\LockException $e) {
+			// Nevermind.
+		}
+	}
+
 }
