@@ -27,8 +27,11 @@ class Product extends \Deli\Model {
 
 	public function getSourceProduct() {
 		$class = $this->getSourceProductClass();
+		if (class_exists($class)) {
+			return new $class($this);
+		}
 
-		return new $class($this);
+		return null;
 	}
 
 	/****************************************************************************
@@ -234,6 +237,69 @@ class Product extends \Deli\Model {
 			'productId' => $this->getId(),
 			'nutrientCode' => $code,
 		])->getOne();
+	}
+
+	/****************************************************************************
+	 * Emulgators.
+	 */
+
+	// TODO - zkontrolovat
+	public function getCombinedEmulgators() {
+		$sqls = [];
+
+		// ProductEmulgator table.
+		$sqls[] = SX::select()
+			->setOptGetTotalRows(false)
+			->select(SX::aka(\Deli\Models\Emulgator::getIdColumn(), SX::a('emulgatorId')))
+			->from(ProductEmulgator::getTable())
+			->where(SX::eq(ProductEmulgator::getColumn('productId'), $this->getId()))
+			->joinColumns(ProductEmulgator::getColumn('emulgatorId'), \Deli\Models\Emulgator::getIdColumn())
+			;
+
+		// EAN.
+		if ($this->ean) {
+
+			$sqls[] = SX::select()
+				->setOptGetTotalRows(false)
+				->select(SX::aka(\Deli\Models\Emulgator::getIdColumn(), SX::a('emulgatorId')))
+				->from(static::getTable())
+				->where(SX::eq(static::getColumn('ean'), $this->ean))
+				->where(SX::eq(static::getColumn('source'), 'viscojis_cz'))
+				->joinColumns(static::getIdColumn(), ProductEmulgator::getColumn('productId'))
+				->joinColumns(ProductEmulgator::getColumn('emulgatorId'), \Deli\Models\Emulgator::getIdColumn())
+				;
+
+		}
+
+		if (!$sqls) {
+			return null;
+		}
+
+		$sql = SX::select()
+			->select(\Deli\Models\Emulgator::getTable())
+			->from(SX::aka(SX::union($sqls), SX::a('_t')))
+			->join(SX::join(\Deli\Models\Emulgator::getTable(), SX::lgcAnd([
+				SX::eq(\Deli\Models\Emulgator::getIdColumn(), SX::a('_t.emulgatorId')),
+			])))
+			->orderBy([
+				\Deli\Models\Emulgator::getColumn('code'),
+			])
+			;
+
+		return \Deli\Models\Emulgator::getBySql($sql);
+	}
+
+	public function getViscojisCzProduct() {
+		if ($this->ean) {
+
+			return static::getOneBy([
+				'source' => 'viscojis_cz',
+				'ean' => $this->ean,
+			]);
+
+		}
+
+		return null;
 	}
 
 
@@ -497,10 +563,6 @@ class Product extends \Deli\Model {
 		return $sql;
 	}
 
-	public function getOrCreateScrapedIngredent() {
-		return \App\Models\ScrapedIngredient::make(static::SOURCE, $this->getName());
-	}
-
 	public function setProductProperty($source, $property, $value) {
 		$productProperty = ProductProperty::upsert([
 			'productId' => $this->getId(),
@@ -578,83 +640,16 @@ class Product extends \Deli\Model {
 	}
 
 	public function getLatestProductPrice() {
-		$class = static::getProductPriceTopClass();
-		if (class_exists($class)) {
-
-			return $class::getOneBy([
-				'productId' => $this->id,
-			], [
-				'orderBy' => SX::orderBy($class::getColumn('timeCreated'), SX::kw('desc')),
-			]);
-
-		}
-
-		return null;
+		return ProductPrice::getOneBy([
+			'productId' => $this->id,
+		], [
+			'orderBy' => SX::orderBy(ProductPrice::getColumn('timeCreated'), SX::kw('desc')),
+		]);
 	}
 
-	public function getViscojisCzProduct() {
-		if ($this->ean) {
 
-			return viscojis_cz\Product::getOneBy([
-				'ean' => $this->ean,
-			]);
 
-		}
 
-		return null;
-	}
-
-	public function getCombinedEmulgators() {
-		$sqls = [];
-
-		// ProductEmulgator table.
-		$class = static::getProductEmulgatorTopClass();
-		if (class_exists($class)) {
-
-			$sqls[] = SX::select()
-				->setOptGetTotalRows(false)
-				->select(SX::aka(\Deli\Models\Emulgator::getIdColumn(), SX::a('emulgatorId')))
-				->from($class::getTable())
-				->where(SX::eq($class::getColumn('productId'), $this->getId()))
-				->joinColumns($class::getColumn('emulgatorId'), \Deli\Models\Emulgator::getIdColumn())
-				;
-
-		}
-
-		// EAN.
-		if ($this->ean) {
-
-			$sqls[] = SX::select()
-				->setOptGetTotalRows(false)
-				->select(SX::aka(\Deli\Models\Emulgator::getIdColumn(), SX::a('emulgatorId')))
-				->from(\Deli\Models\viscojis_cz\Product::getTable())
-				->where(SX::eq(\Deli\Models\viscojis_cz\Product::getColumn('ean'), $this->ean))
-				->joinColumns(\Deli\Models\viscojis_cz\Product::getIdColumn(), \Deli\Models\viscojis_cz\ProductEmulgator::getColumn('productId'))
-				->joinColumns(\Deli\Models\viscojis_cz\ProductEmulgator::getColumn('emulgatorId'), \Deli\Models\Emulgator::getIdColumn())
-				->joinColumns(\Deli\Models\Emulgator::getIdColumn(), \Deli\Models\viscojis_cz\Emulgator::getColumn('emulgatorId'))
-				;
-
-		}
-
-		if (!$sqls) {
-			return null;
-		}
-
-		$sql = SX::select()
-			->select(\Deli\Models\Emulgator::getTable())
-			->from(SX::aka(SX::union($sqls), SX::a('_t')))
-			->join(SX::join(\Deli\Models\Emulgator::getTable(), SX::lgcAnd([
-				SX::eq(\Deli\Models\Emulgator::getIdColumn(), SX::a('_t.emulgatorId')),
-			])))
-			->joinColumns(\Deli\Models\Emulgator::getIdColumn(), \Deli\Models\viscojis_cz\Emulgator::getColumn('emulgatorId'))
-			->orderBy([
-				\Deli\Models\viscojis_cz\Emulgator::getColumn('rating'),
-				\Deli\Models\Emulgator::getColumn('code'),
-			])
-			;
-
-		return \Deli\Models\Emulgator::getBySql($sql);
-	}
 
 	public function loadProductDataFromViscojisCz() {
 		$isViscojisCzValid = false;
