@@ -4,6 +4,10 @@ namespace Deli\Classes\Sources\countrylife_cz;
 
 class SourceProduct extends \Deli\Classes\Sources\SourceProduct {
 
+	public function getURL() {
+		return 'https://www.countrylife.cz' . $this->getProduct()->uri;
+	}
+
 	/****************************************************************************
 	 * Product information.
 	 */

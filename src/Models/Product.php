@@ -8,6 +8,8 @@ class Product extends \Deli\Model {
 
 	const TABLE = 'deli_products';
 
+	const TIMEOUT = 86400;
+
 	/****************************************************************************
 	 * Source.
 	 */
@@ -449,6 +451,8 @@ class Product extends \Deli\Model {
 
 	static function getForLoadProductDataFromViscojisCzSql() {
 		$sql = SX::select()
+			->setOptGetTotalRows(false)
+			->select(static::getTable())
 			->from(static::getTable())
 			->where(SX::lgcOr([
 				SX::lgcOr([
@@ -457,40 +461,16 @@ class Product extends \Deli\Model {
 				]),
 				SX::cmpIsNull(static::getColumn('isViscojisCzValid'))
 			]))
-			->where(SX::eq(static::getColumn('isBanned'), 0))
-			;
-
-		return $sql;
-	}
-
-	static function getAllSourcesForLoadProductDataFromViscojisCzSql() {
-		$sqls = [];
-		foreach (static::getAllSources() as $source => $sourceClass) {
-
-			if (in_array('timeLoadedFromViscojisCz', $sourceClass::getTable()->getColumnNames())) {
-
-				$sqls[] = $sourceClass::getForLoadProductDataFromViscojisCzSql()
-					->setOptGetTotalRows(false)
-					->select(SX::aka(SX::val($source), SX::a('source')))
-					->select($sourceClass::getIdColumn())
-					->select($sourceClass::getColumn('name'))
-					->select($sourceClass::getColumn('timeLoadedFromViscojisCz'))
-					->select($sourceClass::getColumn('isViscojisCzValid'))
-					;
-
-			}
-
-		}
-
-		$sql = SX::select()
-			->from(SX::aka(SX::union($sqls), SX::a('_t')))
+			->where(SX::eq(static::getColumn('isAllowed'), 1))
 			->orderBy([
-				SX::orderBy(SX::a('timeLoadedFromViscojisCz')),
-				SX::orderBy(SX::a('id')),
-				SX::orderBy(SX::a('source')),
-				SX::orderBy(SX::a('name')),
+				SX::orderBy(static::getColumn('timeLoadedFromViscojisCz')),
+				SX::orderBy(static::getColumn('id')),
+				SX::orderBy(static::getColumn('source')),
+				SX::orderBy(static::getColumn('name')),
 			])
 			;
+
+		#echo $sql;die;
 
 		return $sql;
 	}
@@ -647,10 +627,6 @@ class Product extends \Deli\Model {
 		]);
 	}
 
-
-
-
-
 	public function loadProductDataFromViscojisCz() {
 		$isViscojisCzValid = false;
 		/***************************************************************************
@@ -772,14 +748,14 @@ class Product extends \Deli\Model {
 	}
 
 	public function ban() {
-		$this->update('isBanned', 1);
+		$this->update('isAllowed', 0);
 		$this->save();
 
 		return true;
 	}
 
-	public function unban() {
-		$this->update('isBanned', 0);
+	public function allow() {
+		$this->update('isAllowed', 1);
 		$this->save();
 
 		return true;
