@@ -2,11 +2,13 @@
 
 namespace Deli\Classes;
 
-class AmountWithUnit extends \Effekt\AmountWithUnit {
+class AmountWithUnit extends \Effekt\AmountWithUnit
+{
 
-	static $acceptableUnitCodes = ['µg', 'mg', 'g', 'kg', 'ml', 'l', 'ks', 'cal', 'kcal', 'J', 'kJ'];
+	public static $acceptableUnitCodes = ['µg', 'mg', 'g', 'kg', 'ml', 'l', 'ks', 'cal', 'kcal', 'J', 'kJ'];
 
-	static function createFromString($string, $acceptableUnitCodes = null) {
+	public static function createFromString($string, $acceptableUnitCodes = null)
+	{
 		if (!$acceptableUnitCodes) {
 			$acceptableUnitCodes = static::$acceptableUnitCodes;
 		}
@@ -20,5 +22,4 @@ class AmountWithUnit extends \Effekt\AmountWithUnit {
 
 		return null;
 	}
-
 }
