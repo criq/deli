@@ -4,60 +4,94 @@ namespace Deli\Classes\Sources;
 
 use \Sexy\Sexy as SX;
 
-abstract class Source {
-
-	const CACHE_TIMEOUT  = 86400;
-	const LOCK_TIMEOUT   = 3600;
-
-	const HAS_PRODUCT_LOADING    = false;
-	const HAS_PRODUCT_DETAILS    = false;
+abstract class Source
+{
+	const CACHE_TIMEOUT          = 86400;
 	const HAS_PRODUCT_ALLERGENS  = false;
+	const HAS_PRODUCT_DETAILS    = false;
 	const HAS_PRODUCT_EMULGATORS = false;
+	const HAS_PRODUCT_LOADING    = false;
 	const HAS_PRODUCT_NUTRIENTS  = false;
 	const HAS_PRODUCT_PRICES     = false;
+	const LOCK_TIMEOUT           = 3600;
+	const SITEMAP_URL            = null;
+	const XML_URL                = null;
 
-	public function __toString() {
+	public function __toString()
+	{
 		return $this->getCode();
 	}
 
-	static function createFromCode($code) {
+	public static function createFromCode($code)
+	{
 		$class = "\\Deli\\Classes\\Sources\\" . $code . "\\Source";
 
 		return new $class;
 	}
 
-	static function getAllSources() {
+	public static function getAllSources()
+	{
 		$dir = new \Katu\Utils\File(__DIR__);
-		$sources = array_map(function($dir) {
-
+		$sources = array_map(function ($dir) {
 			$code = array_slice(explode('/', $dir), -1)[0];
 
 			return static::createFromCode($code);
-
 		}, $dir->getDirs());
 
 		return $sources;
 	}
 
-	static function getCode() {
+	public static function getCode()
+	{
 		return explode('\\', get_called_class())[3];
 	}
 
-	public function hasXML()               { return defined('static::XML_URL');     }
-	public function hasSitemap()           { return defined('static::SITEMAP_URL'); }
-	public function hasProductLoading()    { return static::HAS_PRODUCT_LOADING;    }
-	public function hasProductDetails()    { return static::HAS_PRODUCT_DETAILS;    }
-	public function hasProductAllergens()  { return static::HAS_PRODUCT_ALLERGENS;  }
-	public function hasProductEmulgators() { return static::HAS_PRODUCT_EMULGATORS; }
-	public function hasProductNutrients()  { return static::HAS_PRODUCT_NUTRIENTS;  }
-	public function hasProductPrices()     { return static::HAS_PRODUCT_PRICES;     }
+	public function hasXML()
+	{
+		return defined('static::XML_URL');
+	}
+
+	public function hasSitemap()
+	{
+		return defined('static::SITEMAP_URL');
+	}
+
+	public function hasProductLoading()
+	{
+		return static::HAS_PRODUCT_LOADING;
+	}
+
+	public function hasProductDetails()
+	{
+		return static::HAS_PRODUCT_DETAILS;
+	}
+
+	public function hasProductAllergens()
+	{
+		return static::HAS_PRODUCT_ALLERGENS;
+	}
+
+	public function hasProductEmulgators()
+	{
+		return static::HAS_PRODUCT_EMULGATORS;
+	}
+
+	public function hasProductNutrients()
+	{
+		return static::HAS_PRODUCT_NUTRIENTS;
+	}
+
+	public function hasProductPrices()
+	{
+		return static::HAS_PRODUCT_PRICES;
+	}
 
 	/****************************************************************************
 	 * Load XML.
 	 */
-	static function loadXML($url) {
-		$src = \Katu\Cache::get([__CLASS__, __FUNCTION__, __LINE__], static::CACHE_TIMEOUT, function($url) {
-
+	public static function loadXML($url)
+	{
+		$src = \Katu\Cache::get([__CLASS__, __FUNCTION__, __LINE__], static::CACHE_TIMEOUT, function ($url) {
 			$curl = new \Curl\Curl;
 			$curl->setConnectTimeout(3600);
 			$curl->setTimeout(3600);
@@ -68,7 +102,6 @@ abstract class Source {
 			}
 
 			return $curl->rawResponse;
-
 		}, $url);
 
 		return new \SimpleXMLElement($src);
@@ -77,11 +110,13 @@ abstract class Source {
 	/****************************************************************************
 	 * XML items.
 	 */
-	static function getXMLItemClass() {
+	public static function getXMLItemClass()
+	{
 		return "\\Deli\\Classes\\Sources\\" . static::getCode() . "\\XML\\Item";
 	}
 
-	static function getXMLItem($xml) {
+	public static function getXMLItem($xml)
+	{
 		$class = static::getXMLItemClass();
 
 		return new $class($xml);
@@ -90,15 +125,18 @@ abstract class Source {
 	/****************************************************************************
 	 * Categories.
 	 */
-	static function getRemoteCategoryArray($text) {
+	public static function getRemoteCategoryArray($text)
+	{
 		return preg_split('/[>\|\/]/', $text);
 	}
 
-	static function getRemoteCategoryJSON($text) {
+	public static function getRemoteCategoryJSON($text)
+	{
 		return \Katu\Utils\JSON::encodeInline(array_values(array_filter(array_map('trim', (array)static::getRemoteCategoryArray($text)))));
 	}
 
-	static function getSanitizedRemoteCategoryJSON($remoteCategory) {
+	public static function getSanitizedRemoteCategoryJSON($remoteCategory)
+	{
 		// Is null - return null.
 		if ($remoteCategory === null) {
 			return null;
@@ -106,14 +144,12 @@ abstract class Source {
 
 		// Is string.
 		if (is_string($remoteCategory) && strlen($remoteCategory)) {
-
 			$array = json_decode($remoteCategory);
 			if ($array === null) {
 				return static::getRemoteCategoryJSON($remoteCategory);
 			} else {
 				return $remoteCategory;
 			}
-
 		}
 
 		return null;
@@ -122,7 +158,8 @@ abstract class Source {
 	/****************************************************************************
 	 * Load products.
 	 */
-	public function loadProducts() {
+	public function loadProducts()
+	{
 		if ($this->hasXML()) {
 			return $this->loadProductsFromXML();
 		} elseif ($this->hasSitemap()) {
@@ -132,48 +169,37 @@ abstract class Source {
 		return null;
 	}
 
-	public function loadProductsFromXML() {
+	public function loadProductsFromXML()
+	{
 		@ini_set('memory_limit', '512M');
 
 		try {
-
-			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__, __LINE__], static::LOCK_TIMEOUT, function() {
-
+			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__, __LINE__], static::LOCK_TIMEOUT, function () {
 				$xml = static::loadXml(static::XML_URL);
 				foreach ($xml->SHOPITEM as $item) {
-
-					\Katu\Cache::get([__CLASS__, __FUNCTION__, __LINE__], static::CACHE_TIMEOUT, function($xml) {
-
+					\Katu\Cache::get([__CLASS__, __FUNCTION__, __LINE__], static::CACHE_TIMEOUT, function ($xml) {
 						try {
-
 							$item = static::getXMLItem($xml);
 							$product = $item->getOrCreateProduct();
-
 						} catch (\Throwable $e) {
 							\App\Extensions\ErrorHandler::log($e);
 						}
-
 					}, $item->asXML());
-
 				}
-
 			}, !in_array(\Katu\Env::getPlatform(), ['dev']));
-
 		} catch (\Katu\Exceptions\LockException $e) {
 			// Nevermind.
 		}
 	}
 
-	public function loadProductsFromSitemap() {
+	public function loadProductsFromSitemap()
+	{
 		@ini_set('memory_limit', '512M');
 
 		try {
-
-			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__, __LINE__], static::LOCK_TIMEOUT, function() {
-
+			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__, __LINE__], static::LOCK_TIMEOUT, function () {
 				$xml = static::loadXml(static::SITEMAP_URL);
 				foreach ($xml->url as $item) {
-
 					$url = (string)$item->loc;
 					$uri = static::getURIFromURL($url);
 
@@ -183,24 +209,23 @@ abstract class Source {
 					], [
 						'timeCreated' => new \Katu\Utils\DateTime,
 					]);
-
 				}
-
 			}, !in_array(\Katu\Env::getPlatform(), ['dev']));
-
 		} catch (\Katu\Exceptions\LockException $e) {
 			// Nevermind.
 		}
 	}
 
-	static function getURIFromURL($url) {
+	public static function getURIFromURL($url)
+	{
 		return $url;
 	}
 
 	/****************************************************************************
 	 * Load product details.
 	 */
-	public function loadProductDetails() {
+	public function loadProductDetails()
+	{
 		$sql = SX::select()
 			->from(\Deli\Models\Product::getTable())
 			->where(SX::eq(\Deli\Models\Product::getColumn('source'), static::getCode()))
@@ -222,7 +247,8 @@ abstract class Source {
 	/****************************************************************************
 	 * Load allergens.
 	 */
-	public function loadProductAllergens() {
+	public function loadProductAllergens()
+	{
 		$sql = SX::select()
 			->from(\Deli\Models\Product::getTable())
 			->where(SX::eq(\Deli\Models\Product::getColumn('source'), static::getCode()))
@@ -246,14 +272,16 @@ abstract class Source {
 	/****************************************************************************
 	 * Load emulgators.
 	 */
-	public function loadProductEmulgators() {
+	public function loadProductEmulgators()
+	{
 		return null;
 	}
 
 	/****************************************************************************
 	 * Load nutrients.
 	 */
-	public function loadProductNutrients() {
+	public function loadProductNutrients()
+	{
 		$sql = SX::select()
 			->from(\Deli\Models\Product::getTable())
 			->where(SX::eq(\Deli\Models\Product::getColumn('source'), static::getCode()))
@@ -280,7 +308,8 @@ abstract class Source {
 	/****************************************************************************
 	 * Load prices.
 	 */
-	public function loadProductPrices() {
+	public function loadProductPrices()
+	{
 		if ($this->hasXML()) {
 			return $this->loadProductPricesFromXML();
 		}
@@ -293,21 +322,16 @@ abstract class Source {
 			;
 
 		foreach (\Deli\Models\Product::getBySql($sql) as $product) {
-
 			try {
-
 				$product->update('timeAttemptedPrice', new \Katu\Utils\DateTime);
 				$product->save();
 
 				$price = $product->getSourceProduct()->loadPrice();
 				if ($price) {
-
 					$product->setProductPrice('CZK', $price);
 					$product->update('timeLoadedPrice', new \Katu\Utils\DateTime);
 					$product->save();
-
 				}
-
 			} catch (\Throwable $e) {
 				\App\Extensions\ErrorHandler::log($e);
 			}
@@ -316,52 +340,38 @@ abstract class Source {
 		return true;
 	}
 
-	public function loadProductPricesFromXML() {
+	public function loadProductPricesFromXML()
+	{
 		@ini_set('memory_limit', '512M');
 
 		try {
-
-			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__, __LINE__], static::LOCK_TIMEOUT, function() {
-
+			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__, __LINE__], static::LOCK_TIMEOUT, function () {
 				$xml = static::loadXML(static::XML_URL);
 				foreach ($xml->SHOPITEM as $item) {
-
-					\Katu\Cache::get([__CLASS__, __FUNCTION__, __LINE__], static::CACHE_TIMEOUT, function($xml) {
-
+					\Katu\Cache::get([__CLASS__, __FUNCTION__, __LINE__], static::CACHE_TIMEOUT, function ($xml) {
 						try {
-
 							$item = static::getXMLItem($xml);
 							$product = $item->getOrCreateProduct();
 
 							if ($product->shouldLoadProductPrice()) {
-
 								$product->update('timeAttemptedPrice', new \Katu\Utils\DateTime);
 								$product->save();
 
 								$price = $item->getPrices()->getPrice();
 								if ($price) {
-
 									$product->setProductPrice('CZK', $price);
 									$product->update('timeLoadedPrice', new \Katu\Utils\DateTime);
 									$product->save();
-
 								}
-
 							}
-
 						} catch (\Throwable $e) {
 							\App\Extensions\ErrorHandler::log($e);
 						}
-
 					}, $item->asXML());
-
 				}
-
 			}, !in_array(\Katu\Env::getPlatform(), ['dev']));
-
 		} catch (\Katu\Exceptions\LockException $e) {
 			// Nevermind.
 		}
 	}
-
 }
