@@ -49,9 +49,14 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 	 */
 	public function loadAllergens()
 	{
-		return \Deli\Models\ProductAllergen::getCodesFromStrings([
-			strip_tags($this->loadProductInfos()->filterByTitle('Složení')[0]->text),
-		]);
+		$productInfo = $this->loadProductInfos()->filterByTitle('Složení')[0] ?? null;
+		if ($productInfo) {
+			return \Deli\Models\ProductAllergen::getCodesFromStrings([
+				strip_tags($productInfo->text),
+			]);
+		}
+
+		return false;
 	}
 
 	/****************************************************************************
