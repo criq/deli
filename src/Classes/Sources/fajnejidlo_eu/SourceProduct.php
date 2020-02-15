@@ -24,7 +24,12 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 	 */
 	public function loadProductAmountWithUnit()
 	{
-		return \Deli\Classes\AmountWithUnit::createFromString($this->getDOM()->filter('#ttdatasheet .table-data-sheet tr')->eq(0)->text());
+		$el = $this->getDOM()->filter('#ttdatasheet .table-data-sheet tr');
+		if ($el->count()) {
+			return \Deli\Classes\AmountWithUnit::createFromString($el->eq(0)->text());
+		}
+
+		return false;
 	}
 
 	/****************************************************************************
