@@ -10,7 +10,7 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 	public function loadProductInfos()
 	{
 		$productInfos = new \Deli\Classes\ProductInfos;
-		
+
 		foreach (array_filter(array_map('trim', explode('<h3>', $this->getDOM()->filter('#content')->html()))) as $line) {
 			try {
 				list($title, $text) = explode('</h3>', $line);
@@ -39,7 +39,12 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 	 */
 	public function loadProductAmountWithUnit()
 	{
-		return \Deli\Classes\AmountWithUnit::createFromString($this->getDOM()->filter('#popis-slozeni .ca-box h3')->text());
+		$el = $this->getDOM()->filter('#popis-slozeni .ca-box h3');
+		if ($el->count()) {
+			return \Deli\Classes\AmountWithUnit::createFromString($el->text());
+		}
+
+		return false;
 	}
 
 	/****************************************************************************
@@ -47,7 +52,7 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 	 */
 	public function loadNutrients()
 	{
-		return $this->getDOM()->filter('#popis-slozeni .ca-box .table-content')->filter('tr')->each(function ($e) {
+		return $this->getDOM()->filter('#popis-slozeni .ca-box .table-content tr')->each(function ($e) {
 			if (preg_match('/^Energetická hodnota\s*([0-9\s\,\.]+)\s*kJ\s*\/\s*([0-9\s\,\.]+)\s*kcal$/u', trim($e->text()), $match)) {
 				return new \Deli\Classes\NutrientAmountWithUnit('energy', new \Deli\Classes\AmountWithUnit($match[1], 'kJ'));
 			} else {
