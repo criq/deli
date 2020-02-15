@@ -4,30 +4,33 @@ namespace Deli\Models;
 
 use \Sexy\Sexy as SX;
 
-class Product extends \Deli\Model {
-
+class Product extends \Deli\Model
+{
 	const TABLE = 'deli_products';
-
 	const TIMEOUT = 86400;
 
 	/****************************************************************************
 	 * Source.
 	 */
-	public function getSourceClass() {
+	public function getSourceClass()
+	{
 		return '\\Deli\\Classes\\Sources\\' . $this->source . '\\Source';
 	}
 
-	public function getSourceProductClass() {
+	public function getSourceProductClass()
+	{
 		return '\\Deli\\Classes\\Sources\\' . $this->source . '\\SourceProduct';
 	}
 
-	public function getSource() {
+	public function getSource()
+	{
 		$class = $this->getSourceClass();
 
 		return new $class;
 	}
 
-	public function getSourceProduct() {
+	public function getSourceProduct()
+	{
 		$class = $this->getSourceProductClass();
 		if (class_exists($class)) {
 			return new $class($this);
@@ -39,21 +42,24 @@ class Product extends \Deli\Model {
 	/****************************************************************************
 	 * Timestamps.
 	 */
-	public function setTimeLoadedDetails() {
+	public function setTimeLoadedDetails()
+	{
 		$this->update('timeLoadedDetails', new \Katu\Utils\DateTime);
 		$this->save();
 
 		return true;
 	}
 
-	public function setTimeLoadedAllergens() {
+	public function setTimeLoadedAllergens()
+	{
 		$this->update('timeLoadedAllergens', new \Katu\Utils\DateTime);
 		$this->save();
 
 		return true;
 	}
 
-	public function setTimeLoadedNutrients() {
+	public function setTimeLoadedNutrients()
+	{
 		$this->update('timeLoadedNutrients', new \Katu\Utils\DateTime);
 		$this->save();
 
@@ -63,41 +69,49 @@ class Product extends \Deli\Model {
 	/****************************************************************************
 	 * Properties.
 	 */
-	public function getName() {
+	public function getName()
+	{
 		return $this->name;
 	}
 
-	public function getOriginalName() {
+	public function getOriginalName()
+	{
 		return isset($this->originalName) ? $this->originalName : null;
 	}
 
-	public function setRemoteId($remoteId) {
+	public function setRemoteId($remoteId)
+	{
 		$this->update('remoteId', $remoteId);
 
 		return $this;
 	}
 
-	public function setRemoteCategory(array $remoteCategory) {
+	public function setRemoteCategory(array $remoteCategory)
+	{
 		$this->update('remoteCategory', \Katu\Utils\JSON::encodeInline($remoteCategory));
 
 		return $this;
 	}
 
-	public function setOriginalRemoteCategory(array $remoteCategory) {
+	public function setOriginalRemoteCategory(array $remoteCategory)
+	{
 		$this->update('originalRemoteCategory', \Katu\Utils\JSON::encodeInline($remoteCategory));
 
 		return $this;
 	}
 
-	static function getRemoteCategoryArray($text) {
+	public static function getRemoteCategoryArray($text)
+	{
 		return preg_split('/[>\|\/]/', $text);
 	}
 
-	static function getRemoteCategoryJSON($text) {
+	public static function getRemoteCategoryJSON($text)
+	{
 		return \Katu\Utils\JSON::encodeInline(array_values(array_filter(array_map('trim', (array)static::getRemoteCategoryArray($text)))));
 	}
 
-	static function getSanitizedRemoteCategoryJSON($remoteCategory) {
+	public static function getSanitizedRemoteCategoryJSON($remoteCategory)
+	{
 		// Is null - return null.
 		if ($remoteCategory === null) {
 			return null;
@@ -105,46 +119,50 @@ class Product extends \Deli\Model {
 
 		// Is string.
 		if (is_string($remoteCategory) && strlen($remoteCategory)) {
-
 			$array = json_decode($remoteCategory);
 			if ($array === null) {
 				return static::getRemoteCategoryJSON($remoteCategory);
 			} else {
 				return $remoteCategory;
 			}
-
 		}
 
 		return null;
 	}
 
-	public function setEan($ean) {
+	public function setEan($ean)
+	{
 		$this->update('ean', trim($ean) ?: null);
 
 		return true;
 	}
 
-	public function setCategory($category) {
+	public function setCategory($category)
+	{
 		$this->update('categoryId', $category->getId());
 
 		return true;
 	}
 
-	public function getCategory() {
+	public function getCategory()
+	{
 		return Category::get($this->categoryId);
 	}
 
-	public function getShoppingList() {
+	public function getShoppingList()
+	{
 		return Category::get($this->shoppingListId);
 	}
 
-	public function setShoppingList($shoppingList) {
+	public function setShoppingList($shoppingList)
+	{
 		$this->update('shoppingListId', $shoppingList->getId());
 
 		return true;
 	}
 
-	public function setShoppingListByName($name) {
+	public function setShoppingListByName($name)
+	{
 		return $this->setShoppingList(ShoppingList::upsert([
 			'name' => trim($name),
 		], [
@@ -152,7 +170,8 @@ class Product extends \Deli\Model {
 		]));
 	}
 
-	public function setCategoryByName($name) {
+	public function setCategoryByName($name)
+	{
 		if (is_string($name)) {
 			$name = [$name];
 		}
@@ -170,7 +189,8 @@ class Product extends \Deli\Model {
 	/****************************************************************************
 	 * Allergens.
 	 */
-	public function setProductAllergens($source, $allergenCodes) {
+	public function setProductAllergens($source, $allergenCodes)
+	{
 		foreach ((array)$allergenCodes as $allergenCode) {
 			$this->setProductAllergen($source, $allergenCode);
 		}
@@ -178,7 +198,8 @@ class Product extends \Deli\Model {
 		return true;
 	}
 
-	public function setProductAllergen($source, $allergenCode) {
+	public function setProductAllergen($source, $allergenCode)
+	{
 		return ProductAllergen::upsert([
 			'productId' => $this->getId(),
 			'source' => $source,
@@ -188,7 +209,8 @@ class Product extends \Deli\Model {
 		]);
 	}
 
-	public function getProductAllergens() {
+	public function getProductAllergens()
+	{
 		return \Deli\Models\ProductAllergen::getBy([
 			'productId' => $this->getId(),
 		]);
@@ -197,8 +219,11 @@ class Product extends \Deli\Model {
 	/****************************************************************************
 	 * Nutrients.
 	 */
-
-	public function setProductNutrients(string $source, \Deli\Classes\AmountWithUnit $productAmountWithUnit, array $nutrients) {
+	public function setProductNutrients(
+		string $source,
+		\Deli\Classes\AmountWithUnit $productAmountWithUnit,
+		array $nutrients
+	) {
 		foreach ($nutrients as $nutrientAmountWithUnit) {
 			if (is_string($source) && $productAmountWithUnit instanceof \Deli\Classes\AmountWithUnit && $nutrientAmountWithUnit instanceof \Deli\Classes\NutrientAmountWithUnit) {
 				$this->setProductNutrient($source, $productAmountWithUnit, $nutrientAmountWithUnit);
@@ -208,7 +233,8 @@ class Product extends \Deli\Model {
 		return true;
 	}
 
-	public function setProductNutrient(string $source, \Deli\Classes\AmountWithUnit $productAmountWithUnit, \Deli\Classes\NutrientAmountWithUnit $nutrientAmountWithUnit) {
+	public function setProductNutrient(string $source, \Deli\Classes\AmountWithUnit $productAmountWithUnit, \Deli\Classes\NutrientAmountWithUnit $nutrientAmountWithUnit)
+	{
 		if (!$nutrientAmountWithUnit->nutrientCode || !$nutrientAmountWithUnit->amountWithUnit) {
 			throw new \Exception("Missing nutrient code.");
 		}
@@ -228,13 +254,15 @@ class Product extends \Deli\Model {
 		]);
 	}
 
-	public function getProductNutrients() {
+	public function getProductNutrients()
+	{
 		return \Deli\Models\ProductNutrient::getBy([
 			'productId' => $this->getId(),
 		]);
 	}
 
-	public function getProductNutrientByCode($code) {
+	public function getProductNutrientByCode($code)
+	{
 		return \Deli\Models\ProductNutrient::getBy([
 			'productId' => $this->getId(),
 			'nutrientCode' => $code,
@@ -244,9 +272,9 @@ class Product extends \Deli\Model {
 	/****************************************************************************
 	 * Emulgators.
 	 */
-
 	// TODO - zkontrolovat
-	public function getCombinedEmulgators() {
+	public function getCombinedEmulgators()
+	{
 		$sqls = [];
 
 		// ProductEmulgator table.
@@ -260,7 +288,6 @@ class Product extends \Deli\Model {
 
 		// EAN.
 		if ($this->ean) {
-
 			$sqls[] = SX::select()
 				->setOptGetTotalRows(false)
 				->select(SX::aka(\Deli\Models\Emulgator::getIdColumn(), SX::a('emulgatorId')))
@@ -270,7 +297,6 @@ class Product extends \Deli\Model {
 				->joinColumns(static::getIdColumn(), ProductEmulgator::getColumn('productId'))
 				->joinColumns(ProductEmulgator::getColumn('emulgatorId'), \Deli\Models\Emulgator::getIdColumn())
 				;
-
 		}
 
 		if (!$sqls) {
@@ -291,18 +317,39 @@ class Product extends \Deli\Model {
 		return \Deli\Models\Emulgator::getBySql($sql);
 	}
 
-	public function getViscojisCzProduct() {
+	public function getViscojisCzProduct()
+	{
 		if ($this->ean) {
-
 			return static::getOneBy([
 				'source' => 'viscojis_cz',
 				'ean' => $this->ean,
 			]);
-
 		}
 
 		return null;
 	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
@@ -342,28 +389,6 @@ class Product extends \Deli\Model {
 			'timeCreated' => new \Katu\Utils\DateTime,
 		]);
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 	public function getProductEmulgators() {
@@ -530,7 +555,7 @@ class Product extends \Deli\Model {
 		return !$productPrice->isInTimeout();
 	}
 
-	static function getForLoadPriceSql() {
+	public static function getForLoadPriceSql() {
 		$sql = SX::select()
 			->from(static::getTable())
 			->where(SX::lgcOr([
