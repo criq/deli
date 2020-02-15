@@ -9,9 +9,14 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 	 */
 	public function loadAllergens()
 	{
-		return \Deli\Models\ProductAllergen::getCodesFromStrings([
-			$this->getDOM()->filter('.basic-description')->text(),
-		]);
+		$el = $this->getDOM()->filter('.basic-description');
+		if ($el->count()) {
+			return \Deli\Models\ProductAllergen::getCodesFromStrings([
+				$el->text(),
+			]);
+		}
+
+		return false;
 	}
 
 	/****************************************************************************
