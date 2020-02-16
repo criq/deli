@@ -11,12 +11,15 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 	{
 		$productInfos = new \Deli\Classes\ProductInfos;
 
-		foreach (array_filter(array_map('trim', explode('<h3>', $this->getDOM()->filter('#content')->html()))) as $line) {
-			try {
-				list($title, $text) = explode('</h3>', $line);
-				$productInfos->add(new \Deli\Classes\ProductInfo($title, $text));
-			} catch (\Throwable $e) {
-				// Nevermind.
+		$el = $this->getDOM()->filter('#content');
+		if ($el->count()) {
+			foreach (array_filter(array_map('trim', explode('<h3>', $el->html()))) as $line) {
+				try {
+					list($title, $text) = explode('</h3>', $line);
+					$productInfos->add(new \Deli\Classes\ProductInfo($title, $text));
+				} catch (\Throwable $e) {
+					// Nevermind.
+				}
 			}
 		}
 
