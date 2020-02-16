@@ -2,60 +2,39 @@
 
 namespace Deli\Classes\Sources\viscojis_cz;
 
-class Source extends \Deli\Classes\Sources\Source {
-
-	const HAS_PRODUCT_LOADING    = false;
-	const HAS_PRODUCT_DETAILS    = false;
+class Source extends \Deli\Classes\Sources\Source
+{
 	const HAS_PRODUCT_ALLERGENS  = false;
+	const HAS_PRODUCT_DETAILS    = false;
 	const HAS_PRODUCT_EMULGATORS = false;
+	const HAS_PRODUCT_LOADING    = false;
 	const HAS_PRODUCT_NUTRIENTS  = false;
 	const HAS_PRODUCT_PRICES     = false;
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-	static function buildProductList() {
+	public function loadProducts()
+	{
 		@ini_set('memory_limit', '512M');
 
 		try {
-
-			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__], 3600, function() {
-
-				$array = \Katu\Utils\Cache::get(function() {
-
+			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__], 3600, function () {
+				$array = \Katu\Utils\Cache::get(function () {
 					$curl = new \Curl\Curl;
 					$curl->setBasicAuthentication('jidelniplan', 'modraKarkulka55');
 					$res = $curl->get('https://viscokupujes.cz/export/data.json');
-
 					return $res;
-
-				}, static::TIMEOUT);
+				}, static::CACHE_TIMEOUT);
 
 				foreach (array_chunk($array, 100) as $chunk) {
-
-					\Katu\Utils\Cache::get(function($chunk) {
-
+					\Katu\Utils\Cache::get(function ($chunk) {
 						foreach ($chunk as $item) {
-
 							if (preg_match('/^tes\-(?<id>[0-9]+)$/', $item->id, $match)) {
-
-								$product = static::upsert([
+								$product = \Deli\Models\Product::upsert([
+									'source' => $this->getCode(),
 									'uri' => $item->id,
 								], [
 									'timeCreated' => new \Katu\Utils\DateTime,
 								], [
 									'timeLoaded' => new \Katu\Utils\DateTime,
-									'remoteSource' => \Deli\Models\ITescoCz\Product::SOURCE,
 									'remoteId' => $match['id'],
 									'ean' => $item->bc ?: null,
 									'name' => $item->name,
@@ -65,7 +44,6 @@ class Source extends \Deli\Classes\Sources\Source {
 
 								// Allergens.
 								if (isset($item->a)) {
-
 									$allergens = [
 										1  => 'gluten',
 										2  => 'crustaceans',
@@ -98,7 +76,6 @@ class Source extends \Deli\Classes\Sources\Source {
 
 								// Emulgators.
 								if (isset($item->e)) {
-
 									foreach ($item->e as $e) {
 										ProductEmulgator::upsert([
 											'productId' => $product,
@@ -111,22 +88,15 @@ class Source extends \Deli\Classes\Sources\Source {
 											'timeCreated' => new \Katu\Utils\DateTime,
 										]);
 									}
-
 								}
-
 							}
-
 						}
-
 					}, static::TIMEOUT, $chunk);
-
 				}
-
 			}, !in_array(\Katu\Env::getPlatform(), ['dev']));
 
 		} catch (\Exception $e) {
 			// Nevermind.
 		}
 	}
-
 }

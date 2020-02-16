@@ -663,7 +663,7 @@ class Product extends \Deli\Model
 
 			$isViscojisCzValid = true;
 
-			$res = \Katu\Utils\Cache::get(function($string) {
+			$res = \Katu\Utils\Cache::get(function ($string) {
 
 				$curl = new \Curl\Curl;
 				$curl->setHeader('Content-Type', 'application/json');
