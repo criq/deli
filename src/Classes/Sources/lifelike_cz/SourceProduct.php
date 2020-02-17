@@ -2,18 +2,24 @@
 
 namespace Deli\Classes\Sources\lifelike_cz;
 
-class SourceProduct extends \Deli\Classes\Sources\SourceProduct {
+class SourceProduct extends \Deli\Classes\Sources\SourceProduct
+{
 
-	public function getDescriptionHTML() {
+	public function getDescriptionHTML()
+	{
 		$html = null;
 
 		try {
 			$html .= $this->getDOM()->filter('#popis')->html();
-		} catch (\Throwable $e) { /* Nevermind. */ }
+		} catch (\Throwable $e) {
+			// Nevermins.
+		}
 
 		try {
 			$html .= $this->getDOM()->filter('#nutricni-hodnoty')->html();
-		} catch (\Throwable $e) { /* Nevermind. */ }
+		} catch (\Throwable $e) {
+			// Nevermind.
+		}
 
 		return (new \Katu\Types\TString($html))->normalizeSpaces();
 	}
@@ -21,7 +27,8 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct {
 	/****************************************************************************
 	 * Allergens.
 	 */
-	public function loadAllergens() {
+	public function loadAllergens()
+	{
 		if (preg_match('/<h2>Složení:<\/h2>\s*<p>(?<text>.+)<\/p>/', $this->getDescriptionHTML(), $match)) {
 			return \Deli\Models\ProductAllergen::getCodesFromStrings([
 				$match['text'],
@@ -34,7 +41,8 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct {
 	/****************************************************************************
 	 * Product amount with unit.
 	 */
-	public function loadProductAmountWithUnit() {
+	public function loadProductAmountWithUnit()
+	{
 		if (preg_match('/Nutriční hodnoty ve (?<amount>[0-9]+) (?<unit>g|ml) výrobku:/u', $this->getDescriptionHTML(), $match)) {
 			return new \Deli\Classes\AmountWithUnit($match['amount'], $match['unit']);
 		}
@@ -45,7 +53,8 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct {
 	/****************************************************************************
 	 * Nutrients.
 	 */
-	public function loadNutrients() {
+	public function loadNutrients()
+	{
 		$nutrients = [];
 
 		$text = preg_replace('/\s+/', ' ', strip_tags($this->getDescriptionHTML()));
@@ -70,5 +79,4 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct {
 
 		return $nutrients;
 	}
-
 }

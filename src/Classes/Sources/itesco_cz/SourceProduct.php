@@ -94,8 +94,6 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 	 */
 	public function loadPrice()
 	{
-		//var_dump(\Deli\Classes\AmountWithUnit::createFromString($this->getDOM()->filter('.product-overview .price-per-quantity-weight')->text(), ['Kč']));
-
 		$pricePerProduct = \Deli\Classes\AmountWithUnit::createFromString($this->getDOM()->filter('.product-overview .price-per-sellable-unit')->text(), ['Kč']);
 		$amountWithUnitString = $this->getProduct()->getName();
 		$price = new \Deli\Classes\Price($pricePerProduct, $amountWithUnitString);

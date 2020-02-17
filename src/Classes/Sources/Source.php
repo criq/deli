@@ -236,6 +236,9 @@ abstract class Source
 		foreach (\Deli\Models\Product::getBySql($sql) as $product) {
 			try {
 				$product->getSourceProduct()->loadDetails();
+			} catch (\Deli\Exceptions\ProductNotFoundException $e) {
+				$product->setUnavailable();
+				$product->setTimeLoadedDetails();
 			} catch (\Throwable $e) {
 				\App\Extensions\ErrorHandler::log($e);
 			}
@@ -261,20 +264,15 @@ abstract class Source
 				$allergens = $product->getSourceProduct()->loadAllergens();
 				$product->setProductAllergens(\Deli\Models\ProductAllergen::SOURCE_ORIGIN, $allergens);
 				$product->setTimeLoadedAllergens();
+			} catch (\Deli\Exceptions\ProductNotFoundException $e) {
+				$product->setUnavailable();
+				$product->setTimeLoadedAllergens();
 			} catch (\Throwable $e) {
 				\App\Extensions\ErrorHandler::log($e);
 			}
 		}
 
 		return true;
-	}
-
-	/****************************************************************************
-	 * Load emulgators.
-	 */
-	public function loadProductEmulgators()
-	{
-		return null;
 	}
 
 	/****************************************************************************
@@ -297,6 +295,38 @@ abstract class Source
 					$product->setProductNutrients(\Deli\Models\ProductNutrient::SOURCE_ORIGIN, $productAmountWithUnit, $nutrients);
 				}
 				$product->setTimeLoadedNutrients();
+			} catch (\Deli\Exceptions\ProductNotFoundException $e) {
+				$product->setUnavailable();
+				$product->setTimeLoadedNutrients();
+			} catch (\Throwable $e) {
+				\App\Extensions\ErrorHandler::log($e);
+			}
+		}
+
+		return true;
+	}
+
+	/****************************************************************************
+	 * Load emulgators.
+	 */
+	public function loadProductEmulgators()
+	{
+		$sql = SX::select()
+			->from(\Deli\Models\Product::getTable())
+			->where(SX::eq(\Deli\Models\Product::getColumn('source'), static::getCode()))
+			->where(SX::cmpIsNull(\Deli\Models\Product::getColumn('timeLoadedEmulgators')))
+			->setPage(SX::page(1, 1000))
+			;
+
+		foreach (\Deli\Models\Product::getBySql($sql) as $product) {
+			try {
+				$emulgators = $product->getSourceProduct()->loadEmulgators();
+				if ($emulgators) {
+					var_dump($emulgators);die;
+				}
+			} catch (\Deli\Exceptions\ProductNotFoundException $e) {
+				$product->setUnavailable();
+				$product->setTimeLoadedEmulgators();
 			} catch (\Throwable $e) {
 				\App\Extensions\ErrorHandler::log($e);
 			}
@@ -323,15 +353,15 @@ abstract class Source
 
 		foreach (\Deli\Models\Product::getBySql($sql) as $product) {
 			try {
-				$product->update('timeAttemptedPrice', new \Katu\Utils\DateTime);
-				$product->save();
+				$product->setTimeAttemptedPrice();
 
 				$price = $product->getSourceProduct()->loadPrice();
 				if ($price) {
 					$product->setProductPrice('CZK', $price);
-					$product->update('timeLoadedPrice', new \Katu\Utils\DateTime);
-					$product->save();
+					$product->setTimeLoadedPrice();
 				}
+			} catch (\Deli\Exceptions\ProductNotFoundException $e) {
+				$product->setUnavailable();
 			} catch (\Throwable $e) {
 				\App\Extensions\ErrorHandler::log($e);
 			}

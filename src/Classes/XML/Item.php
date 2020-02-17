@@ -2,50 +2,61 @@
 
 namespace Deli\Classes\XML;
 
-class Item extends \SimpleXMLElement {
+class Item extends \SimpleXMLElement
+{
 
-	public function getSource() {
+	public function getSource()
+	{
 		$code = explode('\\', get_called_class())[3];
 		$class = "\\Deli\\Classes\\Sources\\" . $code . "\\Source";
 
 		return new $class;
 	}
 
-	public function getId() {
+	public function getId()
+	{
 		return (string)($this->ITEM_ID ?? null) ?: null;
 	}
 
-	public function getURL() {
+	public function getURL()
+	{
 		return (string)($this->URL ?? null) ?: null;
 	}
 
-	public function getEAN() {
+	public function getEAN()
+	{
 		return (string)($this->EAN ?? null) ?: null;
 	}
 
-	public function getName() {
+	public function getName()
+	{
 		return (string)($this->PRODUCTNAME ?? null) ?: (string)($this->PRODUCT ?? null) ?: null;
 	}
 
-	public function getCategory() {
+	public function getCategory()
+	{
 		return (string)($this->CATEGORYTEXT ?? null) ?: null;
 	}
 
-	public function isAvailable() {
+	public function isAvailable()
+	{
 		return (bool)((string)($this->AVAILABILITY ?? null) ?: true);
 	}
 
-	public function getPrice() {
+	public function getPrice()
+	{
 		return (string)($this->PRICE_VAT ?? null) ?: (string)($this->PRICE ?? null) ?: null;
 	}
 
-	public function getPrices() {
+	public function getPrices()
+	{
 		return new \Deli\Classes\Prices([
 			new \Deli\Classes\Price($this->getPrice(), $this->getName()),
 		]);
 	}
 
-	public function getParams() {
+	public function getParams()
+	{
 		$params = [];
 
 		try {
@@ -59,7 +70,8 @@ class Item extends \SimpleXMLElement {
 		return $params;
 	}
 
-	public function getParam($param) {
+	public function getParam($param)
+	{
 		$params = $this->getParams();
 
 		return $params[$param] ?? null;
@@ -68,7 +80,8 @@ class Item extends \SimpleXMLElement {
 	/****************************************************************************
 	 * Get or create product from XML.
 	 */
-	public function getOrCreateProduct() {
+	public function getOrCreateProduct()
+	{
 		$product = \Deli\Models\Product::upsert([
 			'remoteId' => $this->getId(),
 		], [
@@ -93,7 +106,8 @@ class Item extends \SimpleXMLElement {
 	/****************************************************************************
 	 * Load product properties from XML.
 	 */
-	public function getProperties() {
+	public function getProperties()
+	{
 		$properties = [];
 
 		$properties['description']  = (string)($this->DESCRIPTION ?? null);
@@ -102,5 +116,4 @@ class Item extends \SimpleXMLElement {
 
 		return $properties;
 	}
-
 }

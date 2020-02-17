@@ -40,6 +40,25 @@ class Product extends \Deli\Model
 	}
 
 	/****************************************************************************
+	 * Availability.
+	 */
+	public function setAvailable()
+	{
+		$this->update('isAvailable', 1);
+		$this->save();
+
+		return $this;
+	}
+
+	public function setUnavailable()
+	{
+		$this->update('isAvailable', 0);
+		$this->save();
+
+		return $this;
+	}
+
+	/****************************************************************************
 	 * Timestamps.
 	 */
 	public function setTimeLoadedDetails()
@@ -61,6 +80,30 @@ class Product extends \Deli\Model
 	public function setTimeLoadedNutrients()
 	{
 		$this->update('timeLoadedNutrients', new \Katu\Utils\DateTime);
+		$this->save();
+
+		return true;
+	}
+
+	public function setTimeLoadedEmulgators()
+	{
+		$this->update('timeLoadedEmulgators', new \Katu\Utils\DateTime);
+		$this->save();
+
+		return true;
+	}
+
+	public function setTimeAttemptedPrice()
+	{
+		$this->update('timeAttemptedPrice', new \Katu\Utils\DateTime);
+		$this->save();
+
+		return true;
+	}
+
+	public function setTimeLoadedPrice()
+	{
+		$this->update('timeLoadedPrice', new \Katu\Utils\DateTime);
 		$this->save();
 
 		return true;
@@ -378,7 +421,8 @@ class Product extends \Deli\Model
 
 
 
-	public function setProductEmulgator($source, $emulgator) {
+	public function setProductEmulgator($source, $emulgator)
+	{
 		$class = static::getProductEmulgatorTopClass();
 
 		return $class::upsert([
@@ -771,19 +815,4 @@ class Product extends \Deli\Model
 
 		return null;
 	}
-
-	public function ban() {
-		$this->update('isAllowed', 0);
-		$this->save();
-
-		return true;
-	}
-
-	public function allow() {
-		$this->update('isAllowed', 1);
-		$this->save();
-
-		return true;
-	}
-
 }
