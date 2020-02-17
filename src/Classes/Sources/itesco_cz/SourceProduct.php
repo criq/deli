@@ -15,12 +15,14 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 	public function loadDetails()
 	{
 		$product = $this->getProduct();
-
 		$product->setRemoteId($product->uri);
 
-		$name = trim($this->getDOM()->filter('h1.product-details-tile__title')->text());
-		$product->update('name', $name);
-		$product->update('originalName', $name);
+		$el = $this->getDOM()->filter('h1.product-details-tile__title');
+		if ($el->count()) {
+			$name = trim($el->text());
+			$product->update('name', $name);
+			$product->update('originalName', $name);
+		}
 
 		$remoteCategory = array_values(array_filter($this->getDOM()->filter('.breadcrumbs ol li')->each(function ($e) {
 			return trim($e->text());
