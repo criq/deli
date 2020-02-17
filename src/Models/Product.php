@@ -229,6 +229,114 @@ class Product extends \Deli\Model
 		return true;
 	}
 
+	public function setProductProperty($source, $property, $value)
+	{
+		$productProperty = ProductProperty::upsert([
+			'productId' => $this->getId(),
+			'source' => $source,
+			'property' => trim($property),
+		], [
+			'timeCreated' => new \Katu\Utils\DateTime,
+		]);
+		$productProperty->setValue($value);
+		$productProperty->save();
+
+		return true;
+	}
+
+	public function setProductProperties($source, $properties)
+	{
+		foreach ($properties as $property => $value) {
+			$this->setProductProperty($source, $property, $value);
+		}
+
+		return true;
+	}
+
+	public function getProductProperties()
+	{
+		return ProductProperty::getBy([
+			'productId' => $this->getId(),
+		]);
+	}
+
+	public function getProductProperty($property)
+	{
+		return ProductProperty::getOneBy([
+			'productId' => $this->getId(),
+			'property' => trim($property),
+		]);
+	}
+
+	public function getProductPropertyValue($property)
+	{
+		$productProperty = $this->getProductProperty($property);
+		if ($productProperty) {
+			return $productProperty->getValue();
+		}
+
+		return null;
+	}
+
+	public function getContents()
+	{
+		return $this->getProductProperty('contents');
+	}
+
+	public function getContentsString()
+	{
+		$contents = $this->getContents();
+		if (!$contents) {
+			return null;
+		}
+
+		return trim(preg_replace('/\s+/', ' ', preg_replace('/\v/u', ' ', strip_tags((new \Katu\Types\TString((string)$contents->getValue()))->normalizeSpaces()))));
+	}
+
+	public function getSanitizedContentsString()
+	{
+		$string = $this->getContentsString();
+
+		$allergenInfoString = implode("|", array_map(function ($i) {
+			return preg_quote($i, "/");
+		}, ProductAllergen::$allergenAdviceStrings));
+
+		$preg = "/\s*$allergenInfoString\s*/";
+		$string = trim(preg_replace($preg, ' ', $string));
+
+		return $string;
+	}
+
+	public function isPalmOil()
+	{
+		$viscokupujesCzProduct = $this->getViscokupujesCzProduct();
+		if ($viscokupujesCzProduct) {
+			return (bool)$viscokupujesCzProduct->isPalmOil;
+		}
+
+		$productProperty = $this->getProductProperty('isPalmOil');
+		if ($productProperty) {
+			return $productProperty->getValue();
+		}
+
+		return null;
+	}
+
+	public function isHfcs()
+	{
+		$viscokupujesCzProduct = $this->getViscokupujesCzProduct();
+		if ($viscokupujesCzProduct) {
+			return (bool)$viscokupujesCzProduct->isHfcs;
+		}
+
+		$productProperty = $this->getProductProperty('isHfcs');
+		if ($productProperty) {
+			return $productProperty->getValue();
+		}
+
+		return null;
+	}
+
 	/****************************************************************************
 	 * Allergens.
 	 */
@@ -306,10 +414,10 @@ class Product extends \Deli\Model
 
 	public function getProductNutrientByCode($code)
 	{
-		return \Deli\Models\ProductNutrient::getBy([
+		return \Deli\Models\ProductNutrient::getOneBy([
 			'productId' => $this->getId(),
 			'nutrientCode' => $code,
-		])->getOne();
+		]);
 	}
 
 	/****************************************************************************
@@ -327,7 +435,8 @@ class Product extends \Deli\Model
 	}
 
 
-	public function getProductEmulgators() {
+	public function getProductEmulgators()
+	{
 		return ProductEmulgator::getBy([
 			'productId' => $this->getId(),
 		]);
@@ -378,6 +487,55 @@ class Product extends \Deli\Model
 		return \Deli\Models\Emulgator::getBySql($sql);
 	}
 
+	/****************************************************************************
+	 * Prices.
+	 */
+	public function getProductPrices()
+	{
+		return ProductPrice::getBy([
+			'productId' => $this->getId(),
+		]);
+	}
+
+	public function getLatestProductPrice()
+	{
+		return ProductPrice::getOneBy([
+			'productId' => $this->id,
+		], [
+			'orderBy' => SX::orderBy(ProductPrice::getColumn('timeCreated'), SX::kw('desc')),
+		]);
+	}
+
+	public function shouldLoadProductPrice()
+	{
+		if (!$this->timeAttemptedPrice || !$this->timeLoadedPrice) {
+			return true;
+		}
+
+		$productPrice = $this->getLatestProductPrice();
+		if (!$productPrice) {
+			return true;
+		}
+
+		return !$productPrice->isInTimeout();
+	}
+
+	public function setProductPrice($currencyCode, \Deli\Classes\Price $price)
+	{
+		return ProductPrice::insert([
+			'timeCreated'     => new \Katu\Utils\DateTime,
+			'productId'       => $this->getId(),
+			'currencyCode'    => $currencyCode,
+			'pricePerProduct' => $price->pricePerProduct,
+			'pricePerUnit'    => $price->pricePerUnit,
+			'unitAmount'      => $price->unitAmount ? $price->unitAmount : null,
+			'unitCode'        => $price->unitAmount ? $price->unitCode : null,
+		]);
+	}
+
+	/****************************************************************************
+	 * Víš co kupuješ.
+	 */
 	public function getViscokupujesCzProduct()
 	{
 		if ($this->ean) {
@@ -387,131 +545,11 @@ class Product extends \Deli\Model
 			]);
 		}
 
-		return null;
+		return false;
 	}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-	public function getProductPrices() {
-		$class = static::getProductPriceTopClass();
-
-		if (class_exists($class)) {
-			return $class::getBy([
-				'productId' => $this->getId(),
-			]);
-		}
-
-		return null;
-	}
-
-	public function getProductProperties() {
-		$class = static::getProductPropertyTopClass();
-
-		if (class_exists($class)) {
-			return $class::getBy([
-				'productId' => $this->getId(),
-			]);
-		}
-
-		return null;
-	}
-
-	static function getForLoadSql() {
-		$sql = SX::select()
-			->from(static::getTable())
-			->where(SX::lgcOr([
-				SX::cmpIsNull(static::getColumn('timeLoaded')),
-				SX::cmpLessThan(static::getColumn('timeLoaded'), new \Katu\Utils\DateTime('- 1 month')),
-			]))
-			->where(SX::eq(static::getColumn('isBanned'), 0))
-			->orderBy([
-				SX::orderBy(static::getColumn('timeLoaded')),
-				SX::orderBy(static::getIdColumn()),
-			])
-			;
-
-		return $sql;
-	}
-
-	static function getAllSourcesForLoadSql() {
-		$sqls = [];
-		foreach (static::getAllSources() as $source => $sourceClass) {
-
-			$sqls[] = $sourceClass::getForLoadSql()
-				->setOptGetTotalRows(false)
-				->select(SX::aka(SX::val($sourceClass), SX::a('class')))
-				->select($sourceClass::getIdColumn())
-				->select($sourceClass::getColumn('name'))
-				->select($sourceClass::getColumn('timeLoaded'))
-				;
-
-		}
-
-		$sql = SX::select()
-			->from(SX::aka(SX::union($sqls), SX::a('_t')))
-			->orderBy([
-				SX::orderBy(SX::a('timeLoaded')),
-				SX::orderBy(SX::a('name')),
-				SX::orderBy(SX::a('id')),
-				SX::orderBy(SX::a('class')),
-			])
-			;
-
-		return $sql;
-	}
-
-	static function getForLoadProductDataFromViscokupujesCzSql() {
+	public static function getForLoadProductDataFromViscokupujesCzSql()
+	{
 		$sql = SX::select()
 			->setOptGetTotalRows(false)
 			->select(static::getTable())
@@ -537,159 +575,8 @@ class Product extends \Deli\Model
 		return $sql;
 	}
 
-	static function getAllSourcesForLoadPriceSql() {
-		$sqls = [];
-		foreach (static::getAllSources() as $source => $sourceClass) {
-
-			if (in_array('timeAttemptedPrice', $sourceClass::getTable()->getColumnNames())) {
-
-				$sourceProductPriceClass = $sourceClass::getProductPriceTopClass();
-				if (method_exists($sourceClass, 'loadPrice') && class_exists($sourceProductPriceClass)) {
-
-					$sqls[] = SX::select()
-						->setOptGetTotalRows(false)
-						->select(SX::aka(SX::val($source), SX::a('source')))
-						->select($sourceClass::getIdColumn())
-						->select($sourceClass::getColumn('name'))
-						->select($sourceClass::getColumn('timeAttemptedPrice'))
-						->select($sourceClass::getColumn('timeLoadedPrice'))
-						->from($sourceClass::getTable())
-						->where(SX::lgcOr([
-							SX::cmpIsNull($sourceClass::getColumn('timeAttemptedPrice')),
-							SX::cmpLessThan($sourceClass::getColumn('timeAttemptedPrice'), new \Katu\Utils\DateTime('- ' . ProductPrice::TIMEOUT . ' seconds')),
-						]))
-						;
-
-				}
-
-			}
-
-		}
-
-		$sql = SX::select()
-			->from(SX::aka(SX::union($sqls), SX::a('_t')))
-			->orderBy([
-				SX::orderBy(SX::a('timeAttemptedPrice')),
-				SX::orderBy(SX::a('id')),
-				SX::orderBy(SX::a('source')),
-				SX::orderBy(SX::a('name')),
-			])
-			;
-
-		return $sql;
-	}
-
-	public function shouldLoadProductPrice() {
-		if (!$this->timeAttemptedPrice || !$this->timeLoadedPrice) {
-			return true;
-		}
-
-		$productPrice = $this->getLatestProductPrice();
-		if (!$productPrice) {
-			return true;
-		}
-
-		return !$productPrice->isInTimeout();
-	}
-
-	public static function getForLoadPriceSql() {
-		$sql = SX::select()
-			->from(static::getTable())
-			->where(SX::lgcOr([
-				SX::cmpIsNull(static::getColumn('timeAttemptedPrice')),
-				SX::cmpLessThan(static::getColumn('timeAttemptedPrice'), new \Katu\Utils\DateTime('- ' . ProductPrice::TIMEOUT . ' seconds')),
-			]))
-			->orderBy(static::getColumn('timeCreated'))
-			;
-
-		return $sql;
-	}
-
-	public function setProductProperty($source, $property, $value) {
-		$productProperty = ProductProperty::upsert([
-			'productId' => $this->getId(),
-			'source' => $source,
-			'property' => trim($property),
-		], [
-			'timeCreated' => new \Katu\Utils\DateTime,
-		]);
-		$productProperty->setValue($value);
-		$productProperty->save();
-
-		return true;
-	}
-
-	public function setProductProperties($source, $properties) {
-		foreach ($properties as $property => $value) {
-			$this->setProductProperty($source, $property, $value);
-		}
-
-		return true;
-	}
-
-	public function getProductProperty($property) {
-		return ProductProperty::getOneBy([
-			'productId' => $this->getId(),
-			'property' => trim($property),
-		]);
-	}
-
-	public function getProductPropertyValue($property) {
-		$productProperty = $this->getProductProperty($property);
-		if ($productProperty) {
-			return $productProperty->getValue();
-		}
-
-		return null;
-	}
-
-	public function getContents() {
-		return $this->getProductProperty('contents');
-	}
-
-	public function getContentsString() {
-		$contents = $this->getContents();
-		if (!$contents) {
-			return null;
-		}
-
-		return trim(preg_replace('/\s+/', ' ', preg_replace('/\v/u', ' ', strip_tags((new \Katu\Types\TString((string)$contents->getValue()))->normalizeSpaces()))));
-	}
-
-	public function getSanitizedContentsString() {
-		$string = $this->getContentsString();
-
-		$allergenInfoString = implode("|", array_map(function($i) {
-			return preg_quote($i, "/");
-		}, ProductAllergen::$allergenAdviceStrings));
-
-		$preg = "/\s*$allergenInfoString\s*/";
-		$string = trim(preg_replace($preg, ' ', $string));
-
-		return $string;
-	}
-
-	public function setProductPrice($currencyCode, \Deli\Classes\Price $price) {
-		return ProductPrice::insert([
-			'timeCreated'     => new \Katu\Utils\DateTime,
-			'productId'       => $this->getId(),
-			'currencyCode'    => $currencyCode,
-			'pricePerProduct' => $price->pricePerProduct,
-			'pricePerUnit'    => $price->pricePerUnit,
-			'unitAmount'      => $price->unitAmount ? $price->unitAmount : null,
-			'unitCode'        => $price->unitAmount ? $price->unitCode : null,
-		]);
-	}
-
-	public function getLatestProductPrice() {
-		return ProductPrice::getOneBy([
-			'productId' => $this->id,
-		], [
-			'orderBy' => SX::orderBy(ProductPrice::getColumn('timeCreated'), SX::kw('desc')),
-		]);
-	}
-
-	public function loadProductDataFromViscokupujesCz() {
+	public function loadProductDataFromViscokupujesCz()
+	{
 		$isViscokupujesCzValid = false;
 		/***************************************************************************
 		 * Load by contents.
@@ -697,11 +584,9 @@ class Product extends \Deli\Model
 
 		$string = (string)trim($this->getContentsString());
 		if ($string) {
-
 			$isViscokupujesCzValid = true;
 
 			$res = \Katu\Utils\Cache::get(function ($string) {
-
 				$curl = new \Curl\Curl;
 				$curl->setHeader('Content-Type', 'application/json');
 				$res = $curl->post('https://viscokupujes.cz/api/get-info', \Katu\Utils\JSON::encodeInline([
@@ -709,22 +594,18 @@ class Product extends \Deli\Model
 				]));
 
 				return $res;
-
-			}, static::TIMEOUT, $string);
+			}, $this->getSource()::CACHE_TIMEOUT, $string);
 
 			// Allergens.
 			if (isset($res->a)) {
-
 				$config = ProductAllergen::getConfig();
 				foreach ((array)$res->a as $allergenId) {
 					$this->setProductAllergen(ProductAllergen::SOURCE_VISCOKUPUJES_CZ, $config['list'][$allergenId]['code']);
 				}
-
 			}
 
 			// Emulgators.
 			if (isset($res->e)) {
-
 				foreach ((array)$res->e as $emulgatorData) {
 					$emulgator = Emulgator::upsert([
 						'code' => $emulgatorData->id,
@@ -733,7 +614,6 @@ class Product extends \Deli\Model
 					]);
 					$this->setProductEmulgator(ProductEmulgator::SOURCE_VISCOKUPUJES_CZ, $emulgator);
 				}
-
 			}
 
 			// Palm oil.
@@ -745,17 +625,14 @@ class Product extends \Deli\Model
 			if (isset($res->gf)) {
 				$this->setProductProperty(ProductEmulgator::SOURCE_VISCOKUPUJES_CZ, 'isHfcs', $res->gf);
 			}
-
 		}
 
 		/***************************************************************************
 		 * Load by EAN.
 		 */
 		if ($this->ean) {
-
 			$viscokupujesCzProduct = $this->getViscokupujesCzProduct();
 			if ($viscokupujesCzProduct) {
-
 				$isViscokupujesCzValid = true;
 
 				// Allergens.
@@ -769,9 +646,7 @@ class Product extends \Deli\Model
 				foreach ($productEmulgators as $productEmulgator) {
 					$this->setProductEmulgator(ProductEmulgator::SOURCE_VISCOKUPUJES_CZ, Emulgator::get($productEmulgator->emulgatorId));
 				}
-
 			}
-
 		}
 
 		$this->update('timeLoadedFromViscokupujesCz', new \Katu\Utils\DateTime);
@@ -779,33 +654,5 @@ class Product extends \Deli\Model
 		$this->save();
 
 		return true;
-	}
-
-	public function isPalmOil() {
-		$viscokupujesCzProduct = $this->getViscokupujesCzProduct();
-		if ($viscokupujesCzProduct) {
-			return (bool)$viscokupujesCzProduct->isPalmOil;
-		}
-
-		$productProperty = $this->getProductProperty('isPalmOil');
-		if ($productProperty) {
-			return $productProperty->getValue();
-		}
-
-		return null;
-	}
-
-	public function isHfcs() {
-		$viscokupujesCzProduct = $this->getViscokupujesCzProduct();
-		if ($viscokupujesCzProduct) {
-			return (bool)$viscokupujesCzProduct->isHfcs;
-		}
-
-		$productProperty = $this->getProductProperty('isHfcs');
-		if ($productProperty) {
-			return $productProperty->getValue();
-		}
-
-		return null;
 	}
 }
