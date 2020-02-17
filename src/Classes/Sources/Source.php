@@ -224,13 +224,13 @@ abstract class Source
 	/****************************************************************************
 	 * Load product details.
 	 */
-	public function loadProductDetails()
+	public function loadProductDetails($limit = 10)
 	{
 		$sql = SX::select()
 			->from(\Deli\Models\Product::getTable())
 			->where(SX::eq(\Deli\Models\Product::getColumn('source'), static::getCode()))
 			->where(SX::cmpIsNull(\Deli\Models\Product::getColumn('timeLoadedDetails')))
-			->setPage(SX::page(1, 10))
+			->setPage(SX::page(1, $limit))
 			;
 
 		foreach (\Deli\Models\Product::getBySql($sql) as $product) {
@@ -250,13 +250,13 @@ abstract class Source
 	/****************************************************************************
 	 * Load allergens.
 	 */
-	public function loadProductAllergens()
+	public function loadProductAllergens($limit = 10)
 	{
 		$sql = SX::select()
 			->from(\Deli\Models\Product::getTable())
 			->where(SX::eq(\Deli\Models\Product::getColumn('source'), static::getCode()))
 			->where(SX::cmpIsNull(\Deli\Models\Product::getColumn('timeLoadedAllergens')))
-			->setPage(SX::page(1, 10))
+			->setPage(SX::page(1, $limit))
 			;
 
 		foreach (\Deli\Models\Product::getBySql($sql) as $product) {
@@ -278,13 +278,13 @@ abstract class Source
 	/****************************************************************************
 	 * Load nutrients.
 	 */
-	public function loadProductNutrients()
+	public function loadProductNutrients($limit = 10)
 	{
 		$sql = SX::select()
 			->from(\Deli\Models\Product::getTable())
 			->where(SX::eq(\Deli\Models\Product::getColumn('source'), static::getCode()))
 			->where(SX::cmpIsNull(\Deli\Models\Product::getColumn('timeLoadedNutrients')))
-			->setPage(SX::page(1, 10))
+			->setPage(SX::page(1, $limit))
 			;
 
 		foreach (\Deli\Models\Product::getBySql($sql) as $product) {
@@ -309,13 +309,13 @@ abstract class Source
 	/****************************************************************************
 	 * Load emulgators.
 	 */
-	public function loadProductEmulgators()
+	public function loadProductEmulgators($limit = 10)
 	{
 		$sql = SX::select()
 			->from(\Deli\Models\Product::getTable())
 			->where(SX::eq(\Deli\Models\Product::getColumn('source'), static::getCode()))
 			->where(SX::cmpIsNull(\Deli\Models\Product::getColumn('timeLoadedEmulgators')))
-			->setPage(SX::page(1, 10))
+			->setPage(SX::page(1, $limit))
 			;
 
 		foreach (\Deli\Models\Product::getBySql($sql) as $product) {
@@ -338,7 +338,7 @@ abstract class Source
 	/****************************************************************************
 	 * Load prices.
 	 */
-	public function loadProductPrices()
+	public function loadProductPrices($limit = 10)
 	{
 		if ($this->hasXML()) {
 			return $this->loadProductPricesFromXML();
@@ -348,7 +348,7 @@ abstract class Source
 			->from(\Deli\Models\Product::getTable())
 			->where(SX::eq(\Deli\Models\Product::getColumn('source'), static::getCode()))
 			->where(SX::cmpIsNull(\Deli\Models\Product::getColumn('timeLoadedPrice')))
-			->setPage(SX::page(1, 10))
+			->setPage(SX::page(1, $limit))
 			;
 
 		foreach (\Deli\Models\Product::getBySql($sql) as $product) {
