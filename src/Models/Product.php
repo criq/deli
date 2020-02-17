@@ -311,7 +311,10 @@ class Product extends \Deli\Model
 	{
 		$viscokupujesCzProduct = $this->getViscokupujesCzProduct();
 		if ($viscokupujesCzProduct) {
-			return (bool)$viscokupujesCzProduct->isPalmOil;
+			$viscokupujesCzProductProperty = $viscokupujesCzProduct->getProductProperty('isPalmOil');
+			if ($viscokupujesCzProductProperty) {
+				return (bool)$viscokupujesCzProductProperty->getValue();
+			}
 		}
 
 		$productProperty = $this->getProductProperty('isPalmOil');
@@ -326,7 +329,10 @@ class Product extends \Deli\Model
 	{
 		$viscokupujesCzProduct = $this->getViscokupujesCzProduct();
 		if ($viscokupujesCzProduct) {
-			return (bool)$viscokupujesCzProduct->isHfcs;
+			$viscokupujesCzProductProperty = $viscokupujesCzProduct->getProductProperty('isHfcs');
+			if ($viscokupujesCzProductProperty) {
+				return (bool)$viscokupujesCzProductProperty->getValue();
+			}
 		}
 
 		$productProperty = $this->getProductProperty('isHfcs');
