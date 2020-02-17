@@ -63,7 +63,7 @@ class Source extends \Deli\Classes\Sources\Source
 
 									foreach ($item->a as $a) {
 										if (isset($allergens[$a])) {
-											ProductAllergen::upsert([
+											\Deli\Models\ProductAllergen::upsert([
 												'productId' => $product,
 												'allergenCode' => $allergens[$a],
 											], [
@@ -71,19 +71,14 @@ class Source extends \Deli\Classes\Sources\Source
 											]);
 										}
 									}
-
 								}
 
 								// Emulgators.
 								if (isset($item->e)) {
 									foreach ($item->e as $e) {
-										ProductEmulgator::upsert([
+										\Deli\Models\ProductEmulgator::upsert([
 											'productId' => $product,
-											'emulgatorId' => \Deli\Models\Emulgator::upsert([
-												'code' => $e,
-											], [
-												'timeCreated' => new \Katu\Utils\DateTime,
-											])->getId(),
+											'emulgatorId' => \Deli\Models\Emulgator::getOrCreateByCode($e)->getId(),
 										], [
 											'timeCreated' => new \Katu\Utils\DateTime,
 										]);
@@ -91,10 +86,9 @@ class Source extends \Deli\Classes\Sources\Source
 								}
 							}
 						}
-					}, static::TIMEOUT, $chunk);
+					}, static::CACHE_TIMEOUT, $chunk);
 				}
 			}, !in_array(\Katu\Env::getPlatform(), ['dev']));
-
 		} catch (\Exception $e) {
 			// Nevermind.
 		}
