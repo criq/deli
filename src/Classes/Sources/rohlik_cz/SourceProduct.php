@@ -19,6 +19,8 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 		if ($res->messages[0]->messageCode ?? null && $res->messages[0]->messageCode == 'productListService.product_not_enabled_exception') {
 			throw new \Deli\Exceptions\ProductNotFoundException;
 		}
+
+		return $res;
 	}
 
 	/****************************************************************************
@@ -67,7 +69,7 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 		if (isset($json->data->product->composition->ingredients)) {
 			foreach ($json->data->product->composition->ingredients as $ingredient) {
 				if (isset($ingredient->code) && preg_match('/^E[0-9]+/i', $ingredient->code)) {
-					$emulgators[] = strtolower(preg_replace('/[^a-z0-9]/i', null, $ingredient->code));
+					$emulgators[] = \Deli\Models\Emulgator::getOrCreateByCode(preg_replace('/[^a-z0-9]/i', null, $ingredient->code));
 				}
 			}
 		}
@@ -85,7 +87,6 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 			$pricePerUnit = $unitAmount = $unitCode = null;
 
 			try {
-
 				// $pricePerProduct = \Deli\Classes\AmountWithUnit::createFromString($this->getDOM()->filter('.product-overview .price-per-sellable-unit')->text(), ['Kč']);
 				// $amountWithUnitString = $this->getProduct()->getName();
 				// $price = new \Deli\Classes\Price($pricePerProduct, $amountWithUnitString);
@@ -100,7 +101,6 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 					$unitAmount = $amountWithUnit->amount;
 					$unitCode = $amountWithUnit->unit;
 				}
-
 			} catch (\Exception $e) {
 				// Nevermind.
 			}

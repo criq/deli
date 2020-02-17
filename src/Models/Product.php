@@ -315,6 +315,24 @@ class Product extends \Deli\Model
 	/****************************************************************************
 	 * Emulgators.
 	 */
+	public function setProductEmulgator($source, $emulgator)
+	{
+		return ProductEmulgator::upsert([
+			'productId' => $this->getId(),
+			'source' => $source,
+			'emulgatorId' => $emulgator->getId(),
+		], [
+			'timeCreated' => new \Katu\Utils\DateTime,
+		]);
+	}
+
+
+	public function getProductEmulgators() {
+		return ProductEmulgator::getBy([
+			'productId' => $this->getId(),
+		]);
+	}
+
 	// TODO - zkontrolovat
 	public function getCombinedEmulgators()
 	{
@@ -421,32 +439,7 @@ class Product extends \Deli\Model
 
 
 
-	public function setProductEmulgator($source, $emulgator)
-	{
-		$class = static::getProductEmulgatorTopClass();
 
-		return $class::upsert([
-			'productId' => $this->getId(),
-			'source' => $source,
-			'emulgatorId' => $emulgator->getId(),
-		], [
-			'timeCreated' => new \Katu\Utils\DateTime,
-		]);
-	}
-
-
-	public function getProductEmulgators() {
-		$class = static::getProductEmulgatorTopClass();
-		if (class_exists($class)) {
-
-			return $class::getBy([
-				'productId' => $this->getId(),
-			]);
-
-		}
-
-		return null;
-	}
 
 
 

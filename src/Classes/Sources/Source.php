@@ -315,14 +315,14 @@ abstract class Source
 			->from(\Deli\Models\Product::getTable())
 			->where(SX::eq(\Deli\Models\Product::getColumn('source'), static::getCode()))
 			->where(SX::cmpIsNull(\Deli\Models\Product::getColumn('timeLoadedEmulgators')))
-			->setPage(SX::page(1, 1000))
+			->setPage(SX::page(1, 10))
 			;
 
 		foreach (\Deli\Models\Product::getBySql($sql) as $product) {
 			try {
 				$emulgators = $product->getSourceProduct()->loadEmulgators();
-				if ($emulgators) {
-					var_dump($emulgators);die;
+				foreach ($emulgators as $emulgator) {
+					$product->setProductEmulgator(\Deli\Models\ProductNutrient::SOURCE_ORIGIN, $emulgator);
 				}
 			} catch (\Deli\Exceptions\ProductNotFoundException $e) {
 				$product->setUnavailable();
