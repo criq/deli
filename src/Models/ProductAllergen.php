@@ -7,7 +7,7 @@ class ProductAllergen extends \Deli\Model {
 	const TABLE = 'deli_product_allergens';
 
 	const SOURCE_ORIGIN = 'origin';
-	const SOURCE_VISCOJIS_CZ = 'viscojis_cz';
+	const SOURCE_VISCOKUPUJES_CZ = 'viscokupujes_cz';
 
 	static $allergenAdviceStrings = [
 		"Alergeny jsou označeny <b>tučným písmem</b>.",

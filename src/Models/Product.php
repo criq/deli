@@ -354,7 +354,7 @@ class Product extends \Deli\Model
 				->select(SX::aka(\Deli\Models\Emulgator::getIdColumn(), SX::a('emulgatorId')))
 				->from(static::getTable())
 				->where(SX::eq(static::getColumn('ean'), $this->ean))
-				->where(SX::eq(static::getColumn('source'), 'viscojis_cz'))
+				->where(SX::eq(static::getColumn('source'), 'viscokupujes_cz'))
 				->joinColumns(static::getIdColumn(), ProductEmulgator::getColumn('productId'))
 				->joinColumns(ProductEmulgator::getColumn('emulgatorId'), \Deli\Models\Emulgator::getIdColumn())
 				;
@@ -378,11 +378,11 @@ class Product extends \Deli\Model
 		return \Deli\Models\Emulgator::getBySql($sql);
 	}
 
-	public function getViscojisCzProduct()
+	public function getViscokupujesCzProduct()
 	{
 		if ($this->ean) {
 			return static::getOneBy([
-				'source' => 'viscojis_cz',
+				'source' => 'viscokupujes_cz',
 				'ean' => $this->ean,
 			]);
 		}
@@ -511,21 +511,21 @@ class Product extends \Deli\Model
 		return $sql;
 	}
 
-	static function getForLoadProductDataFromViscojisCzSql() {
+	static function getForLoadProductDataFromViscokupujesCzSql() {
 		$sql = SX::select()
 			->setOptGetTotalRows(false)
 			->select(static::getTable())
 			->from(static::getTable())
 			->where(SX::lgcOr([
 				SX::lgcOr([
-					SX::cmpIsNull(static::getColumn('timeLoadedFromViscojisCz')),
-					SX::cmpLessThan(static::getColumn('timeLoadedFromViscojisCz'), new \Katu\Utils\DateTime('- ' . static::TIMEOUT . ' seconds')),
+					SX::cmpIsNull(static::getColumn('timeLoadedFromViscokupujesCz')),
+					SX::cmpLessThan(static::getColumn('timeLoadedFromViscokupujesCz'), new \Katu\Utils\DateTime('- ' . static::TIMEOUT . ' seconds')),
 				]),
-				SX::cmpIsNull(static::getColumn('isViscojisCzValid'))
+				SX::cmpIsNull(static::getColumn('isViscokupujesCzValid'))
 			]))
 			->where(SX::eq(static::getColumn('isAllowed'), 1))
 			->orderBy([
-				SX::orderBy(static::getColumn('timeLoadedFromViscojisCz')),
+				SX::orderBy(static::getColumn('timeLoadedFromViscokupujesCz')),
 				SX::orderBy(static::getColumn('id')),
 				SX::orderBy(static::getColumn('source')),
 				SX::orderBy(static::getColumn('name')),
@@ -689,8 +689,8 @@ class Product extends \Deli\Model
 		]);
 	}
 
-	public function loadProductDataFromViscojisCz() {
-		$isViscojisCzValid = false;
+	public function loadProductDataFromViscokupujesCz() {
+		$isViscokupujesCzValid = false;
 		/***************************************************************************
 		 * Load by contents.
 		 */
@@ -698,7 +698,7 @@ class Product extends \Deli\Model
 		$string = (string)trim($this->getContentsString());
 		if ($string) {
 
-			$isViscojisCzValid = true;
+			$isViscokupujesCzValid = true;
 
 			$res = \Katu\Utils\Cache::get(function ($string) {
 
@@ -717,7 +717,7 @@ class Product extends \Deli\Model
 
 				$config = ProductAllergen::getConfig();
 				foreach ((array)$res->a as $allergenId) {
-					$this->setProductAllergen(ProductAllergen::SOURCE_VISCOJIS_CZ, $config['list'][$allergenId]['code']);
+					$this->setProductAllergen(ProductAllergen::SOURCE_VISCOKUPUJES_CZ, $config['list'][$allergenId]['code']);
 				}
 
 			}
@@ -731,19 +731,19 @@ class Product extends \Deli\Model
 					], [
 						'timeCreated' => new \Katu\Utils\DateTime,
 					]);
-					$this->setProductEmulgator(ProductEmulgator::SOURCE_VISCOJIS_CZ, $emulgator);
+					$this->setProductEmulgator(ProductEmulgator::SOURCE_VISCOKUPUJES_CZ, $emulgator);
 				}
 
 			}
 
 			// Palm oil.
 			if (isset($res->po)) {
-				$this->setProductProperty(ProductEmulgator::SOURCE_VISCOJIS_CZ, 'isPalmOil', $res->po);
+				$this->setProductProperty(ProductEmulgator::SOURCE_VISCOKUPUJES_CZ, 'isPalmOil', $res->po);
 			}
 
 			// HFCS.
 			if (isset($res->gf)) {
-				$this->setProductProperty(ProductEmulgator::SOURCE_VISCOJIS_CZ, 'isHfcs', $res->gf);
+				$this->setProductProperty(ProductEmulgator::SOURCE_VISCOKUPUJES_CZ, 'isHfcs', $res->gf);
 			}
 
 		}
@@ -753,38 +753,38 @@ class Product extends \Deli\Model
 		 */
 		if ($this->ean) {
 
-			$viscojisCzProduct = $this->getViscojisCzProduct();
-			if ($viscojisCzProduct) {
+			$viscokupujesCzProduct = $this->getViscokupujesCzProduct();
+			if ($viscokupujesCzProduct) {
 
-				$isViscojisCzValid = true;
+				$isViscokupujesCzValid = true;
 
 				// Allergens.
-				$productAllergens = $viscojisCzProduct->getProductAllergens();
+				$productAllergens = $viscokupujesCzProduct->getProductAllergens();
 				foreach ($productAllergens as $productAllergen) {
-					$this->setProductAllergen(ProductAllergen::SOURCE_VISCOJIS_CZ, $productAllergen->allergenCode);
+					$this->setProductAllergen(ProductAllergen::SOURCE_VISCOKUPUJES_CZ, $productAllergen->allergenCode);
 				}
 
 				// Emulgators.
-				$productEmulgators = $viscojisCzProduct->getProductEmulgators();
+				$productEmulgators = $viscokupujesCzProduct->getProductEmulgators();
 				foreach ($productEmulgators as $productEmulgator) {
-					$this->setProductEmulgator(ProductEmulgator::SOURCE_VISCOJIS_CZ, Emulgator::get($productEmulgator->emulgatorId));
+					$this->setProductEmulgator(ProductEmulgator::SOURCE_VISCOKUPUJES_CZ, Emulgator::get($productEmulgator->emulgatorId));
 				}
 
 			}
 
 		}
 
-		$this->update('timeLoadedFromViscojisCz', new \Katu\Utils\DateTime);
-		$this->update('isViscojisCzValid', $isViscojisCzValid ? 1 : 0);
+		$this->update('timeLoadedFromViscokupujesCz', new \Katu\Utils\DateTime);
+		$this->update('isViscokupujesCzValid', $isViscokupujesCzValid ? 1 : 0);
 		$this->save();
 
 		return true;
 	}
 
 	public function isPalmOil() {
-		$viscojisCzProduct = $this->getViscojisCzProduct();
-		if ($viscojisCzProduct) {
-			return (bool)$viscojisCzProduct->isPalmOil;
+		$viscokupujesCzProduct = $this->getViscokupujesCzProduct();
+		if ($viscokupujesCzProduct) {
+			return (bool)$viscokupujesCzProduct->isPalmOil;
 		}
 
 		$productProperty = $this->getProductProperty('isPalmOil');
@@ -796,9 +796,9 @@ class Product extends \Deli\Model
 	}
 
 	public function isHfcs() {
-		$viscojisCzProduct = $this->getViscojisCzProduct();
-		if ($viscojisCzProduct) {
-			return (bool)$viscojisCzProduct->isHfcs;
+		$viscokupujesCzProduct = $this->getViscokupujesCzProduct();
+		if ($viscokupujesCzProduct) {
+			return (bool)$viscokupujesCzProduct->isHfcs;
 		}
 
 		$productProperty = $this->getProductProperty('isHfcs');

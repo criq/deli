@@ -7,7 +7,7 @@ class ProductProperty extends \Deli\Model {
 	const TABLE = 'deli_product_properties';
 
 	const SOURCE_ORIGIN = 'origin';
-	const SOURCE_VISCOJIS_CZ = 'viscojis_cz';
+	const SOURCE_VISCOKUPUJES_CZ = 'viscokupujes_cz';
 
 	public function setValue($value) {
 		$value = \Katu\Utils\JSON::encodeInline($value);

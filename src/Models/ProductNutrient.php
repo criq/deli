@@ -7,7 +7,7 @@ class ProductNutrient extends \Deli\Model {
 	const TABLE = 'deli_product_nutrients';
 
 	const SOURCE_ORIGIN = 'origin';
-	const SOURCE_VISCOJIS_CZ = 'viscojis_cz';
+	const SOURCE_VISCOKUPUJES_CZ = 'viscokupujes_cz';
 
 	static function getConfig() {
 		$configFile = new \Katu\Utils\File(__DIR__, '..', 'Config', 'nutrients.yaml');

@@ -1,6 +1,6 @@
 <?php
 
-namespace Deli\Classes\Sources\viscojis_cz;
+namespace Deli\Classes\Sources\viscokupujes_cz;
 
 class Source extends \Deli\Classes\Sources\Source
 {
