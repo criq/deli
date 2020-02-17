@@ -404,4 +404,26 @@ abstract class Source
 			// Nevermind.
 		}
 	}
+
+	/****************************************************************************
+	 * Categories.
+	 */
+	public function getRemoteCategoriesSql()
+	{
+		$sql = SX::select()
+			->select(\Deli\Models\Product::getColumn('remoteCategory'))
+			->select(SX::aka(SX::fncCount([
+				\Deli\Models\Product::getIdColumn(),
+			]), SX::a('size')))
+			->from(\Deli\Models\Product::getTable())
+			->where(SX::fncLength([
+				\Deli\Models\Product::getColumn('remoteCategory'),
+			]))
+			->where(SX::cmpNotEq(\Deli\Models\Product::getColumn('remoteCategory'), '[]'))
+			->where(SX::eq(\Deli\Models\Product::getColumn('source'), $this->getCode()))
+			->groupBy(\Deli\Models\Product::getColumn('remoteCategory'))
+			;
+
+		return $sql;
+	}
 }

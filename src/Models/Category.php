@@ -4,11 +4,12 @@ namespace Deli\Models;
 
 use \Sexy\Sexy as SX;
 
-class Category extends \Deli\Model {
-
+class Category extends \Deli\Model
+{
 	const TABLE = 'deli_categories';
 
-	static function make($parent, $name) {
+	public static function make($parent, $name)
+	{
 		$sql = SX::select()
 			->from(static::getTable())
 			->where(SX::eq(static::getColumn('name'), trim($name)))
@@ -22,17 +23,14 @@ class Category extends \Deli\Model {
 
 		$object = static::getOneBySql($sql);
 		if (!$object) {
-
 			$object = static::upsert([
 				'categoryId' => $parent ? $parent->getId() : null,
 				'name' => trim($name),
 			], [
 				'timeCreated' => new \Katu\Utils\DateTime,
 			]);
-
 		}
 
 		return $object;
 	}
-
 }
