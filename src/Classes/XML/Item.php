@@ -89,7 +89,7 @@ class Item extends \SimpleXMLElement
 		], [
 			'source' => $this->getSource(),
 			'uri' => $this->getURL(),
-			'ean' => $this->getEAN(),
+			'ean' => trim($this->getEAN()) ?: null,
 			'name' => $this->getName(),
 			'originalName' => $this->getName(),
 			'remoteCategory' => $this->getSource()->getRemoteCategoryJSON($this->getCategory()),

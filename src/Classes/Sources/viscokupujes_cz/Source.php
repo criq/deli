@@ -36,7 +36,7 @@ class Source extends \Deli\Classes\Sources\Source
 								], [
 									'timeLoaded' => new \Katu\Utils\DateTime,
 									'remoteId' => $match['id'],
-									'ean' => $item->bc ?: null,
+									'ean' => trim($item->bc) ?: null,
 									'name' => $item->name,
 									'isHfcs' => isset($item->gf) ? (bool)$item->gf : false,
 									'isPalmOil' => isset($item->po) ? (bool)$item->po : false,
