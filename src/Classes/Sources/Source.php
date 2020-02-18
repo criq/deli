@@ -411,17 +411,14 @@ abstract class Source
 	public function getRemoteCategoriesSql()
 	{
 		$sql = SX::select()
-			->select(\Deli\Models\Product::getColumn('remoteCategory'))
+			->select(\Deli\Models\RemoteCategory::getTable())
 			->select(SX::aka(SX::fncCount([
 				\Deli\Models\Product::getIdColumn(),
-			]), SX::a('size')))
-			->from(\Deli\Models\Product::getTable())
-			->where(SX::fncLength([
-				\Deli\Models\Product::getColumn('remoteCategory'),
-			]))
-			->where(SX::cmpNotEq(\Deli\Models\Product::getColumn('remoteCategory'), '[]'))
+			]), SX::a('_size')))
+			->from(\Deli\Models\RemoteCategory::getTable())
+			->joinColumns(\Deli\Models\RemoteCategory::getIdColumn(), \Deli\Models\Product::getColumn('remoteCategoryId'))
 			->where(SX::eq(\Deli\Models\Product::getColumn('source'), $this->getCode()))
-			->groupBy(\Deli\Models\Product::getColumn('remoteCategory'))
+			->groupBy(\Deli\Models\RemoteCategory::getIdColumn())
 			;
 
 		return $sql;
