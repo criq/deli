@@ -417,7 +417,7 @@ abstract class Source
 			]), SX::a('_size')))
 			->from(\Deli\Models\RemoteCategory::getTable())
 			->joinColumns(\Deli\Models\RemoteCategory::getIdColumn(), \Deli\Models\Product::getColumn('remoteCategoryId'))
-			->where(SX::eq(\Deli\Models\Product::getColumn('source'), $this->getCode()))
+			->where(SX::eq(\Deli\Models\RemoteCategory::getColumn('source'), $this->getCode()))
 			->groupBy(\Deli\Models\RemoteCategory::getIdColumn())
 			;
 
