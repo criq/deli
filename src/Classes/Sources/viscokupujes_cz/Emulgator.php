@@ -1,5 +1,7 @@
 <?php
 
+// TODO - přesunout do Deli\Models\Emulgator
+
 namespace Deli\Models\viscokupujes_cz;
 
 class Emulgator extends \Deli\Model

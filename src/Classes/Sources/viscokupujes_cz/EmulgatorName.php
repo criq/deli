@@ -1,5 +1,7 @@
 <?php
 
+// TODO - smazat
+
 namespace Deli\Models\viscokupujes_cz;
 
 class EmulgatorName extends \Deli\Model
