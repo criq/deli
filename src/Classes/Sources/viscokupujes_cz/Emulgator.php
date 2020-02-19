@@ -2,67 +2,58 @@
 
 namespace Deli\Models\viscokupujes_cz;
 
-class Emulgator extends \Deli\Model {
-
+class Emulgator extends \Deli\Model
+{
 	const TABLE = 'deli_viscokupujes_cz_emulgators';
 
-	static function buildEmulgatorList() {
-		@ini_set('memory_limit', '512M');
+	// public static function buildEmulgatorList()
+	// {
+	// 	@ini_set('memory_limit', '512M');
 
-		try {
+	// 	try {
+	// 		\Katu\Utils\Lock::run(['deli', Product::SOURCE, __FUNCTION__], 3600, function () {
+	// 			$array = \Katu\Utils\Cache::get(function () {
+	// 				$curl = new \Curl\Curl;
+	// 				$curl->setBasicAuthentication('jidelniplan', 'modraKarkulka55');
+	// 				$res = $curl->get('https://viscokupujes.cz/export/e.json');
 
-			\Katu\Utils\Lock::run(['deli', Product::SOURCE, __FUNCTION__], 3600, function() {
+	// 				return $res;
+	// 			}, Product::TIMEOUT);
 
-				$array = \Katu\Utils\Cache::get(function() {
+	// 			foreach ($array as $code => $item) {
+	// 				$emulgator = static::upsert([
+	// 					'emulgatorId' => \Deli\Models\Emulgator::upsert([
+	// 						'code' => $code,
+	// 					], [
+	// 						'timeCreated' => new \Katu\Utils\DateTime,
+	// 					])->getId(),
+	// 				], [
+	// 					'timeCreated' => new \Katu\Utils\DateTime,
+	// 				], [
+	// 					'timeLoaded' => new \Katu\Utils\DateTime,
+	// 					'rating' => $item->rating,
+	// 					'description' => $item->desc ?: null,
+	// 				]);
 
-					$curl = new \Curl\Curl;
-					$curl->setBasicAuthentication('jidelniplan', 'modraKarkulka55');
-					$res = $curl->get('https://viscokupujes.cz/export/e.json');
+	// 				foreach ($item->names as $name) {
+	// 					EmulgatorName::upsert([
+	// 						'emulgatorId' => $emulgator->getId(),
+	// 						'name' => $name,
+	// 					], [
+	// 						'timeCreated' => new \Katu\Utils\DateTime,
+	// 					]);
+	// 				}
+	// 			}
+	// 		}, !in_array(\Katu\Env::getPlatform(), ['dev']));
+	// 	} catch (\Exception $e) {
+	// 		// Nevermind.
+	// 	}
+	// }
 
-					return $res;
-
-				}, Product::TIMEOUT);
-
-				foreach ($array as $code => $item) {
-
-					$emulgator = static::upsert([
-						'emulgatorId' => \Deli\Models\Emulgator::upsert([
-							'code' => $code,
-						], [
-							'timeCreated' => new \Katu\Utils\DateTime,
-						])->getId(),
-					], [
-						'timeCreated' => new \Katu\Utils\DateTime,
-					], [
-						'timeLoaded' => new \Katu\Utils\DateTime,
-						'rating' => $item->rating,
-						'description' => $item->desc ?: null,
-					]);
-
-					foreach ($item->names as $name) {
-
-						EmulgatorName::upsert([
-							'emulgatorId' => $emulgator->getId(),
-							'name' => $name,
-						], [
-							'timeCreated' => new \Katu\Utils\DateTime,
-						]);
-
-					}
-
-				}
-
-			}, !in_array(\Katu\Env::getPlatform(), ['dev']));
-
-		} catch (\Exception $e) {
-			// Nevermind.
-		}
-	}
-
-	public function getEmulgatorName() {
+	public function getEmulgatorName()
+	{
 		return EmulgatorName::getOneBy([
 			'emulgatorId' => $this->getId(),
 		]);
 	}
-
 }
