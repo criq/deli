@@ -39,6 +39,11 @@ class Product extends \Deli\Model
 		return null;
 	}
 
+	public function getRemoteCategory()
+	{
+		return RemoteCategory::get($this->remoteCategoryId);
+	}
+
 	/****************************************************************************
 	 * Availability.
 	 */
