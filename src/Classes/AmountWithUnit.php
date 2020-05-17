@@ -4,7 +4,6 @@ namespace Deli\Classes;
 
 class AmountWithUnit extends \Effekt\AmountWithUnit
 {
-
 	public static $acceptableUnitCodes = ['µg', 'mg', 'g', 'kg', 'ml', 'l', 'ks', 'cal', 'kcal', 'J', 'kJ'];
 
 	public static function createFromString($string, $acceptableUnitCodes = null)
