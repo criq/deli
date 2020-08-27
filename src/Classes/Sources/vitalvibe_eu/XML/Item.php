@@ -2,6 +2,6 @@
 
 namespace Deli\Classes\Sources\vitalvibe_eu\XML;
 
-class Item extends \Deli\Classes\XML\Item {
-
+class Item extends \Deli\Classes\XML\Item
+{
 }

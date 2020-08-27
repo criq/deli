@@ -4,25 +4,24 @@
 
 namespace Deli\Classes\Sources\usda_gov;
 
-class Source extends \Deli\Classes\Sources\Source {
-
-	const HAS_PRODUCT_LOADING    = false;
-	const HAS_PRODUCT_DETAILS    = false;
-	const HAS_PRODUCT_ALLERGENS  = false;
+class Source extends \Deli\Classes\Sources\Source
+{
+	const HAS_PRODUCT_LOADING = false;
+	const HAS_PRODUCT_DETAILS = false;
+	const HAS_PRODUCT_ALLERGENS = false;
 	const HAS_PRODUCT_EMULGATORS = false;
-	const HAS_PRODUCT_NUTRIENTS  = false;
-	const HAS_PRODUCT_PRICES     = false;
+	const HAS_PRODUCT_NUTRIENTS = false;
+	const HAS_PRODUCT_PRICES = false;
 
 	/****************************************************************************
 	 * Load products.
 	 */
-	public function loadProducts() {
+	public function loadProducts()
+	{
 		@ini_set('memory_limit', '512M');
 
 		try {
-
-			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__, __LINE__], 3600, function() {
-
+			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__, __LINE__], 3600, function () {
 				$categoryFileName = realpath(dirname(__FILE__) . '/../../../Resources/UsdaGov/sr28asc/FD_GROUP.txt');
 				$categories = [];
 				foreach (static::readTextFileToArray($categoryFileName) as $row) {
@@ -32,7 +31,6 @@ class Source extends \Deli\Classes\Sources\Source {
 				$productFileName = realpath(dirname(__FILE__) . '/../../../Resources/UsdaGov/sr28asc/FOOD_DES.txt');
 				$products = static::readTextFileToArray($productFileName);
 				foreach ($products as $productLine) {
-
 					$product = \Deli\Models\Product::upsert([
 						'source' => (string)$this,
 						'uri' => $productLine[0],
@@ -42,21 +40,20 @@ class Source extends \Deli\Classes\Sources\Source {
 						'originalName' => $productLine[2],
 						'remoteCategory' => $this->getRemoteCategoryJSON($categories[$productLine[1]]),
 					]);
-
 				}
-
 			}, !in_array(\Katu\Env::getPlatform(), ['dev']));
-
 		} catch (\Throwable $e) {
 			// Nevermind.
 		}
 	}
 
-	static function readTextFileToArray($fileName) {
+	public static function readTextFileToArray($fileName)
+	{
 		return array_map('static::getTextFileLineArray', array_map('static::sanitizeTextFileLine', static::readTextFileToLines($fileName)));
 	}
 
-	static function readTextFileToLines($fileName) {
+	public static function readTextFileToLines($fileName)
+	{
 		$lines = [];
 
 		$handle = fopen($fileName, 'r');
@@ -70,26 +67,20 @@ class Source extends \Deli\Classes\Sources\Source {
 		return $lines;
 	}
 
-	static function sanitizeTextFileLine($line) {
+	public static function sanitizeTextFileLine($line)
+	{
 		return iconv('iso-8859-1', 'utf-8', trim($line));
 	}
 
-	static function getTextFileLineArray($line) {
-		return array_map(function($line) {
+	public static function getTextFileLineArray($line)
+	{
+		return array_map(function ($line) {
 			return trim($line, '~');
 		}, explode('^', $line));
 	}
 
-
-
-
-
-
-
-
-
-
-	public function loadName() {
+	public function loadName()
+	{
 		$translation = (new \Deli\Classes\Translation('en', 'cs', $this->originalName))->translate();
 		if ($translation) {
 			$this->update('name', $translation);
@@ -99,7 +90,8 @@ class Source extends \Deli\Classes\Sources\Source {
 		return true;
 	}
 
-	public function loadCategory() {
+	public function loadCategory()
+	{
 		$categories = [];
 		foreach (\Katu\Utils\JSON::decodeAsArray($this->remoteOriginalCategory) as $remoteOriginalCategory) {
 			$translation = (new \Deli\Classes\Translation('en', 'cs', $remoteOriginalCategory))->translate();
@@ -114,7 +106,8 @@ class Source extends \Deli\Classes\Sources\Source {
 		return true;
 	}
 
-	static function getRawNutrientsDefinitions() {
+	public static function getRawNutrientsDefinitions()
+	{
 		$nutrientFileName = realpath(dirname(__FILE__) . '/../../Resources/UsdaGov/sr28asc/NUTR_DEF.txt');
 		$nutrients = [];
 		foreach (static::readTextFileToArray($nutrientFileName) as $row) {
@@ -127,7 +120,8 @@ class Source extends \Deli\Classes\Sources\Source {
 		return $nutrients;
 	}
 
-	public function scrapeNutrients() {
+	public function scrapeNutrients()
+	{
 		$nutrientNameMap = [
 			'Protein' => 'proteins',
 			'Total lipid (fat)' => 'fats',
@@ -182,53 +176,48 @@ class Source extends \Deli\Classes\Sources\Source {
 
 		$nutrients = [];
 		foreach ($rawNutrients as $rawNutrient) {
-
 			if (isset($rawNutrientDefinitions[$rawNutrient->nutrientUri])) {
 				$rawNutrientDefinition = $rawNutrientDefinitions[$rawNutrient->nutrientUri];
 				if (isset($nutrientNameMap[$rawNutrientDefinition['name']])) {
-
 					$nutrientCode = $nutrientNameMap[$rawNutrientDefinition['name']];
 
 					switch ($rawNutrientDefinition['unit']) {
-						case 'mg' :
+						case 'mg':
 							$nutrientAmount = (new \Katu\Types\TString($rawNutrient->nutrientAmount))->getAsFloat() * .001;
 							$nutrientUnit = 'g';
-						break;
-						case 'µg' :
+							break;
+						case 'µg':
 							$nutrientAmount = (new \Katu\Types\TString($rawNutrient->nutrientAmount))->getAsFloat() * .000001;
 							$nutrientUnit = 'g';
-						break;
-						default :
+							break;
+						default:
 							$nutrientAmount = (new \Katu\Types\TString($rawNutrient->nutrientAmount))->getAsFloat();
 							$nutrientUnit = $rawNutrientDefinition['unit'];
-						break;
+							break;
 					}
 
 					$nutrients[$nutrientCode] = new \Deli\Classes\AmountWithUnit($nutrientAmount, $nutrientUnit);
-
 				}
 			}
-
 		}
 
 		return $nutrients;
 	}
 
-	public function getProductAmountWithUnit() {
+	public function getProductAmountWithUnit()
+	{
 		return new \Deli\Classes\AmountWithUnit(100, 'g');
 	}
 
-	static function loadNutrients() {
+	public static function loadNutrients()
+	{
 		try {
-
 			$productAmountWithUnit = $this->getProductAmountWithUnit();
 			foreach ($this->scrapeNutrients() as $nutrientCode => $nutrientAmountWithUnit) {
 				$this->setProductNutrient(ProductNutrient::SOURCE_ORIGIN, $nutrientCode, $nutrientAmountWithUnit, $productAmountWithUnit);
 			}
-
 		} catch (\Exception $e) {
 			// Nevermind.
 		}
 	}
-
 }

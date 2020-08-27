@@ -2,6 +2,6 @@
 
 namespace Deli\Classes\Sources\alkohol_cz;
 
-class SourceProduct extends \Deli\Classes\Sources\SourceProduct {
-
+class SourceProduct extends \Deli\Classes\Sources\SourceProduct
+{
 }

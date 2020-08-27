@@ -4,7 +4,6 @@ namespace Deli\Classes\Sources\lifelike_cz;
 
 class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 {
-
 	public function getDescriptionHTML()
 	{
 		$html = null;

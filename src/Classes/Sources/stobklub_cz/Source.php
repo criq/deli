@@ -2,52 +2,45 @@
 
 namespace Deli\Classes\Sources\stobklub_cz;
 
-class Source extends \Deli\Classes\Sources\Source {
-
-	const HAS_PRODUCT_LOADING    = true;
-	const HAS_PRODUCT_DETAILS    = false;
-	const HAS_PRODUCT_ALLERGENS  = false;
+class Source extends \Deli\Classes\Sources\Source
+{
+	const HAS_PRODUCT_ALLERGENS = false;
+	const HAS_PRODUCT_DETAILS = false;
 	const HAS_PRODUCT_EMULGATORS = false;
-	const HAS_PRODUCT_NUTRIENTS  = false;
-	const HAS_PRODUCT_PRICES     = false;
+	const HAS_PRODUCT_LOADING = true;
+	const HAS_PRODUCT_NUTRIENTS = false;
+	const HAS_PRODUCT_PRICES = false;
 
-	public function loadProducts() {
+	public function loadProducts()
+	{
 		@ini_set('memory_limit', '512M');
 
 		try {
-
-			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__, __LINE__], 3600, function() {
-
+			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__, __LINE__], 3600, function () {
 				$url = 'http://www.stobklub.cz/databaze-potravin/';
 				$src = \Katu\Utils\Cache::getUrl($url);
 				$dom = \Katu\Utils\DOM::crawlHtml($src);
 
-				$categories = $dom->filter('.boxSubmenu .list > li')->each(function($e) {
-
+				$categories = $dom->filter('.boxSubmenu .list > li')->each(function ($e) {
 					return [
 						'name' => $e->filter('a.plus')->text(),
-						'subcategories' => $e->filter('ul li')->each(function($e) {
-
+						'subcategories' => $e->filter('ul li')->each(function ($e) {
 							return [
 								'uri' => $e->filter('a')->attr('href'),
 								'name' => $e->text(),
 							];
-
 						}),
 					];
-
 				});
 
 				foreach ($categories as $category) {
 					foreach ($category['subcategories'] as $subcategory) {
-
-						\Katu\Cache::get([__CLASS__, __FUNCTION__, __LINE__], static::CACHE_TIMEOUT, function($subcategoryUri) use($category, $subcategory) {
-
+						\Katu\Cache::get([__CLASS__, __FUNCTION__, __LINE__], static::CACHE_TIMEOUT, function ($subcategoryUri) use ($category, $subcategory) {
 							$url = 'http://www.stobklub.cz' . $subcategoryUri;
 							$src = \Katu\Utils\Cache::getUrl($url);
 							$dom = \Katu\Utils\DOM::crawlHtml($src);
 
-							$dom->filter('#mainContent table tbody tr')->each(function($e) use($category, $subcategory) {
+							$dom->filter('#mainContent table tbody tr')->each(function ($e) use ($category, $subcategory) {
 
 								$product = \Deli\Models\Product::upsert([
 									'source' => $this->getCode(),
@@ -72,7 +65,7 @@ class Source extends \Deli\Classes\Sources\Source {
 									$product->setProductNutrient(\Deli\Models\ProductNutrient::SOURCE_ORIGIN, $nutrientCode, $nutrientAmountWithUnit, $productAmountWithUnit);
 								}
 
-								var_dump($category);die;
+								// var_dump($category);die;
 
 								// TODO
 								$product->setRemoteCategory([
@@ -82,19 +75,13 @@ class Source extends \Deli\Classes\Sources\Source {
 								$product->save();
 
 								$product->load();
-
 							});
-
 						}, $subcategory['uri']);
-
 					}
 				}
-
 			}, !in_array(\Katu\Env::getPlatform(), ['dev']));
-
 		} catch (\Katu\Exceptions\LockException $e) {
 			// Nevermind.
 		}
 	}
-
 }

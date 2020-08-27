@@ -34,16 +34,16 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 	/****************************************************************************
 	 * Bordel.
 	 */
-	public function loadCategory()
-	{
-		$nutrientAssoc = $this->scrapeNutrientAssoc();
+	// public function loadCategory()
+	// {
+	// 	$nutrientAssoc = $this->scrapeNutrientAssoc();
 
-		if (isset($nutrientAssoc['Kategorie'])) {
-			// TODO
-			$this->setRemoteCategory($nutrientAssoc['Kategorie']);
-			$this->save();
-		}
+	// 	if (isset($nutrientAssoc['Kategorie'])) {
+	// 		// TODO
+	// 		$this->setRemoteCategory($nutrientAssoc['Kategorie']);
+	// 		$this->save();
+	// 	}
 
-		return true;
-	}
+	// 	return true;
+	// }
 }
