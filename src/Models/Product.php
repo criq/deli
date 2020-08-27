@@ -521,6 +521,8 @@ class Product extends \Deli\Model
 	{
 		return ProductPrice::getBy([
 			'productId' => $this->getId(),
+		], [
+			'orderBy' => SX::orderBy(ProductPrice::getColumn('timeCreated'), SX::kw('desc')),
 		]);
 	}
 
