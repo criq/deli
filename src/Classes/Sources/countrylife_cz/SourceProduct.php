@@ -6,7 +6,7 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 {
 	public function getURL()
 	{
-		return 'http://www.countrylife.cz' . $this->getProduct()->uri;
+		return 'https://www.countrylife.cz' . $this->getProduct()->uri;
 	}
 
 	/****************************************************************************

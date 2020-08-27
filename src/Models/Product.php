@@ -63,6 +63,22 @@ class Product extends \Deli\Model
 		return $this;
 	}
 
+	public function setAllowed()
+	{
+		$this->update('isAllowed', 1);
+		$this->save();
+
+		return $this;
+	}
+
+	public function setBanned()
+	{
+		$this->update('isAllowed', 0);
+		$this->save();
+
+		return $this;
+	}
+
 	/****************************************************************************
 	 * Timestamps.
 	 */
