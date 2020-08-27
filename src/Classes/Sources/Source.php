@@ -48,12 +48,12 @@ abstract class Source
 
 	public function hasXML()
 	{
-		return defined('static::XML_URL');
+		return defined('static::XML_URL') && static::XML_URL;
 	}
 
 	public function hasSitemap()
 	{
-		return defined('static::SITEMAP_URL');
+		return defined('static::SITEMAP_URL') && static::SITEMAP_URL;
 	}
 
 	public function hasProductLoading()
@@ -95,7 +95,7 @@ abstract class Source
 			$curl = new \Curl\Curl;
 			$curl->setConnectTimeout(3600);
 			$curl->setTimeout(3600);
-			$curl->get($url);
+			$res = $curl->get($url);
 
 			if ($curl->error) {
 				throw new \Katu\Exceptions\DoNotCacheException;
@@ -384,13 +384,12 @@ abstract class Source
 							$product = $item->getOrCreateProduct();
 
 							if ($product->shouldLoadProductPrice()) {
-								$product->update('timeAttemptedPrice', new \Katu\Utils\DateTime);
-								$product->save();
+								$product->setTimeAttemptedPrice();
 
 								$price = $item->getPrices()->getPrice();
 								if ($price) {
 									$product->setProductPrice('CZK', $price);
-									$product->update('timeLoadedPrice', new \Katu\Utils\DateTime);
+									$product->setTimeLoadedPrice();
 									$product->save();
 								}
 							}
