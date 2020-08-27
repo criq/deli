@@ -60,6 +60,9 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 		return $nutrients;
 	}
 
+	/****************************************************************************
+	 * Emulgators.
+	 */
 	public function loadEmulgators()
 	{
 		$json = $this->getJSON();
@@ -77,41 +80,19 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 		return $emulgators;
 	}
 
+	/****************************************************************************
+	 * Price.
+	 */
 	public function loadPrice()
 	{
-		try {
-			$json = $this->getJSON();
+		$json = $this->getJSON();
 
-			$currency = $json->data->product->currency;
-			$pricePerProduct = (new \Katu\Types\TString($json->data->product->price))->getAsFloat();
-			$pricePerUnit = $unitAmount = $unitCode = null;
-
-			try {
-				// $pricePerProduct = \Deli\Classes\AmountWithUnit::createFromString($this->getDOM()->filter('.product-overview .price-per-sellable-unit')->text(), ['Kč']);
-				// $amountWithUnitString = $this->getProduct()->getName();
-				// $price = new \Deli\Classes\Price($pricePerProduct, $amountWithUnitString);
-
-				$amountWithUnit = \Deli\Models\ProductPrice::createFromString($json->data->product->textualAmount);
-				if (!$amountWithUnit) {
-					$amountWithUnit = \Deli\Models\ProductPrice::createFromString($json->data->product->productName);
-				}
-
-				if ($amountWithUnit) {
-					$pricePerUnit = $pricePerProduct;
-					$unitAmount = $amountWithUnit->amount;
-					$unitCode = $amountWithUnit->unit;
-				}
-			} catch (\Exception $e) {
-				// Nevermind.
-			}
-
-			$this->setProductPrice($currency, $pricePerProduct, $pricePerUnit, $unitAmount, $unitCode);
-
-		} catch (\Exception $e) {
-			// Nevermind.
+		if ($json->data->product->archived) {
+			throw new \Deli\Exceptions\ProductNotFoundException;
 		}
 
-		return true;
-	}
+		$price = new \Deli\Classes\Price($json->data->product->price->full, $json->data->product->textualAmount);
 
+		return $price;
+	}
 }
