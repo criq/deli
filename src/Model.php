@@ -2,8 +2,7 @@
 
 namespace Deli;
 
-abstract class Model extends \Katu\Model {
-
+abstract class Model extends \Katu\Model
+{
 	const DATABASE = 'deli';
-
 }
