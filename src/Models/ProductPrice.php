@@ -5,7 +5,7 @@ namespace Deli\Models;
 class ProductPrice extends \Deli\Model
 {
 	const TABLE = 'deli_product_prices';
-	const TIMEOUT = 86400;
+	const TIMEOUT = 604800;
 
 	public function isInTimeout()
 	{
