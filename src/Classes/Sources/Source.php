@@ -132,7 +132,12 @@ abstract class Source
 
 	public static function getRemoteCategoryJSON($text)
 	{
-		return \Katu\Utils\JSON::encodeInline(array_values(array_filter(array_map('trim', (array)static::getRemoteCategoryArray($text)))));
+		return static::encodeRemoteCategory(array_values(array_filter(array_map('trim', (array)static::getRemoteCategoryArray($text)))));
+	}
+
+	public static function encodeRemoteCategory($remoteCategory)
+	{
+		return \Katu\Utils\JSON::encodeInline($remoteCategory);
 	}
 
 	public static function getSanitizedRemoteCategoryJSON($remoteCategory)

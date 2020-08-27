@@ -90,6 +90,7 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 	public function loadPrice()
 	{
 		$json = $this->getJSON();
+
 		$price = new \Deli\Classes\Price($json->data->product->price->full, $json->data->product->textualAmount);
 
 		return $price;
