@@ -20,6 +20,10 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 			throw new \Deli\Exceptions\ProductNotFoundException;
 		}
 
+		if ($res->data->product->archived ?? null) {
+			throw new \Deli\Exceptions\ProductNotFoundException;
+		}
+
 		return $res;
 	}
 
@@ -86,11 +90,6 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 	public function loadPrice()
 	{
 		$json = $this->getJSON();
-
-		if ($json->data->product->archived) {
-			throw new \Deli\Exceptions\ProductNotFoundException;
-		}
-
 		$price = new \Deli\Classes\Price($json->data->product->price->full, $json->data->product->textualAmount);
 
 		return $price;
