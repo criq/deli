@@ -20,7 +20,7 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 			// Nevermind.
 		}
 
-		return (new \Katu\Types\TString($html))->normalizeSpaces();
+		return (new \Katu\Types\TString((string)$html))->normalizeSpaces();
 	}
 
 	/****************************************************************************
