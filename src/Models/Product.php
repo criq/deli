@@ -607,10 +607,10 @@ class Product extends \Deli\Model
 	public function loadProductDataFromViscokupujesCz()
 	{
 		$isViscokupujesCzValid = false;
+
 		/***************************************************************************
 		 * Load by contents.
 		 */
-
 		$string = (string)trim($this->getContentsString());
 		if ($string) {
 			$isViscokupujesCzValid = true;
@@ -688,8 +688,21 @@ class Product extends \Deli\Model
 	/****************************************************************************
 	 * Unit.
 	 */
+	public function getAmountWithUnit()
+	{
+		return \Deli\Classes\AmountWithUnit::createFromString($this->getName());
+	}
+
+	/****************************************************************************
+	 * Unit.
+	 */
 	public function getProductUnitAbbr()
 	{
+		$amountWithUnit = $this->getAmountWithUnit();
+		if ($amountWithUnit) {
+			return $amountWithUnit->unit;
+		}
+
 		$sql = SX::select()
 			->select(ProductNutrient::getColumn('ingredientUnit'))
 			->select(SX::aka(SX::fncCount([
