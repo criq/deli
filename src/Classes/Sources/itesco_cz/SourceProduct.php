@@ -96,10 +96,14 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 	 */
 	public function loadPrice()
 	{
-		$pricePerProduct = \Deli\Classes\AmountWithUnit::createFromString($this->getDOM()->filter('.product-overview .price-per-sellable-unit')->text(), ['Kč']);
-		$amountWithUnitString = $this->getProduct()->getName();
-		$price = new \Deli\Classes\Price($pricePerProduct, $amountWithUnitString);
+		try {
+			$pricePerProduct = \Deli\Classes\AmountWithUnit::createFromString($this->getDOM()->filter('.product-overview .price-per-sellable-unit')->text(), ['Kč']);
+			$amountWithUnitString = $this->getProduct()->getName();
+			$price = new \Deli\Classes\Price($pricePerProduct, $amountWithUnitString);
 
-		return $price;
+			return $price;
+		} catch (\Exception $e) {
+			throw new \Deli\Exceptions\ProductUnavailableException;
+		}
 	}
 }

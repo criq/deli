@@ -365,6 +365,8 @@ abstract class Source
 					$product->setProductPrice('CZK', $price);
 					$product->setTimeLoadedPrice();
 				}
+			} catch (\Deli\Exceptions\ProductUnavailableException $e) {
+				$product->setUnavailable();
 			} catch (\Deli\Exceptions\ProductNotFoundException $e) {
 				$product->setUnavailable();
 			} catch (\Throwable $e) {
