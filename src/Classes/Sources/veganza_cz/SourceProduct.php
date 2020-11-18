@@ -11,7 +11,7 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 	{
 		$product = $this->getProduct();
 
-		$name = trim($this->getDOM()->filter('h1[itemprop="name"]')->text());
+		$name = trim($this->getDOM()->filter('.p-detail-inner-header h1')->text());
 		$product->update('name', $name);
 		$product->update('originalName', $name);
 
