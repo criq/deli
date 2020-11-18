@@ -23,6 +23,8 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 	 */
 	public function loadProductAmountWithUnit()
 	{
+		echo $this->getDOM()->html();die;
+
 		if (preg_match('/ve? (?<amount>[0-9]+) (?<unit>g|ml)/', $this->getDOM()->filter('#podrobnosti')->html(), $match)) {
 			return \Deli\Classes\AmountWithUnit::createFromString($match[0]);
 		}

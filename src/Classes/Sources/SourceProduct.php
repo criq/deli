@@ -39,6 +39,13 @@ abstract class SourceProduct
 
 	public function getDOM()
 	{
-		return \Katu\Utils\DOM::crawlHtml($this->getSrc());
+		try {
+			$dom = \Katu\Utils\DOM::crawlHtml($this->getSrc());
+			if (!$dom->html()) {
+				throw new \Exception;
+			}
+		} catch (\Throwable $e) {
+			throw new \Deli\Exceptions\ProductNotFoundException;
+		}
 	}
 }
