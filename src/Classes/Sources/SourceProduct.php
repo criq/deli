@@ -44,6 +44,8 @@ abstract class SourceProduct
 			if (!$dom->html()) {
 				throw new \Exception;
 			}
+
+			return $dom;
 		} catch (\Throwable $e) {
 			throw new \Deli\Exceptions\ProductNotFoundException;
 		}

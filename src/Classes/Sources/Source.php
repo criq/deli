@@ -241,6 +241,9 @@ abstract class Source
 		foreach (\Deli\Models\Product::getBySql($sql) as $product) {
 			try {
 				$product->getSourceProduct()->loadDetails();
+			} catch (\Deli\Exceptions\ProductUnavailableException $e) {
+				$product->setUnavailable();
+				$product->setTimeLoadedDetails();
 			} catch (\Deli\Exceptions\ProductNotFoundException $e) {
 				$product->setUnavailable();
 				$product->setTimeLoadedDetails();
@@ -268,6 +271,9 @@ abstract class Source
 			try {
 				$allergens = $product->getSourceProduct()->loadAllergens();
 				$product->setProductAllergens(\Deli\Models\ProductAllergen::SOURCE_ORIGIN, $allergens);
+				$product->setTimeLoadedAllergens();
+			} catch (\Deli\Exceptions\ProductUnavailableException $e) {
+				$product->setUnavailable();
 				$product->setTimeLoadedAllergens();
 			} catch (\Deli\Exceptions\ProductNotFoundException $e) {
 				$product->setUnavailable();
@@ -300,6 +306,9 @@ abstract class Source
 					$product->setProductNutrients(\Deli\Models\ProductNutrient::SOURCE_ORIGIN, $productAmountWithUnit, $nutrients);
 				}
 				$product->setTimeLoadedNutrients();
+			} catch (\Deli\Exceptions\ProductUnavailableException $e) {
+				$product->setUnavailable();
+				$product->setTimeLoadedNutrients();
 			} catch (\Deli\Exceptions\ProductNotFoundException $e) {
 				$product->setUnavailable();
 				$product->setTimeLoadedNutrients();
@@ -329,6 +338,9 @@ abstract class Source
 				foreach ($emulgators as $emulgator) {
 					$product->setProductEmulgator(\Deli\Models\ProductNutrient::SOURCE_ORIGIN, $emulgator);
 				}
+			} catch (\Deli\Exceptions\ProductUnavailableException $e) {
+				$product->setUnavailable();
+				$product->setTimeLoadedEmulgators();
 			} catch (\Deli\Exceptions\ProductNotFoundException $e) {
 				$product->setUnavailable();
 				$product->setTimeLoadedEmulgators();
