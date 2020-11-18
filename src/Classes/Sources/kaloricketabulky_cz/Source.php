@@ -4,9 +4,6 @@ namespace Deli\Classes\Sources\kaloricketabulky_cz;
 
 class Source extends \Deli\Classes\Sources\Source
 {
-	const HAS_PRODUCT_LOADING = true;
-	const HAS_PRODUCT_NUTRIENTS = true;
-
 	public function loadProducts()
 	{
 		@ini_set('memory_limit', '512M');
