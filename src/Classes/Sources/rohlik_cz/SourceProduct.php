@@ -17,11 +17,11 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 		$res = $curl->get($this->getJSONURL());
 
 		if ($res->messages[0]->messageCode ?? null && $res->messages[0]->messageCode == 'productListService.product_not_enabled_exception') {
-			throw new \Deli\Exceptions\ProductNotFoundException;
+			throw new \Deli\Exceptions\ProductUnavailableException;
 		}
 
 		if ($res->data->product->archived ?? null) {
-			throw new \Deli\Exceptions\ProductNotFoundException;
+			throw new \Deli\Exceptions\ProductUnavailableException;
 		}
 
 		return $res;

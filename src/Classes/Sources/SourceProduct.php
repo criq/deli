@@ -47,7 +47,7 @@ abstract class SourceProduct
 
 			return $dom;
 		} catch (\Throwable $e) {
-			throw new \Deli\Exceptions\ProductNotFoundException;
+			throw new \Deli\Exceptions\ProductUnavailableException;
 		}
 	}
 }

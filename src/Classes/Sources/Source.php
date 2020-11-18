@@ -244,9 +244,6 @@ abstract class Source
 			} catch (\Deli\Exceptions\ProductUnavailableException $e) {
 				$product->setUnavailable();
 				$product->setTimeLoadedDetails();
-			} catch (\Deli\Exceptions\ProductNotFoundException $e) {
-				$product->setUnavailable();
-				$product->setTimeLoadedDetails();
 			} catch (\Throwable $e) {
 				\App\Extensions\ErrorHandler::log($e);
 			}
@@ -273,9 +270,6 @@ abstract class Source
 				$product->setProductAllergens(\Deli\Models\ProductAllergen::SOURCE_ORIGIN, $allergens);
 				$product->setTimeLoadedAllergens();
 			} catch (\Deli\Exceptions\ProductUnavailableException $e) {
-				$product->setUnavailable();
-				$product->setTimeLoadedAllergens();
-			} catch (\Deli\Exceptions\ProductNotFoundException $e) {
 				$product->setUnavailable();
 				$product->setTimeLoadedAllergens();
 			} catch (\Throwable $e) {
@@ -309,9 +303,6 @@ abstract class Source
 			} catch (\Deli\Exceptions\ProductUnavailableException $e) {
 				$product->setUnavailable();
 				$product->setTimeLoadedNutrients();
-			} catch (\Deli\Exceptions\ProductNotFoundException $e) {
-				$product->setUnavailable();
-				$product->setTimeLoadedNutrients();
 			} catch (\Throwable $e) {
 				\App\Extensions\ErrorHandler::log($e);
 			}
@@ -339,9 +330,6 @@ abstract class Source
 					$product->setProductEmulgator(\Deli\Models\ProductNutrient::SOURCE_ORIGIN, $emulgator);
 				}
 			} catch (\Deli\Exceptions\ProductUnavailableException $e) {
-				$product->setUnavailable();
-				$product->setTimeLoadedEmulgators();
-			} catch (\Deli\Exceptions\ProductNotFoundException $e) {
 				$product->setUnavailable();
 				$product->setTimeLoadedEmulgators();
 			} catch (\Throwable $e) {
@@ -378,8 +366,6 @@ abstract class Source
 					$product->setTimeLoadedPrice();
 				}
 			} catch (\Deli\Exceptions\ProductUnavailableException $e) {
-				$product->setUnavailable();
-			} catch (\Deli\Exceptions\ProductNotFoundException $e) {
 				$product->setUnavailable();
 			} catch (\Throwable $e) {
 				\App\Extensions\ErrorHandler::log($e);
