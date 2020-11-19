@@ -9,26 +9,30 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 	 */
 	public function loadDetails()
 	{
-		$product = $this->getProduct();
+		try {
+			$product = $this->getProduct();
 
-		$name = trim($this->getDOM()->filter('.p-detail-inner-header h1')->text());
-		$product->update('name', $name);
-		$product->update('originalName', $name);
+			$name = trim($this->getDOM()->filter('.p-detail-inner-header h1')->text());
+			$product->update('name', $name);
+			$product->update('originalName', $name);
 
-		$remoteCategory = array_values(array_filter($this->getDOM()->filter('#navigation [itemprop="title"]')->each(function ($e) use ($name) {
-			$category = trim($e->text());
-			return $category != $name ? $category : null;
-		})));
+			$remoteCategory = array_values(array_filter($this->getDOM()->filter('#navigation [itemprop="title"]')->each(function ($e) use ($name) {
+				$category = trim($e->text());
+				return $category != $name ? $category : null;
+			})));
 
-		$product->setRemoteCategory($remoteCategory);
-		$product->setOriginalRemoteCategory($remoteCategory);
+			$product->setRemoteCategory($remoteCategory);
+			$product->setOriginalRemoteCategory($remoteCategory);
 
-		$remoteId = $this->getDOM()->filter('[name="productId"]')->attr('value');
-		$product->setRemoteId($remoteId);
+			$remoteId = $this->getDOM()->filter('[name="productId"]')->attr('value');
+			$product->setRemoteId($remoteId);
 
-		$product->update('timeLoadedDetails', new \Katu\Utils\DateTime);
-		$product->save();
+			$product->update('timeLoadedDetails', new \Katu\Utils\DateTime);
+			$product->save();
 
-		return true;
+			return true;
+		} catch (\Exception $e) {
+			return false;
+		}
 	}
 }

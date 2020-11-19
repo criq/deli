@@ -9,13 +9,17 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 	 */
 	public function loadAllergens()
 	{
-		if (preg_match('/<p>\s*<strong>Složení:<\/strong>(?<text>.+)<\/p>/Uu', $this->getDOM()->filter('#podrobnosti')->html(), $match)) {
-			return \Deli\Models\ProductAllergen::getCodesFromStrings([
-				$match['text'],
-			]);
-		}
+		try {
+			if (preg_match('/<p>\s*<strong>Složení:<\/strong>(?<text>.+)<\/p>/Uu', $this->getDOM()->filter('#podrobnosti')->html(), $match)) {
+				return \Deli\Models\ProductAllergen::getCodesFromStrings([
+					$match['text'],
+				]);
+			}
 
-		return null;
+			return null;
+		} catch (\Exception $e) {
+			return null;
+		}
 	}
 
 	/****************************************************************************
