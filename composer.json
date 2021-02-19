@@ -3,11 +3,11 @@
 	"description": "scrapers",
 	"type": "library",
 	"require" : {
-		"php": ">=7.4",
-		"jabli/katu": "v2.x-dev",
-		"jabli/effekt": "@stable",
 		"jabli/chakula": "@stable",
-		"mustangostang/spyc": "@stable"
+		"jabli/effekt": "@stable",
+		"jabli/katu": "v2.x-dev",
+		"mustangostang/spyc": "@stable",
+		"php": ">=7.4"
 	},
 	"minimum-stability": "dev",
 	"autoload": {
