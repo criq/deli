@@ -3,13 +3,14 @@
 	"description": "scrapers",
 	"type": "library",
 	"require" : {
-		"jabli/chakula": "v2.x-dev",
-		"jabli/effekt": "v2.x-dev",
-		"jabli/katu": "v2.x-dev",
 		"mustangostang/spyc": "@stable",
 		"php": ">=7.4"
 	},
-	"minimum-stability": "dev",
+	"require-dev": {
+		"jabli/chakula": "v2.x-dev",
+		"jabli/effekt": "v2.x-dev",
+		"jabli/katu": "v2.x-dev"
+	},
 	"autoload": {
 		"psr-4": {
 			"Deli\\": "src/"
