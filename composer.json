@@ -3,8 +3,8 @@
 	"description": "scrapers",
 	"type": "library",
 	"require" : {
-		"jabli/chakula": "@stable",
-		"jabli/effekt": "@stable",
+		"jabli/chakula": "v2.x-dev",
+		"jabli/effekt": "v2.x-dev",
 		"jabli/katu": "v2.x-dev",
 		"mustangostang/spyc": "@stable",
 		"php": ">=7.4"
