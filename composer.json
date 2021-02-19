@@ -7,7 +7,6 @@
 		"php": ">=7.4"
 	},
 	"require-dev": {
-		"jabli/chakula": "v2.x-dev",
 		"jabli/effekt": "v2.x-dev",
 		"jabli/katu": "v2.x-dev"
 	},
