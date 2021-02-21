@@ -11,7 +11,7 @@ class Emulgator extends \Deli\Model
 		return static::upsert([
 			'code' => strtolower($code),
 		], [
-			'timeCreated' => new \Katu\Utils\DateTime,
+			'timeCreated' => new \Katu\Tools\DateTime\DateTime,
 		]);
 	}
 }

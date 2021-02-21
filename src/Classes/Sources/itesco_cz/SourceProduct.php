@@ -30,7 +30,7 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 		$product->setRemoteCategory($remoteCategory);
 		$product->setOriginalRemoteCategory($remoteCategory);
 
-		$product->update('timeLoadedDetails', new \Katu\Utils\DateTime);
+		$product->update('timeLoadedDetails', new \Katu\Tools\DateTime\DateTime);
 		$product->save();
 
 		return true;

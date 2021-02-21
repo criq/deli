@@ -85,7 +85,7 @@ class Item extends \SimpleXMLElement
 		$product = \Deli\Models\Product::upsert([
 			'remoteId' => $this->getId(),
 		], [
-			'timeCreated' => new \Katu\Utils\DateTime,
+			'timeCreated' => new \Katu\Tools\DateTime\DateTime,
 		], [
 			'source' => $this->getSource(),
 			'uri' => $this->getURL(),

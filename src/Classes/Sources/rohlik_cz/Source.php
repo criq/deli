@@ -15,7 +15,7 @@ class Source extends \Deli\Classes\Sources\Source
 
 	public function loadCategoryIds()
 	{
-		return \Katu\Cache::get([__CLASS__, __FUNCTION__], 86400, function () {
+		return \Katu\Cache\General::get([__CLASS__, __FUNCTION__, __LINE__], '1 day', function () {
 			$categoryIds = [];
 			$json = \Katu\Cache\Url::get(static::JSON_URL);
 			foreach ((array)$json->navigation as $category) {
@@ -32,7 +32,7 @@ class Source extends \Deli\Classes\Sources\Source
 	{
 		$categoryIds = $this->loadCategoryIds();
 		foreach ($categoryIds as $categoryId) {
-			\Katu\Cache::get([__CLASS__, __FUNCTION__], static::CATEGORY_TIMEOUT, function ($categoryId) {
+			\Katu\Cache\General::get([__CLASS__, __FUNCTION__, __LINE__], static::CATEGORY_TIMEOUT, function ($categoryId) {
 				$page = 1;
 				$pages = 1;
 				$perPage = 100;
@@ -57,10 +57,10 @@ class Source extends \Deli\Classes\Sources\Source
 						$product = \Deli\Models\Product::upsert([
 							'remoteId' => $item->productId,
 						], [
-							'timeCreated' => new \Katu\Utils\DateTime,
+							'timeCreated' => new \Katu\Tools\DateTime\DateTime,
 						], [
-							'timeLoaded' => new \Katu\Utils\DateTime,
-							'timeLoadedDetails' => new \Katu\Utils\DateTime,
+							'timeLoaded' => new \Katu\Tools\DateTime\DateTime,
+							'timeLoadedDetails' => new \Katu\Tools\DateTime\DateTime,
 							'source' => $this->getCode(),
 							'uri' => 'https://www.rohlik.cz/' . $item->baseLink,
 							'name' => $item->productName,

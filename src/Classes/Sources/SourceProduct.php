@@ -28,7 +28,7 @@ abstract class SourceProduct
 
 	public function getSrc()
 	{
-		return \Katu\Cache::get([__CLASS__, __FUNCTION__, __LINE__], $this->product->getSource()::CACHE_TIMEOUT, function ($url) {
+		return \Katu\Cache\General::get([__CLASS__, __FUNCTION__, __LINE__], $this->product->getSource()::CACHE_TIMEOUT, function ($url) {
 			$curl = new \Curl\Curl;
 			$curl->setOpt(CURLOPT_TIMEOUT, 30);
 			$curl->setOpt(CURLOPT_CONNECTTIMEOUT, 30);

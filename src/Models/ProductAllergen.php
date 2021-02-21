@@ -18,7 +18,7 @@ class ProductAllergen extends \Deli\Model
 
 	public static function getConfig()
 	{
-		$configFile = new \Katu\Utils\File(__DIR__, '..', 'Config', 'allergens.yaml');
+		$configFile = new \Katu\Files\File(__DIR__, '..', 'Config', 'allergens.yaml');
 		$config = \Spyc::YAMLLoad($configFile->get());
 
 		return $config;

@@ -15,7 +15,7 @@ class Source extends \Deli\Classes\Sources\Source
 				$limit = 50;
 
 				while ($page <= $pages) {
-					$res = \Katu\Cache::get([__CLASS__, __FUNCTION__], static::CACHE_TIMEOUT, function ($page, $limit) {
+					$res = \Katu\Cache\General::get([__CLASS__, __FUNCTION__, __LINE__], static::CACHE_TIMEOUT, function ($page, $limit) {
 						$url = \Katu\Types\TUrl::make('https://www.kaloricketabulky.cz/foodstuff/normal/filter', [
 							'format' => 'json',
 							'page' => $page,
@@ -35,7 +35,7 @@ class Source extends \Deli\Classes\Sources\Source
 							'source' => $this->getCode(),
 							'uri' => '/' . $item->url,
 						], [
-							'timeCreated' => new \Katu\Utils\DateTime,
+							'timeCreated' => new \Katu\Tools\DateTime\DateTime,
 							'remoteId' => $item->id,
 						]);
 
@@ -43,7 +43,7 @@ class Source extends \Deli\Classes\Sources\Source
 						$product->setProductProperty(\Deli\Models\ProductProperty::SOURCE_ORIGIN, 'baseUnit', 'g');
 					}
 				}
-			}, !in_array(\Katu\Env::getPlatform(), ['dev']));
+			}, !in_array(\Katu\Config\Env::getPlatform(), ['dev']));
 		} catch (\Katu\Exceptions\LockException $e) {
 			// Nevermind.
 		}
