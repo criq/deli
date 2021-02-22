@@ -16,10 +16,10 @@ class Source extends \Deli\Classes\Sources\Source
 		@ini_set('memory_limit', '512M');
 
 		try {
-			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__, __LINE__], 3600, function () {
+			$lock = new \Katu\Tools\Locks\Lock(3600, [__CLASS__, __FUNCTION__], function () {
 				$url = 'http://www.stobklub.cz/databaze-potravin/';
 				$src = \Katu\Cache\URL::get($url);
-				$dom = \Katu\Utils\DOM::crawlHtml($src);
+				$dom = \Katu\Tools\DOM\DOM::crawlHtml($src);
 
 				$categories = $dom->filter('.boxSubmenu .list > li')->each(function ($e) {
 					return [
@@ -38,7 +38,7 @@ class Source extends \Deli\Classes\Sources\Source
 						\Katu\Cache\General::get([__CLASS__, __FUNCTION__, __LINE__], static::CACHE_TIMEOUT, function ($subcategoryUri) use ($category, $subcategory) {
 							$url = 'http://www.stobklub.cz' . $subcategoryUri;
 							$src = \Katu\Cache\URL::get($url);
-							$dom = \Katu\Utils\DOM::crawlHtml($src);
+							$dom = \Katu\Tools\DOM\DOM::crawlHtml($src);
 
 							$dom->filter('#mainContent table tbody tr')->each(function ($e) use ($category, $subcategory) {
 
@@ -79,7 +79,8 @@ class Source extends \Deli\Classes\Sources\Source
 						}, $subcategory['uri']);
 					}
 				}
-			}, !in_array(\Katu\Config\Env::getPlatform(), ['dev']));
+			});
+			$lock->run();
 		} catch (\Katu\Exceptions\LockException $e) {
 			// Nevermind.
 		}

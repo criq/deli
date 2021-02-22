@@ -1,8 +1,6 @@
 <?php
 
-// Stačí zmigrovat stará data
-
-namespace Deli\Classes\Sources\usda_gov;
+namespace Deli\Models\usda_gov;
 
 class Source extends \Deli\Classes\Sources\Source
 {
@@ -21,7 +19,7 @@ class Source extends \Deli\Classes\Sources\Source
 		@ini_set('memory_limit', '512M');
 
 		try {
-			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__, __LINE__], 3600, function () {
+			$lock = new \Katu\Tools\Locks\Lock(3600, [__CLASS__, __FUNCTION__], function () {
 				$categoryFileName = realpath(dirname(__FILE__) . '/../../../Resources/UsdaGov/sr28asc/FD_GROUP.txt');
 				$categories = [];
 				foreach (static::readTextFileToArray($categoryFileName) as $row) {
@@ -93,7 +91,7 @@ class Source extends \Deli\Classes\Sources\Source
 	public function loadCategory()
 	{
 		$categories = [];
-		foreach (\Katu\Utils\JSON::decodeAsArray($this->remoteOriginalCategory) as $remoteOriginalCategory) {
+		foreach (\Katu\Files\Formats\JSON::decodeAsArray($this->remoteOriginalCategory) as $remoteOriginalCategory) {
 			$translation = (new \Deli\Classes\Translation('en', 'cs', $remoteOriginalCategory))->translate();
 			if ($translation) {
 				$categories[] = $translation;

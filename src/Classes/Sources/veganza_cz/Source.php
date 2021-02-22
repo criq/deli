@@ -19,12 +19,12 @@ class Source extends \Deli\Classes\Sources\Source
 		@ini_set('memory_limit', '512M');
 
 		try {
-			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__, __LINE__], static::LOCK_TIMEOUT, function () {
+			$lock = new \Katu\Tools\Locks\Lock(static::LOCK_TIMEOUT, [__CLASS__, __FUNCTION__], function () {
 				$xml = static::loadXml(static::SITEMAP_URL);
 				foreach ($xml->url as $item) {
 					$url = (string)$item->loc;
 					$src = \Katu\Cache\Url::get($url, static::CACHE_TIMEOUT);
-					$dom = \Katu\Utils\DOM::crawlHtml($src);
+					$dom = \Katu\Tools\DOM\DOM::crawlHtml($src);
 
 					if ($dom->filter('body.type-product')->count()) {
 						$product = \Deli\Models\Product::upsert([
@@ -35,7 +35,8 @@ class Source extends \Deli\Classes\Sources\Source
 						]);
 					}
 				}
-			}, !in_array(\Katu\Config\Env::getPlatform(), ['dev']));
+			});
+			$lock->run();
 		} catch (\Katu\Exceptions\LockException $e) {
 			// Nevermind.
 		}

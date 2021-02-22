@@ -137,7 +137,7 @@ abstract class Source
 
 	public static function encodeRemoteCategory($remoteCategory)
 	{
-		return \Katu\Utils\JSON::encodeInline($remoteCategory);
+		return \Katu\Files\Formats\JSON::encodeInline($remoteCategory);
 	}
 
 	public static function getSanitizedRemoteCategoryJSON($remoteCategory)
@@ -179,7 +179,7 @@ abstract class Source
 		@ini_set('memory_limit', '512M');
 
 		try {
-			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__, __LINE__], static::LOCK_TIMEOUT, function () {
+			$lock = new \Katu\Tools\Locks\Lock(static::LOCK_TIMEOUT, [__CLASS__, __FUNCTION__], function () {
 				$xml = static::loadXml(static::XML_URL);
 				foreach ($xml->SHOPITEM as $item) {
 					\Katu\Cache\General::get([__CLASS__, __FUNCTION__, __LINE__], static::CACHE_TIMEOUT, function ($xml) {
@@ -191,7 +191,8 @@ abstract class Source
 						}
 					}, $item->asXML());
 				}
-			}, !in_array(\Katu\Config\Env::getPlatform(), ['dev']));
+			});
+			$lock->run();
 		} catch (\Katu\Exceptions\LockException $e) {
 			// Nevermind.
 		}
@@ -202,7 +203,7 @@ abstract class Source
 		@ini_set('memory_limit', '512M');
 
 		try {
-			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__, __LINE__], static::LOCK_TIMEOUT, function () {
+			$lock = new \Katu\Tools\Locks\Lock(static::LOCK_TIMEOUT, [__CLASS__, __FUNCTION__], function () {
 				$xml = static::loadXml(static::SITEMAP_URL);
 				foreach ($xml->url as $item) {
 					$url = (string)$item->loc;
@@ -215,7 +216,8 @@ abstract class Source
 						'timeCreated' => new \Katu\Tools\DateTime\DateTime,
 					]);
 				}
-			}, !in_array(\Katu\Config\Env::getPlatform(), ['dev']));
+			});
+			$lock->run();
 		} catch (\Katu\Exceptions\LockException $e) {
 			// Nevermind.
 		}
@@ -380,7 +382,7 @@ abstract class Source
 		@ini_set('memory_limit', '512M');
 
 		try {
-			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__, __LINE__], static::LOCK_TIMEOUT, function () {
+			$lock = new \Katu\Tools\Locks\Lock(static::LOCK_TIMEOUT, [__CLASS__, __FUNCTION__], function () {
 				$xml = static::loadXML(static::XML_URL);
 				foreach ($xml->SHOPITEM as $item) {
 					\Katu\Cache\General::get([__CLASS__, __FUNCTION__, __LINE__], static::CACHE_TIMEOUT, function ($xml) {
@@ -403,7 +405,8 @@ abstract class Source
 						}
 					}, $item->asXML());
 				}
-			}, !in_array(\Katu\Config\Env::getPlatform(), ['dev']));
+			});
+			$lock->run();
 		} catch (\Katu\Exceptions\LockException $e) {
 			// Nevermind.
 		}

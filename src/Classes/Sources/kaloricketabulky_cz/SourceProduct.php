@@ -20,7 +20,7 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 	public function loadNutrients()
 	{
 		$src = $this->getSrc();
-		$dom = \Katu\Utils\DOM::crawlHtml($src);
+		$dom = \Katu\Tools\DOM\DOM::crawlHtml($src);
 
 		return $dom->filter('[ng-if="foodstuff==null"]')->eq(1)->filter('tr')->each(function ($e) {
 			$nutrientCode = \Deli\Models\ProductNutrient::getCodeFromString($e->filter('td')->eq(0)->text());

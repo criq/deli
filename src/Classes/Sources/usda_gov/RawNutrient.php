@@ -9,9 +9,9 @@ class RawNutrient extends \Deli\Model
 	public static function buildRawNutrientList()
 	{
 		try {
-			\Katu\Utils\Lock::run(['deli', Product::SOURCE, __FUNCTION__], 3600, function () {
+			$lock = new \Katu\Tools\Locks\Lock(3600, [__CLASS__, __FUNCTION__], function () {
 				$productNutrientFileName = realpath(dirname(__FILE__) . '/../../Resources/UsdaGov/sr28asc/NUT_DATA.txt');
-				$rows = Product::readTextFileToLines($productNutrientFileName);
+				$rows = Source::readTextFileToLines($productNutrientFileName);
 
 				$sliceSize = 1000;
 				$slices = ceil(count($rows) / $sliceSize);
@@ -20,7 +20,7 @@ class RawNutrient extends \Deli\Model
 					\Katu\Cache\General::get([__CLASS__, __FUNCTION__, __LINE__], '1 day', function ($sliceSize, $slice) use ($rows) {
 						$sliceRows = array_slice($rows, $sliceSize * ($slice - 1), $sliceSize);
 						foreach ($sliceRows as $row) {
-							$array = Product::getTextFileLineArray(Product::sanitizeTextFileLine($row));
+							$array = Source::getTextFileLineArray(Source::sanitizeTextFileLine($row));
 
 							// in 100 g
 							static::upsert([
@@ -35,7 +35,8 @@ class RawNutrient extends \Deli\Model
 						return true;
 					}, $sliceSize, $slice);
 				}
-			}, !in_array(\Katu\Config\Env::getPlatform(), ['dev']));
+			});
+			$lock->run();
 		} catch (\Exception $e) {
 			// Nevermind.
 		}

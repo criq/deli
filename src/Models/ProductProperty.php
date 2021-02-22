@@ -10,7 +10,7 @@ class ProductProperty extends \Deli\Model
 
 	public function setValue($value)
 	{
-		$value = \Katu\Utils\JSON::encodeInline($value);
+		$value = \Katu\Files\Formats\JSON::encodeInline($value);
 		$this->update('value', in_array($value, ['null', '""', '[]']) ? null : $value);
 
 		return true;
@@ -18,6 +18,6 @@ class ProductProperty extends \Deli\Model
 
 	public function getValue()
 	{
-		return \Katu\Utils\JSON::decodeAsArray($this->value);
+		return \Katu\Files\Formats\JSON::decodeAsArray($this->value);
 	}
 }

@@ -40,7 +40,7 @@ abstract class SourceProduct
 	public function getDOM()
 	{
 		try {
-			$dom = \Katu\Utils\DOM::crawlHtml($this->getSrc());
+			$dom = \Katu\Tools\DOM\DOM::crawlHtml($this->getSrc());
 			if (!$dom->html()) {
 				throw new \Exception;
 			}

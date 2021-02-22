@@ -9,7 +9,7 @@ class Source extends \Deli\Classes\Sources\Source
 		@ini_set('memory_limit', '512M');
 
 		try {
-			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__], static::CACHE_TIMEOUT, function () {
+			$lock = new \Katu\Tools\Locks\Lock(static::CACHE_TIMEOUT, [__CLASS__, __FUNCTION__], function () {
 				$pages = 1;
 				$page = 1;
 				$limit = 50;
@@ -43,7 +43,8 @@ class Source extends \Deli\Classes\Sources\Source
 						$product->setProductProperty(\Deli\Models\ProductProperty::SOURCE_ORIGIN, 'baseUnit', 'g');
 					}
 				}
-			}, !in_array(\Katu\Config\Env::getPlatform(), ['dev']));
+			});
+			$lock->run();
 		} catch (\Katu\Exceptions\LockException $e) {
 			// Nevermind.
 		}

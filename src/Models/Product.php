@@ -152,14 +152,14 @@ class Product extends \Deli\Model
 
 	public function setRemoteCategory(array $remoteCategory)
 	{
-		$this->update('remoteCategory', \Katu\Utils\JSON::encodeInline($remoteCategory));
+		$this->update('remoteCategory', \Katu\Files\Formats\JSON::encodeInline($remoteCategory));
 
 		return $this;
 	}
 
 	public function setOriginalRemoteCategory(array $remoteCategory)
 	{
-		$this->update('originalRemoteCategory', \Katu\Utils\JSON::encodeInline($remoteCategory));
+		$this->update('originalRemoteCategory', \Katu\Files\Formats\JSON::encodeInline($remoteCategory));
 
 		return $this;
 	}
@@ -171,7 +171,7 @@ class Product extends \Deli\Model
 
 	public static function getRemoteCategoryJSON($text)
 	{
-		return \Katu\Utils\JSON::encodeInline(array_values(array_filter(array_map('trim', (array)static::getRemoteCategoryArray($text)))));
+		return \Katu\Files\Formats\JSON::encodeInline(array_values(array_filter(array_map('trim', (array)static::getRemoteCategoryArray($text)))));
 	}
 
 	public static function getSanitizedRemoteCategoryJSON($remoteCategory)
@@ -618,7 +618,7 @@ class Product extends \Deli\Model
 			$res = \Katu\Cache\General::get([__CLASS__, __FUNCTION__, __LINE__], $this->getSource()::CACHE_TIMEOUT, function ($string) {
 				$curl = new \Curl\Curl;
 				$curl->setHeader('Content-Type', 'application/json');
-				$res = $curl->post('https://viscokupujes.cz/api/get-info', \Katu\Utils\JSON::encodeInline([
+				$res = $curl->post('https://viscokupujes.cz/api/get-info', \Katu\Files\Formats\JSON::encodeInline([
 					'ingredients' => $string,
 				]));
 

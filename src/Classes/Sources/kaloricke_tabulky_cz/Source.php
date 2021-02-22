@@ -12,16 +12,16 @@ class Source extends \Deli\Classes\Sources\Source
 		@ini_set('memory_limit', '512M');
 
 		try {
-			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__], 3600, function () {
+			$lock = new \Katu\Tools\Locks\Lock(3600, [__CLASS__, __FUNCTION__], function () {
 				$url = 'http://www.kaloricke-tabulky.cz/';
 				$src = \Katu\Cache\URL::get($url);
-				$dom = \Katu\Utils\DOM::crawlHtml($src);
+				$dom = \Katu\Tools\DOM\DOM::crawlHtml($src);
 				$dom->filter('#dropdown_category ul li a')->each(function ($e) {
 					$category = $e->text();
 
 					$url = 'http://www.kaloricke-tabulky.cz' . $e->attr('href');
 					$src = \Katu\Cache\URL::get($url);
-					$dom = \Katu\Utils\DOM::crawlHtml($src);
+					$dom = \Katu\Tools\DOM\DOM::crawlHtml($src);
 
 					return $dom->filter('#kalDenik .odd_row_c, #kalDenik .even_row_c')->each(function ($e) use ($category) {
 						try {
@@ -48,7 +48,8 @@ class Source extends \Deli\Classes\Sources\Source
 						}
 					});
 				});
-			}, !in_array(\Katu\Config\Env::getPlatform(), ['dev']));
+			});
+			$lock->run();
 		} catch (\Katu\Exceptions\LockException $e) {
 			// Nevermind.
 		}

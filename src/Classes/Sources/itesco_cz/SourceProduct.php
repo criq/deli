@@ -67,7 +67,7 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 	public function loadProductAmountWithUnit()
 	{
 		try {
-			$dom = \Katu\Utils\DOM::crawlHtml($this->loadProductInfos()->filterByTitle('Výživové hodnoty')[0]->text);
+			$dom = \Katu\Tools\DOM\DOM::crawlHtml($this->loadProductInfos()->filterByTitle('Výživové hodnoty')[0]->text);
 			return \Deli\Classes\AmountWithUnit::createFromString($dom->filter('table thead th')->eq(1)->html());
 		} catch (\Throwable $e) {
 			return null;
@@ -80,7 +80,7 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 	public function loadNutrients()
 	{
 		try {
-			$dom = \Katu\Utils\DOM::crawlHtml($this->loadProductInfos()->filterByTitle('Výživové hodnoty')[0]->text);
+			$dom = \Katu\Tools\DOM\DOM::crawlHtml($this->loadProductInfos()->filterByTitle('Výživové hodnoty')[0]->text);
 			return $dom->filter('tbody tr')->each(function ($e) {
 				$nutrientName = $e->filter('td')->eq(0)->text();
 				$amountWithUnitString = explode('/', $e->filter('td')->eq(1)->text())[0];
