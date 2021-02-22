@@ -715,7 +715,7 @@ class Product extends \Deli\Model
 			->orderBy(SX::orderBy(SX::a('size'), SX::kw('desc')))
 			;
 
-		$res = ProductNutrient::getPdo()->createQuery($sql)->getResult()->getArray();
+		$res = ProductNutrient::getConnection()->createQuery($sql)->getResult();
 
 		return $res[0]['ingredientUnit'] ?? false;
 	}
