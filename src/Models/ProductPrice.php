@@ -9,7 +9,7 @@ class ProductPrice extends \Deli\Model
 
 	public function isInTimeout()
 	{
-		return (new \Katu\Utils\DateTime($this->timeCreated))->isInTimeout(static::TIMEOUT);
+		return (new \Katu\Tools\DateTime\DateTime($this->timeCreated))->isInTimeout(static::TIMEOUT);
 	}
 
 	public function getPricePerAmount($amount = 100)

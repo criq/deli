@@ -27,7 +27,7 @@ class SourceProduct extends \Deli\Classes\Sources\SourceProduct
 			$remoteId = $this->getDOM()->filter('[name="productId"]')->attr('value');
 			$product->setRemoteId($remoteId);
 
-			$product->update('timeLoadedDetails', new \Katu\Utils\DateTime);
+			$product->update('timeLoadedDetails', new \Katu\Tools\DateTime\DateTime);
 			$product->save();
 
 			return true;

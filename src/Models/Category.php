@@ -27,7 +27,7 @@ class Category extends \Deli\Model
 				'categoryId' => $parent ? $parent->getId() : null,
 				'name' => trim($name),
 			], [
-				'timeCreated' => new \Katu\Utils\DateTime,
+				'timeCreated' => new \Katu\Tools\DateTime\DateTime,
 			]);
 		}
 

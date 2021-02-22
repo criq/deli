@@ -10,7 +10,7 @@ class ProductNutrient extends \Deli\Model
 
 	public static function getConfig()
 	{
-		$configFile = new \Katu\Utils\File(__DIR__, '..', 'Config', 'nutrients.yaml');
+		$configFile = new \Katu\Files\File(__DIR__, '..', 'Config', 'nutrients.yaml');
 		$config = \Spyc::YAMLLoad($configFile->get());
 
 		return $config;

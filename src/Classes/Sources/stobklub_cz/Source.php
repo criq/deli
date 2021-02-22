@@ -18,7 +18,7 @@ class Source extends \Deli\Classes\Sources\Source
 		try {
 			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__, __LINE__], 3600, function () {
 				$url = 'http://www.stobklub.cz/databaze-potravin/';
-				$src = \Katu\Utils\Cache::getUrl($url);
+				$src = \Katu\Cache\URL::get($url);
 				$dom = \Katu\Utils\DOM::crawlHtml($src);
 
 				$categories = $dom->filter('.boxSubmenu .list > li')->each(function ($e) {
@@ -35,9 +35,9 @@ class Source extends \Deli\Classes\Sources\Source
 
 				foreach ($categories as $category) {
 					foreach ($category['subcategories'] as $subcategory) {
-						\Katu\Cache::get([__CLASS__, __FUNCTION__, __LINE__], static::CACHE_TIMEOUT, function ($subcategoryUri) use ($category, $subcategory) {
+						\Katu\Cache\General::get([__CLASS__, __FUNCTION__, __LINE__], static::CACHE_TIMEOUT, function ($subcategoryUri) use ($category, $subcategory) {
 							$url = 'http://www.stobklub.cz' . $subcategoryUri;
-							$src = \Katu\Utils\Cache::getUrl($url);
+							$src = \Katu\Cache\URL::get($url);
 							$dom = \Katu\Utils\DOM::crawlHtml($src);
 
 							$dom->filter('#mainContent table tbody tr')->each(function ($e) use ($category, $subcategory) {
@@ -46,7 +46,7 @@ class Source extends \Deli\Classes\Sources\Source
 									'source' => $this->getCode(),
 									'uri' => $e->filter('td')->eq(1)->filter('a')->attr('href'),
 								], [
-									'timeCreated' => new \Katu\Utils\DateTime,
+									'timeCreated' => new \Katu\Tools\DateTime\DateTime,
 								], [
 									'name' => $e->filter('td')->eq(1)->filter('a')->text(),
 								]);
@@ -79,7 +79,7 @@ class Source extends \Deli\Classes\Sources\Source
 						}, $subcategory['uri']);
 					}
 				}
-			}, !in_array(\Katu\Env::getPlatform(), ['dev']));
+			}, !in_array(\Katu\Config\Env::getPlatform(), ['dev']));
 		} catch (\Katu\Exceptions\LockException $e) {
 			// Nevermind.
 		}

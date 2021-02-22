@@ -31,7 +31,7 @@ abstract class Source
 
 	public static function getAllSources()
 	{
-		$dir = new \Katu\Utils\File(__DIR__);
+		$dir = new \Katu\Files\File(__DIR__);
 		$sources = array_map(function ($dir) {
 			$code = array_slice(explode('/', $dir), -1)[0];
 
@@ -91,7 +91,7 @@ abstract class Source
 	 */
 	public static function loadXML($url)
 	{
-		$src = \Katu\Cache::get([__CLASS__, __FUNCTION__, __LINE__], static::CACHE_TIMEOUT, function ($url) {
+		$src = \Katu\Cache\General::get([__CLASS__, __FUNCTION__, __LINE__], static::CACHE_TIMEOUT, function ($url) {
 			$curl = new \Curl\Curl;
 			$curl->setConnectTimeout(3600);
 			$curl->setTimeout(3600);
@@ -182,16 +182,16 @@ abstract class Source
 			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__, __LINE__], static::LOCK_TIMEOUT, function () {
 				$xml = static::loadXml(static::XML_URL);
 				foreach ($xml->SHOPITEM as $item) {
-					\Katu\Cache::get([__CLASS__, __FUNCTION__, __LINE__], static::CACHE_TIMEOUT, function ($xml) {
+					\Katu\Cache\General::get([__CLASS__, __FUNCTION__, __LINE__], static::CACHE_TIMEOUT, function ($xml) {
 						try {
 							$item = static::getXMLItem($xml);
 							$product = $item->getOrCreateProduct();
 						} catch (\Throwable $e) {
-							\App\Extensions\ErrorHandler::log($e);
+							\App\Extensions\Errors\Handler::log($e);
 						}
 					}, $item->asXML());
 				}
-			}, !in_array(\Katu\Env::getPlatform(), ['dev']));
+			}, !in_array(\Katu\Config\Env::getPlatform(), ['dev']));
 		} catch (\Katu\Exceptions\LockException $e) {
 			// Nevermind.
 		}
@@ -212,10 +212,10 @@ abstract class Source
 						'source' => $this->getCode(),
 						'uri' => $uri,
 					], [
-						'timeCreated' => new \Katu\Utils\DateTime,
+						'timeCreated' => new \Katu\Tools\DateTime\DateTime,
 					]);
 				}
-			}, !in_array(\Katu\Env::getPlatform(), ['dev']));
+			}, !in_array(\Katu\Config\Env::getPlatform(), ['dev']));
 		} catch (\Katu\Exceptions\LockException $e) {
 			// Nevermind.
 		}
@@ -245,7 +245,7 @@ abstract class Source
 				$product->setUnavailable();
 				$product->setTimeLoadedDetails();
 			} catch (\Throwable $e) {
-				\App\Extensions\ErrorHandler::log($e);
+				\App\Extensions\Errors\Handler::log($e);
 			}
 		}
 
@@ -273,7 +273,7 @@ abstract class Source
 				$product->setUnavailable();
 				$product->setTimeLoadedAllergens();
 			} catch (\Throwable $e) {
-				\App\Extensions\ErrorHandler::log($e);
+				\App\Extensions\Errors\Handler::log($e);
 			}
 		}
 
@@ -304,7 +304,7 @@ abstract class Source
 				$product->setUnavailable();
 				$product->setTimeLoadedNutrients();
 			} catch (\Throwable $e) {
-				\App\Extensions\ErrorHandler::log($e);
+				\App\Extensions\Errors\Handler::log($e);
 			}
 		}
 
@@ -333,7 +333,7 @@ abstract class Source
 				$product->setUnavailable();
 				$product->setTimeLoadedEmulgators();
 			} catch (\Throwable $e) {
-				\App\Extensions\ErrorHandler::log($e);
+				\App\Extensions\Errors\Handler::log($e);
 			}
 		}
 
@@ -368,7 +368,7 @@ abstract class Source
 			} catch (\Deli\Exceptions\ProductUnavailableException $e) {
 				$product->setUnavailable();
 			} catch (\Throwable $e) {
-				\App\Extensions\ErrorHandler::log($e);
+				\App\Extensions\Errors\Handler::log($e);
 			}
 		}
 
@@ -383,7 +383,7 @@ abstract class Source
 			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__, __LINE__], static::LOCK_TIMEOUT, function () {
 				$xml = static::loadXML(static::XML_URL);
 				foreach ($xml->SHOPITEM as $item) {
-					\Katu\Cache::get([__CLASS__, __FUNCTION__, __LINE__], static::CACHE_TIMEOUT, function ($xml) {
+					\Katu\Cache\General::get([__CLASS__, __FUNCTION__, __LINE__], static::CACHE_TIMEOUT, function ($xml) {
 						try {
 							$item = static::getXMLItem($xml);
 							$product = $item->getOrCreateProduct();
@@ -399,11 +399,11 @@ abstract class Source
 								}
 							}
 						} catch (\Throwable $e) {
-							\App\Extensions\ErrorHandler::log($e);
+							\App\Extensions\Errors\Handler::log($e);
 						}
 					}, $item->asXML());
 				}
-			}, !in_array(\Katu\Env::getPlatform(), ['dev']));
+			}, !in_array(\Katu\Config\Env::getPlatform(), ['dev']));
 		} catch (\Katu\Exceptions\LockException $e) {
 			// Nevermind.
 		}

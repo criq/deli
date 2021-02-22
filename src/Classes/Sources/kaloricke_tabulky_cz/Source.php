@@ -14,13 +14,13 @@ class Source extends \Deli\Classes\Sources\Source
 		try {
 			\Katu\Utils\Lock::run([__CLASS__, __FUNCTION__], 3600, function () {
 				$url = 'http://www.kaloricke-tabulky.cz/';
-				$src = \Katu\Utils\Cache::getUrl($url);
+				$src = \Katu\Cache\URL::get($url);
 				$dom = \Katu\Utils\DOM::crawlHtml($src);
 				$dom->filter('#dropdown_category ul li a')->each(function ($e) {
 					$category = $e->text();
 
 					$url = 'http://www.kaloricke-tabulky.cz' . $e->attr('href');
-					$src = \Katu\Utils\Cache::getUrl($url);
+					$src = \Katu\Cache\URL::get($url);
 					$dom = \Katu\Utils\DOM::crawlHtml($src);
 
 					return $dom->filter('#kalDenik .odd_row_c, #kalDenik .even_row_c')->each(function ($e) use ($category) {
@@ -29,7 +29,7 @@ class Source extends \Deli\Classes\Sources\Source
 								'source' => $this->getCode(),
 								'uri' => trim($e->filter('a')->attr('href')),
 							], [
-								'timeCreated' => new \Katu\Utils\DateTime,
+								'timeCreated' => new \Katu\Tools\DateTime\DateTime,
 							], [
 								'name' => trim($e->filter('a')->text()),
 								'originalName' => trim($e->filter('a')->text()),
@@ -44,11 +44,11 @@ class Source extends \Deli\Classes\Sources\Source
 								$product->setProductProperty(\Deli\Models\ProductProperty::SOURCE_ORIGIN, 'baseUnit', $baseAmountWithUnit->unit);
 							}
 						} catch (\Exception $e) {
-							\App\Extensions\ErrorHandler::log($e);
+							\App\Extensions\Errors\Handler::log($e);
 						}
 					});
 				});
-			}, !in_array(\Katu\Env::getPlatform(), ['dev']));
+			}, !in_array(\Katu\Config\Env::getPlatform(), ['dev']));
 		} catch (\Katu\Exceptions\LockException $e) {
 			// Nevermind.
 		}

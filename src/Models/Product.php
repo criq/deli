@@ -84,7 +84,7 @@ class Product extends \Deli\Model
 	 */
 	public function setTimeLoadedDetails()
 	{
-		$this->update('timeLoadedDetails', new \Katu\Utils\DateTime);
+		$this->update('timeLoadedDetails', new \Katu\Tools\DateTime\DateTime);
 		$this->save();
 
 		return true;
@@ -92,7 +92,7 @@ class Product extends \Deli\Model
 
 	public function setTimeLoadedAllergens()
 	{
-		$this->update('timeLoadedAllergens', new \Katu\Utils\DateTime);
+		$this->update('timeLoadedAllergens', new \Katu\Tools\DateTime\DateTime);
 		$this->save();
 
 		return true;
@@ -100,7 +100,7 @@ class Product extends \Deli\Model
 
 	public function setTimeLoadedNutrients()
 	{
-		$this->update('timeLoadedNutrients', new \Katu\Utils\DateTime);
+		$this->update('timeLoadedNutrients', new \Katu\Tools\DateTime\DateTime);
 		$this->save();
 
 		return true;
@@ -108,7 +108,7 @@ class Product extends \Deli\Model
 
 	public function setTimeLoadedEmulgators()
 	{
-		$this->update('timeLoadedEmulgators', new \Katu\Utils\DateTime);
+		$this->update('timeLoadedEmulgators', new \Katu\Tools\DateTime\DateTime);
 		$this->save();
 
 		return true;
@@ -116,7 +116,7 @@ class Product extends \Deli\Model
 
 	public function setTimeAttemptedPrice()
 	{
-		$this->update('timeAttemptedPrice', new \Katu\Utils\DateTime);
+		$this->update('timeAttemptedPrice', new \Katu\Tools\DateTime\DateTime);
 		$this->save();
 
 		return true;
@@ -124,7 +124,7 @@ class Product extends \Deli\Model
 
 	public function setTimeLoadedPrice()
 	{
-		$this->update('timeLoadedPrice', new \Katu\Utils\DateTime);
+		$this->update('timeLoadedPrice', new \Katu\Tools\DateTime\DateTime);
 		$this->save();
 
 		return true;
@@ -230,7 +230,7 @@ class Product extends \Deli\Model
 		return $this->setShoppingList(ShoppingList::upsert([
 			'name' => trim($name),
 		], [
-			'timeCreated' => new \Katu\Utils\DateTime,
+			'timeCreated' => new \Katu\Tools\DateTime\DateTime,
 		]));
 	}
 
@@ -257,7 +257,7 @@ class Product extends \Deli\Model
 			'source' => $source,
 			'property' => trim($property),
 		], [
-			'timeCreated' => new \Katu\Utils\DateTime,
+			'timeCreated' => new \Katu\Tools\DateTime\DateTime,
 		]);
 		$productProperty->setValue($value);
 		$productProperty->save();
@@ -383,7 +383,7 @@ class Product extends \Deli\Model
 			'source' => $source,
 			'allergenCode' => $allergenCode,
 		], [
-			'timeCreated' => new \Katu\Utils\DateTime,
+			'timeCreated' => new \Katu\Tools\DateTime\DateTime,
 		]);
 	}
 
@@ -422,9 +422,9 @@ class Product extends \Deli\Model
 			'source' => $source,
 			'nutrientCode' => $nutrientAmountWithUnit->nutrientCode,
 		], [
-			'timeCreated' => new \Katu\Utils\DateTime,
+			'timeCreated' => new \Katu\Tools\DateTime\DateTime,
 		], [
-			'timeUpdated' => new \Katu\Utils\DateTime,
+			'timeUpdated' => new \Katu\Tools\DateTime\DateTime,
 			'nutrientAmount' => $nutrientAmountWithUnit->amountWithUnit->amount,
 			'nutrientUnit' => $nutrientAmountWithUnit->amountWithUnit->unit,
 			'ingredientAmount' => $productAmountWithUnit->amount,
@@ -457,7 +457,7 @@ class Product extends \Deli\Model
 			'source' => $source,
 			'emulgatorId' => $emulgator->getId(),
 		], [
-			'timeCreated' => new \Katu\Utils\DateTime,
+			'timeCreated' => new \Katu\Tools\DateTime\DateTime,
 		]);
 	}
 
@@ -552,7 +552,7 @@ class Product extends \Deli\Model
 	public function setProductPrice($currencyCode, \Deli\Classes\Price $price)
 	{
 		return ProductPrice::insert([
-			'timeCreated'     => new \Katu\Utils\DateTime,
+			'timeCreated'     => new \Katu\Tools\DateTime\DateTime,
 			'productId'       => $this->getId(),
 			'currencyCode'    => $currencyCode,
 			'pricePerProduct' => $price->pricePerProduct,
@@ -586,7 +586,7 @@ class Product extends \Deli\Model
 			->where(SX::lgcOr([
 				SX::lgcOr([
 					SX::cmpIsNull(static::getColumn('timeLoadedFromViscokupujesCz')),
-					SX::cmpLessThan(static::getColumn('timeLoadedFromViscokupujesCz'), new \Katu\Utils\DateTime('- ' . static::TIMEOUT . ' seconds')),
+					SX::cmpLessThan(static::getColumn('timeLoadedFromViscokupujesCz'), new \Katu\Tools\DateTime\DateTime('- ' . static::TIMEOUT . ' seconds')),
 				]),
 				SX::cmpIsNull(static::getColumn('isViscokupujesCzValid'))
 			]))
@@ -615,7 +615,7 @@ class Product extends \Deli\Model
 		if ($string) {
 			$isViscokupujesCzValid = true;
 
-			$res = \Katu\Utils\Cache::get(function ($string) {
+			$res = \Katu\Cache\General::get([__CLASS__, __FUNCTION__, __LINE__], $this->getSource()::CACHE_TIMEOUT, function ($string) {
 				$curl = new \Curl\Curl;
 				$curl->setHeader('Content-Type', 'application/json');
 				$res = $curl->post('https://viscokupujes.cz/api/get-info', \Katu\Utils\JSON::encodeInline([
@@ -623,7 +623,7 @@ class Product extends \Deli\Model
 				]));
 
 				return $res;
-			}, $this->getSource()::CACHE_TIMEOUT, $string);
+			}, $string);
 
 			// Allergens.
 			if (isset($res->a)) {
@@ -639,7 +639,7 @@ class Product extends \Deli\Model
 					$emulgator = Emulgator::upsert([
 						'code' => $emulgatorData->id,
 					], [
-						'timeCreated' => new \Katu\Utils\DateTime,
+						'timeCreated' => new \Katu\Tools\DateTime\DateTime,
 					]);
 					$this->setProductEmulgator(ProductEmulgator::SOURCE_VISCOKUPUJES_CZ, $emulgator);
 				}
@@ -678,7 +678,7 @@ class Product extends \Deli\Model
 			}
 		}
 
-		$this->update('timeLoadedFromViscokupujesCz', new \Katu\Utils\DateTime);
+		$this->update('timeLoadedFromViscokupujesCz', new \Katu\Tools\DateTime\DateTime);
 		$this->update('isViscokupujesCzValid', $isViscokupujesCzValid ? 1 : 0);
 		$this->save();
 

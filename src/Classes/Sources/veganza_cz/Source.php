@@ -31,11 +31,11 @@ class Source extends \Deli\Classes\Sources\Source
 							'source' => $this->getCode(),
 							'uri' => $url,
 						], [
-							'timeCreated' => new \Katu\Utils\DateTime,
+							'timeCreated' => new \Katu\Tools\DateTime\DateTime,
 						]);
 					}
 				}
-			}, !in_array(\Katu\Env::getPlatform(), ['dev']));
+			}, !in_array(\Katu\Config\Env::getPlatform(), ['dev']));
 		} catch (\Katu\Exceptions\LockException $e) {
 			// Nevermind.
 		}

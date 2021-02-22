@@ -35,13 +35,13 @@ class Source extends \Deli\Classes\Sources\Source
 						'source' => (string)$this,
 						'uri' => $productLine[0],
 					], [
-						'timeCreated' => new \Katu\Utils\DateTime,
+						'timeCreated' => new \Katu\Tools\DateTime\DateTime,
 					], [
 						'originalName' => $productLine[2],
 						'remoteCategory' => $this->getRemoteCategoryJSON($categories[$productLine[1]]),
 					]);
 				}
-			}, !in_array(\Katu\Env::getPlatform(), ['dev']));
+			}, !in_array(\Katu\Config\Env::getPlatform(), ['dev']));
 		} catch (\Throwable $e) {
 			// Nevermind.
 		}
