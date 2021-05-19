@@ -698,25 +698,29 @@ class Product extends \Deli\Model
 	 */
 	public function getProductUnitAbbr()
 	{
-		$amountWithUnit = $this->getAmountWithUnit();
-		if ($amountWithUnit) {
-			return $amountWithUnit->unit;
+		try {
+			$amountWithUnit = $this->getAmountWithUnit();
+			if ($amountWithUnit) {
+				return $amountWithUnit->unit;
+			}
+
+			$sql = SX::select()
+				->select(ProductNutrient::getColumn('ingredientUnit'))
+				->select(SX::aka(SX::fncCount([
+					ProductNutrient::getIdColumn(),
+				]), SX::a('size')))
+				->from(ProductNutrient::getTable())
+				->where(SX::eq(ProductNutrient::getColumn('productId'), $this->getId()))
+				->where(SX::cmpIn(ProductNutrient::getColumn('ingredientUnit'), ['g', 'ml']))
+				->groupBy(ProductNutrient::getColumn('ingredientUnit'))
+				->orderBy(SX::orderBy(SX::a('size'), SX::kw('desc')))
+				;
+
+			$res = ProductNutrient::getConnection()->createQuery($sql)->getResult();
+
+			return $res[0]['ingredientUnit'] ?? false;
+		} catch (\Throwable $e) {
+			return 'g';
 		}
-
-		$sql = SX::select()
-			->select(ProductNutrient::getColumn('ingredientUnit'))
-			->select(SX::aka(SX::fncCount([
-				ProductNutrient::getIdColumn(),
-			]), SX::a('size')))
-			->from(ProductNutrient::getTable())
-			->where(SX::eq(ProductNutrient::getColumn('productId'), $this->getId()))
-			->where(SX::cmpIn(ProductNutrient::getColumn('ingredientUnit'), ['g', 'ml']))
-			->groupBy(ProductNutrient::getColumn('ingredientUnit'))
-			->orderBy(SX::orderBy(SX::a('size'), SX::kw('desc')))
-			;
-
-		$res = ProductNutrient::getConnection()->createQuery($sql)->getResult();
-
-		return $res[0]['ingredientUnit'] ?? false;
 	}
 }
